@@ -3,6 +3,13 @@
 import { createClient } from '@/app/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
+export async function getEmails() {
+const supabase = await createClient();
+const {data,error} = await supabase.from('user').select('email').is('user_uuid', null);
+if(error) throw new Error(error.message);
+return data.map((u) => u.email);
+}
+
 export async function login(email: string, password: string) {
   const supabase = await createClient();
 

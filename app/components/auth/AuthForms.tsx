@@ -4,8 +4,8 @@ import { Button } from 'primereact/button';
 import { clientSignup } from '@/app/actions/clients';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
-import { useState } from 'react';
-import { login } from '@/app/actions/auth';
+import { useEffect, useState } from 'react';
+import { getEmails, login } from '@/app/actions/auth';
 import Link from 'next/link';
 import { PasswordInputIconAuth, TextInputIconAuth } from '../forms/FormElements';
 import { useRouter } from 'next/navigation';
@@ -159,16 +159,35 @@ export function SignInMigrateForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const [emailList, setEmailList] = useState<string[]>([]);
+
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+  const fetchEmails = async () => {
+    try {
+      const res = await getEmails();
+      setEmailList(res);
+      console.log("Emails:", res)
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  fetchEmails(); // ← fehlte
+}, []);
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
     try {
+      if (emailList.includes(email)) {
       await registerBubbleUser(email, password);
+      } else {
       await login(email, password);
+      }
+
     } catch (err) {
       console.error(err);
       setError('Keinen Benutzer mit diesen Daten gefunden.');
