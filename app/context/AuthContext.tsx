@@ -1,0 +1,79 @@
+'use client';
+import { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { createClient } from '@/app/utils/supabase/client';
+import type { User } from '@supabase/supabase-js';
+import { signOut } from '../actions/auth';
+import { Client } from '../types/Database';
+import type { User as UserProfile } from '../types/Database';
+
+interface AuthContextType {
+  clientProfile: Client | null;
+  loading: boolean;
+  logout: () => Promise<void>;
+  user: User | null;
+  userProfile: UserProfile | null;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  clientProfile: null,
+  user: null,
+  userProfile: null,
+  loading: true,
+  logout: async () => {},
+});
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [clientProfile, setClientProfile] = useState<Client | null>(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = useMemo(() => createClient(), []);
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase.from('user').select('*').eq('user_uuid', userId).single();
+    setUserProfile(data);
+
+    if (data?.user_role === 'client') {
+      fetchClient(userId);
+    }
+  };
+
+  const fetchClient = async (userId: string) => {
+    const { data } = await supabase.from('client').select('*').eq('user_id', userId).single();
+    setClientProfile(data);
+  };
+
+  useEffect(() => {
+    // Aktuelle Session laden
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Session-Änderungen beobachten
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) fetchProfile(session.user.id);
+      else setUserProfile(null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
+
+  const logout = async () => {
+    await signOut();
+    setUser(null);
+    setUserProfile(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ clientProfile, user, userProfile, loading, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export const useAuth = () => useContext(AuthContext);

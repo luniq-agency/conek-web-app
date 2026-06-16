@@ -1,7 +1,21 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const nextConfig = {
+  experimental: {
+    viewTransition: true,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ktrrjvapmaftznfxbwhi.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '39f7d44d627148aa5c1c8a4d790903db.cdn.bubble.io',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

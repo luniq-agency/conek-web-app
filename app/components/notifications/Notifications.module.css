@@ -1,0 +1,12 @@
+.unread {
+    background-color: var(--background);
+}
+
+.wrapper {
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: row;
+    padding: 1rem;
+    width: 100%;
+}

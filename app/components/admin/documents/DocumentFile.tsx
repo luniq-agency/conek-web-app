@@ -1,0 +1,54 @@
+'use client';
+
+import { ContextMenu } from 'primereact/contextmenu';
+import { Document } from '@/app/types/Database';
+import styles from './Documents.module.css';
+import { useRef } from 'react';
+import Image from 'next/image';
+import { document_options } from '@/app/constants/Constants';
+
+interface Props {
+  document: Document;
+  draggable?: boolean;
+  onClick: () => void;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
+}
+
+export default function DocumentFile({
+  document,
+  draggable,
+  onClick,
+  onDragStart,
+  onDragEnd,
+}: Props) {
+  const fileMenu = useRef<ContextMenu | null>(null);
+
+  const items = [
+    {
+      label: 'Umbenennen',
+    },
+    {
+      label: 'Löschen',
+      command: () => deleteFile(),
+    },
+  ];
+
+  const deleteFile = async () => {};
+
+  const fileIcon = document_options.find((t) => t.value === document.file_type)?.icon;
+
+  return (
+    <div
+      className={styles.wrapper}
+      draggable={draggable}
+      onClick={onClick}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      style={{ backgroundColor: 'var(--background)' }}
+    >
+      <Image alt="" height={48} src={fileIcon || ''} width={48} />
+      <span style={{ fontSize: 11 }}>{document.document_name}</span>
+    </div>
+  );
+}

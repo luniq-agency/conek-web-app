@@ -9,9 +9,18 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.8",
+    "@supabase/ssr": "^0.10.3",
+    "chart.js": "^4.5.1",
     "next": "16.2.6",
+    "primeicons": "^7.0.0",
+    "primelocale": "^2.3.2",
+    "primereact": "^10.9.8",
+    "quill": "^2.0.3",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "resend": "^6.12.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -1,0 +1,116 @@
+'use client';
+
+import { invoiceCreate, invoicesLoadAll } from '@/app/actions/invoice';
+import { Client, User } from '@/app/types/Database';
+import { useRouter } from 'next/navigation';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+import { Dropdown } from 'primereact/dropdown';
+import { useEffect, useState } from 'react';
+import { TextInputLabel } from '../../forms/FormElements';
+
+interface Props {
+  users: User[];
+}
+export default function AdminCreateInvoice({ users }: Props) {
+  const [visible, setVisible] = useState(false);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchLastInvoice = async () => {
+      try {
+        const invoices = await invoicesLoadAll();
+        if (invoices.length === 0) return;
+
+        const last = invoices.sort(
+          (a, b) => Number(b.invoice_number) - Number(a.invoice_number)
+        )[0];
+
+        const nextNumber = (Number(last.invoice_number) + 1).toString();
+        setInvoicePlaceholder(nextNumber);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchLastInvoice();
+  }, []);
+
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [invoicePlaceholder, setInvoicePlaceholder] = useState('');
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+
+  const createInvoice = async () => {
+    const payload = {
+      invoice_number: invoiceNumber,
+      invoice_status: 'draft',
+      invoice_total_gross: 0,
+      invoice_total_net: 0,
+      recipient: selectedClient?.id,
+      tax_amount: 0,
+      tax_rate: 0,
+    };
+    try {
+      await invoiceCreate(payload);
+      setVisible(false);
+    } catch (err) {
+      console.error(err);
+    }
+    setSelectedClient(null);
+    router.refresh();
+  };
+
+  const userOptions = users
+    .map((u) => ({
+      ...u,
+      fullName: `${u.user_name_last}, ${u.user_name_first}`,
+    }))
+    .sort((a, b) => a.user_name_last.localeCompare(b.user_name_last));
+
+  return (
+    <>
+      <Dialog
+        closable={true}
+        draggable={false}
+        header="Rechnung erstellen"
+        onHide={() => setVisible(false)}
+        style={{ maxWidth: 640, width: '100%' }}
+        visible={visible}
+      >
+        <div className="column gap-m">
+          <div className="column gap-xs">
+            <label>Kunde</label>
+            <Dropdown
+              filter
+              filterPlaceholder="Suchen"
+              onChange={(e) => setSelectedClient(e.value)}
+              optionLabel="fullName"
+              optionValue=""
+              options={userOptions}
+              value={selectedClient}
+            />
+          </div>
+          <TextInputLabel
+            label="Rechnungsnummer"
+            onChange={setInvoiceNumber}
+            placeholder={invoicePlaceholder}
+            value={invoiceNumber}
+          />
+          <Button
+            className="button-primary"
+            disabled={!selectedClient}
+            label="Rechnung erstellen"
+            onClick={createInvoice}
+            style={{ width: 'fit-content' }}
+          />
+        </div>
+      </Dialog>
+      <Button
+        className="button-primary"
+        icon="pi pi-plus"
+        label="Rechnung erstellen"
+        onClick={() => setVisible(true)}
+      />
+    </>
+  );
+}
