@@ -26,6 +26,25 @@ export default function ClientTable({ bearbeiter }: Props) {
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
 
+  // ZEILENHÖHE
+  const [rows, setRows] = useState(7);
+  const tableRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+  const calculateRows = () => {
+    const rowHeight = 73;
+    const offsetTop = tableRef.current?.getBoundingClientRect().top ?? 200;
+    const paginatorHeight = 53.56;
+    const tableHeaderHeight = 56.5;
+    const available = window.innerHeight - offsetTop - paginatorHeight - tableHeaderHeight;
+    setRows(Math.max(1, Math.floor(available / rowHeight)));
+  };
+
+  calculateRows();
+  window.addEventListener('resize', calculateRows);
+  return () => window.removeEventListener('resize', calculateRows);
+}, []);
+
   //DATA
   const [clients, setClients] = useState<User[]>([]);
   const [selectedClients, setSelectedClients] = useState<User[]>([]);
@@ -139,6 +158,7 @@ export default function ClientTable({ bearbeiter }: Props) {
   return (
     <>
       <Toast ref={toast} />
+      <div ref={tableRef}>
       <DataTable
         emptyMessage="Keine Kunden gefunden."
         filterDisplay="menu"
@@ -146,7 +166,7 @@ export default function ClientTable({ bearbeiter }: Props) {
         globalFilterFields={['user_name_first', 'user_name_last']}
         paginator
         onSelectionChange={(e: any) => setSelectedClients(e.value)}
-        rows={10}
+        rows={rows}
         selection={selectedClients}
         selectionMode={rowClick ? null : 'checkbox'}
         sortField="user_name_last"
@@ -201,6 +221,7 @@ export default function ClientTable({ bearbeiter }: Props) {
         />
         <Column body={actionTemplate} header="Aktionen" />
       </DataTable>
+      </div>
     </>
   );
 }
@@ -231,7 +252,7 @@ export function ClientTableLatest() {
   const userTemplate = (rowData: User) => {
     return (
       <div className="row gap-s align-center">
-        <Avatar />
+        <UserAvatarOther fontSize={11} height={30} user={rowData} width={30} />
         <div className="column">
           <span style={{ fontSize: 14, fontWeight: 700 }}>
             {rowData.user_name_last}, {rowData.user_name_first}

@@ -19,7 +19,7 @@ export default function AdminClientsPage() {
         <AdminClientCreate />
       </div>
       <DividerBlock height={2} />
-      <div className="container">
+      <div className="container" style={{maxHeight: '100%'}}>
         <ClientTable />
       </div>
     </div>

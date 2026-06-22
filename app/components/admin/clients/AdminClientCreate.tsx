@@ -25,6 +25,9 @@ export default function AdminClientCreate() {
 
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
+  const maxDate = new Date();
+maxDate.setFullYear(maxDate.getFullYear() - 18);
+
   //FORM
   const [beruf, setBeruf] = useState('');
   const [berufsstatus, setBerufsstatus] = useState('');
@@ -102,8 +105,9 @@ export default function AdminClientCreate() {
             <TextInputLabel label="E-Mail" onChange={setEmail} value={email} />
             <div className="row gap-m mobile-column width-100">
               <DatePicker
-                dateValue={geburtsdatum || new Date()}
+                dateValue={geburtsdatum || maxDate}
                 label="Geburtsdatum"
+                maxDate={maxDate}
                 onDateChange={setGeburtsdatum}
                 placeholder="dd.mm.yyyy"
               />

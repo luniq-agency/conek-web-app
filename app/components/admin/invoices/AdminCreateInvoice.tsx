@@ -10,9 +10,12 @@ import { useEffect, useState } from 'react';
 import { TextInputLabel } from '../../forms/FormElements';
 
 interface Props {
+  onCreate?: ()=>void;
+  secondary?: boolean;
+  user?: User;
   users: User[];
 }
-export default function AdminCreateInvoice({ users }: Props) {
+export default function AdminCreateInvoice({ onCreate, secondary, user, users }: Props) {
   const [visible, setVisible] = useState(false);
 
   const router = useRouter();
@@ -29,6 +32,7 @@ export default function AdminCreateInvoice({ users }: Props) {
 
         const nextNumber = (Number(last.invoice_number) + 1).toString();
         setInvoicePlaceholder(nextNumber);
+        if (onCreate) onCreate();
       } catch (err) {
         console.error(err);
       }
@@ -41,7 +45,17 @@ export default function AdminCreateInvoice({ users }: Props) {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const createInvoice = async () => {
-    const payload = {
+const payload = user
+  ? {
+      invoice_number: invoiceNumber,
+      invoice_status: 'draft',
+      invoice_total_gross: 0,
+      invoice_total_net: 0,
+      tax_amount: 0,
+      tax_rate: 0,
+      user: user.id,
+    }
+  : {
       invoice_number: invoiceNumber,
       invoice_status: 'draft',
       invoice_total_gross: 0,
@@ -87,7 +101,7 @@ export default function AdminCreateInvoice({ users }: Props) {
               optionLabel="fullName"
               optionValue=""
               options={userOptions}
-              value={selectedClient}
+              value={user ? user : selectedClient}
             />
           </div>
           <TextInputLabel
@@ -106,7 +120,7 @@ export default function AdminCreateInvoice({ users }: Props) {
         </div>
       </Dialog>
       <Button
-        className="button-primary"
+        className={secondary ? 'button-secondary' : 'button-primary'}
         icon="pi pi-plus"
         label="Rechnung erstellen"
         onClick={() => setVisible(true)}

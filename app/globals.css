@@ -141,6 +141,7 @@ button {
 .button-secondary {
   background-color: var(--button-secondary);
   color: var(--text-primary);
+  font-size: 0.9rem;
 }
 
 .button-square {
@@ -331,6 +332,12 @@ textarea {
   font-size: 14px;
   padding: 8px 12px;
   width: 100%;
+}
+
+input::placeholder,
+select::placeholder,
+textarea::placeholder {
+  color: rgba(0,0,0,0.3);
 }
 
 .mobile-visible {
@@ -600,8 +607,8 @@ p-datepicker-next {
 }
 
 .tabview-vertical>div>div>ul>.p-highlight>a,
-.tabview-vertical>div>div>ul>.p-highlight>a>.p-tabview-title {
-  color: var(--primary);
+.tabview-vertical>div>div>ul>.p-highlight>.p-tabview-nav-link>.p-tabview-title {
+  color: var(--primary) !important;
 }
 
 .tabview-vertical>.p-tabview-panels {

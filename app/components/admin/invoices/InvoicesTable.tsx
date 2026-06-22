@@ -21,6 +21,8 @@ import {
 } from '@/app/actions/invoice';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import Link from 'next/link';
+import { useAuth } from '@/app/context/AuthContext';
+import AdminCreateInvoice from './AdminCreateInvoice';
 
 interface Props {
   clients?: User[];
@@ -28,6 +30,7 @@ interface Props {
 }
 
 export default function InvoicesTable({ clients }: Props) {
+  const {userProfile} = useAuth();
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
 
@@ -276,6 +279,7 @@ export default function InvoicesTable({ clients }: Props) {
 }
 
 export function InvoicesTableUser({ user }: Props) {
+  const {userProfile} = useAuth();
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
 
@@ -363,6 +367,12 @@ export function InvoicesTableUser({ user }: Props) {
     }
   };
 
+  const refreshInvoices = async () => {
+    if (!user) return
+          const res = await invoicesLoadUser(user.id);
+        setInvoicesList(res);
+  }
+
   const selectInvoice = (rowData: Invoice) => {
     setSelectedInvoice(rowData);
     setVisible(true);
@@ -416,6 +426,7 @@ export function InvoicesTableUser({ user }: Props) {
             />
           </div>
         </OverlayPanel>
+        {userProfile?.user_role === 'admin' && <>
         <Button
           className="button-square"
           icon="pi pi-pencil"
@@ -426,6 +437,8 @@ export function InvoicesTableUser({ user }: Props) {
           icon="pi pi-ellipsis-v"
           onClick={(e) => op.current?.toggle(e)}
         />
+        </>
+  }
       </div>
     );
   };
@@ -460,6 +473,11 @@ export function InvoicesTableUser({ user }: Props) {
   return (
     <>
       <Toast ref={toast} />
+      <div className="column gap-m">
+        <div className="row space-between">
+        <h3>Rechnungen</h3>
+        <AdminCreateInvoice onCreate={refreshInvoices} secondary={true} user={user} users={user ? [user] : []}/>
+        </div>
       {selectedInvoices.length >= 1 && <Button label="Löschen" onClick={deleteMultipleInvoices} />}
       <DataTable
         emptyMessage="Keine Rechnungen gefunden."
@@ -483,6 +501,7 @@ export function InvoicesTableUser({ user }: Props) {
         <Column body={statusTemplate} field="status" header="Status" />
         <Column body={actionTemplate} header="Aktionen" />
       </DataTable>
+      </div>
     </>
   );
 }
