@@ -105,21 +105,33 @@ export const invoice_status = [
 
 export const job_categories = [
   {
+    bg: '#124559',
     label: 'Angestellt',
-    color: '#D8A0F7',
+    color: 'white',
     value: 'employed',
   },
   {
+    bg: '#FCEC52',
     label: 'Freelancer',
-    color: '#9DD9EE',
+    color: 'black',
     value: 'freelancer',
   },
   {
+    bg: '#EF709D',
     label: 'Selbstständig',
-    color: '#BDE97C',
+    color: 'white',
     value: 'self-employed',
   },
 ];
+
+export const notification_types = [
+  {
+    value: 'client'
+  },
+  {
+    value: 'task'
+  }
+]
 
 export const service_options = [
   {
@@ -159,8 +171,14 @@ export const task_status = [
 
 export const tax_rates = [
   {
-    label: '19%',
-    value: 19,
+    label: 'Brutto (19% inbegriffen)',
+    multiplier: 19,
+    value: 'gross',
+  },
+  {
+    label: 'Netto (19% obendrauf)',
+    multiplier: 19,
+    value: 'net',
   },
 ];
 

@@ -1,3 +1,12 @@
+export function formatCurrency(number: number) {
+  const formattedNumber = new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(number);
+
+  return formattedNumber;
+}
+
 export function formatDate(str: string | Date) {
   const date = new Date(str);
   return date.toLocaleDateString('de-DE', {
@@ -22,13 +31,14 @@ export function formatDateWithTime(str: string | Date) {
   return `${dayPart} | ${hourPart}`;
 }
 
-export function formatCurrency(number: number) {
-  const formattedNumber = new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(number);
+export function formatMonth(str: string | Date) {
+  const date = new Date(str);
+  const dayPart = date.toLocaleDateString('de-DE', {
+    month: 'long',
+    year: 'numeric'
+  });
 
-  return formattedNumber;
+  return `${dayPart}`;
 }
 
 export function stripHtml(html: string) {

@@ -15,7 +15,12 @@ import { Button } from 'primereact/button';
 import Link from 'next/link';
 import { Dropdown } from 'primereact/dropdown';
 import { UserAvatarOther } from '../../UserAvatar';
-import { clientsLoadAgency, clientsLoadAll } from '@/app/actions/clients';
+import { clientsLoadAgency, clientsLoadAll, clientUpdate } from '@/app/actions/clients';
+import { Dialog } from 'primereact/dialog';
+import { SelectLabel } from '../../forms/FormElements';
+import { agencyLoadAll } from '@/app/actions/agency';
+import { userUpdate } from '@/app/actions/users';
+import { stat } from 'fs';
 
 interface Props {
   bearbeiter?: User;
@@ -26,24 +31,29 @@ export default function ClientTable({ bearbeiter }: Props) {
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
 
+  //
+  const [agents, setAgents] = useState<User[]>([]);
+  const [transferring, setTransferring] = useState(false);
+  const [transferTarget, setTransferTarget] = useState<User | null>(null);
+
   // ZEILENHÖHE
   const [rows, setRows] = useState(7);
   const tableRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-  const calculateRows = () => {
-    const rowHeight = 73;
-    const offsetTop = tableRef.current?.getBoundingClientRect().top ?? 200;
-    const paginatorHeight = 53.56;
-    const tableHeaderHeight = 56.5;
-    const available = window.innerHeight - offsetTop - paginatorHeight - tableHeaderHeight;
-    setRows(Math.max(1, Math.floor(available / rowHeight)));
-  };
+    const calculateRows = () => {
+      const rowHeight = 73;
+      const offsetTop = tableRef.current?.getBoundingClientRect().top ?? 200;
+      const paginatorHeight = 53.56;
+      const tableHeaderHeight = 56.5;
+      const available = window.innerHeight - offsetTop - paginatorHeight - tableHeaderHeight;
+      setRows(Math.max(1, Math.floor(available / rowHeight)));
+    };
 
-  calculateRows();
-  window.addEventListener('resize', calculateRows);
-  return () => window.removeEventListener('resize', calculateRows);
-}, []);
+    calculateRows();
+    window.addEventListener('resize', calculateRows);
+    return () => window.removeEventListener('resize', calculateRows);
+  }, []);
 
   //DATA
   const [clients, setClients] = useState<User[]>([]);
@@ -64,6 +74,8 @@ export default function ClientTable({ bearbeiter }: Props) {
         try {
           const clientRes = await clientsLoadAll();
           setClients(clientRes);
+          const agencyRes = await agencyLoadAll();
+          setAgents(agencyRes);
         } catch (err) {}
     };
 
@@ -89,8 +101,6 @@ export default function ClientTable({ bearbeiter }: Props) {
   };
 
   //SELECTION
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-
   const selectClient = (rowData: User) => {
     router.push(`/admin/kunden/${rowData.id}`);
   };
@@ -101,17 +111,6 @@ export default function ClientTable({ bearbeiter }: Props) {
       summary: 'Profil aktualisiert',
       detail: 'Das Profil des Kunden wurde aktualisiert.',
     });
-  };
-
-  const sidebarHeader = () => {
-    return (
-      <div className="column">
-        <h3>
-          {selectedClient?.nachname}, {selectedClient?.vorname}
-        </h3>
-        <span>Mitglied seit: {formatDate(selectedClient?.created_at || new Date())}</span>
-      </div>
-    );
   };
 
   //TEMPLATES
@@ -129,13 +128,31 @@ export default function ClientTable({ bearbeiter }: Props) {
 
   const categoryTemplates = (rowData: User) => {
     const statusObj = job_categories.find((t) => t.value === rowData.job_status);
-    return <Tag style={{ backgroundColor: statusObj?.color }} value={statusObj?.label ?? ''} />;
+    return (
+      <Tag
+        style={{ backgroundColor: statusObj?.bg, color: statusObj?.color }}
+        value={statusObj?.label ?? ''}
+      />
+    );
+  };
+
+  const certificateTemplate = (rowData: User) => {
+    return <span>{rowData.certificate ? '✅' : '❌'}</span>;
   };
 
   const nameTemplate = (rowData: User) => {
+    const job = job_categories.find((t) => t.value === rowData.job_status);
+
     return (
       <div className="row gap-s align-center">
-        <UserAvatarOther fontSize={11} height={30} user={rowData} width={30} />
+        <UserAvatarOther
+          backgroundColor={job?.bg}
+          color={job?.color}
+          fontSize={11}
+          height={30}
+          user={rowData}
+          width={30}
+        />
         <span>
           {rowData.user_name_last}, {rowData.user_name_first}
         </span>
@@ -155,72 +172,126 @@ export default function ClientTable({ bearbeiter }: Props) {
     );
   };
 
+  const transferClients = async () => {
+    if (!transferTarget) return;
+
+    try {
+      await Promise.all(
+        selectedClients.map((client) => {
+          clientUpdate({ bearbeiter: transferTarget.id }, client.client_profile);
+          userUpdate({ bearbeiter: transferTarget.id }, client.id);
+        })
+      );
+      setTransferring(false);
+      setSelectedClients([]);
+      setTransferTarget(null);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTransferring(false);
+      setTransferTarget(null);
+    }
+  };
+
   return (
     <>
       <Toast ref={toast} />
-      <div ref={tableRef}>
-      <DataTable
-        emptyMessage="Keine Kunden gefunden."
-        filterDisplay="menu"
-        filters={filters}
-        globalFilterFields={['user_name_first', 'user_name_last']}
-        paginator
-        onSelectionChange={(e: any) => setSelectedClients(e.value)}
-        rows={rows}
-        selection={selectedClients}
-        selectionMode={rowClick ? null : 'checkbox'}
-        sortField="user_name_last"
-        sortOrder={1}
-        stripedRows
-        value={clients}
+      <Dialog
+        header="Kunden zuweisen"
+        onHide={() => setTransferring(false)}
+        style={{ maxWidth: 400, width: '100%' }}
+        visible={transferring}
       >
-        <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }}></Column>
-        <Column body={nameTemplate} field="nachname" header="Name" sortable />
-        <Column
-          body={categoryTemplates}
-          field="berufsstatus"
-          filter
-          filterElement={(options) => (
+        <div className="column gap-m">
+          <div className="column gap-xs">
+            <label>Bearbeiter</label>
             <Dropdown
-              options={job_categories}
-              optionLabel="label"
-              optionValue="value"
-              value={options.value}
-              onChange={(e) => options.filterCallback(e.value, options.index)}
-              placeholder="Status"
-              showClear
+              filter
+              filterPlaceholder="Suchen"
+              onChange={(e) => setTransferTarget(e.value)}
+              optionLabel="fullName"
+              options={agents.map((a) => ({
+                ...a,
+                fullName: `${a.user_name_last}, ${a.user_name_first}`,
+              }))}
+              value={transferTarget}
             />
-          )}
-          header="Berufsstatus"
-        />
-        <Column
-          body={(rowData) => formatDate(rowData.created_at)}
-          field="created_at"
-          header="Angemeldet seit"
-          sortable
-          style={{ width: '15%' }}
-        />
-        <Column
-          body={statusTemplate}
-          field="status"
-          filter
-          filterMatchMode="equals"
-          filterElement={(options) => (
-            <Dropdown
-              options={client_status}
-              optionLabel="label"
-              optionValue="value"
-              value={options.value}
-              onChange={(e) => options.filterCallback(e.value)}
-              placeholder="Status"
-              showClear
-            />
-          )}
-          header="Status"
-          sortable
-        />
-        <Column body={actionTemplate} header="Aktionen" />
-      </DataTable>
+          </div>
+          <Button
+            disabled={!transferTarget || selectedClients.length === 0}
+            label="Kunden zuweisen"
+            onClick={transferClients}
+          />
+        </div>
+      </Dialog>
+      <div ref={tableRef}>
+        {selectedClients.length >= 1 && bearbeiter && (
+          <Button label="Kunden zuweisen" onClick={() => setTransferring(true)} />
+        )}
+        <DataTable
+          emptyMessage="Keine Kunden gefunden."
+          filterDisplay="menu"
+          filters={filters}
+          globalFilterFields={['user_name_first', 'user_name_last']}
+          paginator
+          onSelectionChange={(e: any) => setSelectedClients(e.value)}
+          rows={rows}
+          selection={selectedClients}
+          selectionMode={rowClick ? null : 'checkbox'}
+          sortField="user_name_last"
+          sortOrder={1}
+          stripedRows
+          value={clients}
+        >
+          <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }}></Column>
+          <Column body={nameTemplate} field="nachname" header="Name" sortable />
+          <Column
+            body={categoryTemplates}
+            field="berufsstatus"
+            filter
+            filterElement={(options) => (
+              <Dropdown
+                options={job_categories}
+                optionLabel="label"
+                optionValue="value"
+                value={options.value}
+                onChange={(e) => options.filterCallback(e.value, options.index)}
+                placeholder="Status"
+                showClear
+              />
+            )}
+            header="Berufsstatus"
+          />
+          <Column body={certificateTemplate} header="Zertifikatsdatei" />
+          <Column
+            body={(rowData) => formatDate(rowData.created_at)}
+            field="created_at"
+            header="Angemeldet seit"
+            sortable
+            style={{ width: '15%' }}
+          />
+          <Column
+            body={statusTemplate}
+            field="status"
+            filter
+            filterMatchMode="equals"
+            filterElement={(options) => (
+              <Dropdown
+                options={client_status}
+                optionLabel="label"
+                optionValue="value"
+                value={options.value}
+                onChange={(e) => options.filterCallback(e.value)}
+                placeholder="Status"
+                showClear
+              />
+            )}
+            header="Status"
+            sortable
+          />
+          <Column body={actionTemplate} header="Aktionen" />
+        </DataTable>
       </div>
     </>
   );

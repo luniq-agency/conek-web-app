@@ -3,12 +3,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F4F7FE;
+  --background: #e7e8ee;
   --background-container: #ffffff;
   --background-sidebar: #060231;
   --foreground: #171717;
 
   --primary: #4B39EF;
+  --primary-dark: #091E7C;
   --secondary: #48F5B6;
 
   --button-secondary: #f6f5f8;
@@ -17,9 +18,9 @@
 
   --input-bg: #ffffff;
 
-  --error-text: #C9372C;
+  --error-text: #ee5447;
   --error-bg: #FFECEB;
-  --success-text: #216E4E;
+  --success-text: #249427;
   --success-bg: #DCFFF1;
   --warning-text: #946F00;
   --warning-bg: #FEF7C8;
@@ -172,8 +173,8 @@ button {
 
 .container {
   background-color: var(--background-container);
-  border: 1px solid var(--border-color);
   border-radius: 20px;
+  box-shadow: 0px 0px 4px 0px rgba(0,0,8,0,0.05);
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
@@ -419,7 +420,7 @@ p-datepicker-next {
 }
 
 .p-disabled {
-  opacity: 0.75;
+  opacity: 0.5;
 }
 
 .p-dropdown {

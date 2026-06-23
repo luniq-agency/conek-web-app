@@ -7,16 +7,14 @@ import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DatePicker, SelectLabel, TextAreaLabel, TextInputLabel } from '../../forms/FormElements';
 import { adminLookUp } from '@/app/actions/admin';
 import { taskCreate, taskUpdateCreate } from '@/app/actions/tasks';
 import { notificationCreate } from '@/app/actions/notification';
+import { usersLoadAll } from '@/app/actions/users';
 
-interface Props {
-  admins: User[];
-}
-export default function AdminCreateTask({ admins }: Props) {
+export default function AdminCreateTask() {
   const { user, userProfile } = useAuth();
 
   const [submitting, setSubmitting] = useState(false);
@@ -24,41 +22,55 @@ export default function AdminCreateTask({ admins }: Props) {
 
   const router = useRouter();
 
+  // USERS
+  const [users, setUsers] = useState<User[]>([]);
+
   const [selectedAdmin, setSelectedAdmin] = useState('');
 
-  const adminOptions = admins.map((a) => ({
-    ...a,
-    fullName: `${a.user_name_last}, ${a.user_name_first}`,
-  }));
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await usersLoadAll();
+        setUsers(res);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, []);
 
   //INPUTS
-  const [taskAssignee, setTaskAssignee] = useState('');
+  const [taskAssignee, setTaskAssignee] = useState<User | null>(null);
   const [taskDescription, setTaskDescription] = useState('');
   const [taskDueDate, setTaskDueDate] = useState<Date | null>(null);
   const [taskName, setTaskName] = useState('');
+  const [taskUser, setTaskUser] = useState<User | null>(null);
 
   //ACTIONS
   const createTask = async () => {
-    setSubmitting(true);
+    /* setSubmitting(true); */
 
     const recipient = await adminLookUp(selectedAdmin);
 
     const notificationPayload = {
-      message: `${userProfile?.user_name_first} ${userProfile?.user_name_last} hat die Aufgabe ${taskName} erstellt und dir zugewiesen.`,
+      message: `${userProfile?.user_name_first} ${userProfile?.user_name_last} hat die Aufgabe '${taskName}' erstellt und dir zugewiesen.`,
       read: false,
-      recipient: recipient.user_uuid,
+      recipient: recipient.id,
       title: 'Neue Aufgabe',
     };
 
     const taskPayload = {
-      assignee: recipient.user_uuid,
+      assignee: recipient.id,
       created_at: new Date(),
-      created_by: user?.id,
+      created_by: userProfile?.id,
       description: taskDescription,
-      due_date: taskDueDate,
+      due_date: taskDueDate || null,
       status: 'open',
       title: taskName,
     };
+    console.log('Task:', taskPayload);
+    console.log('Notification:', notificationPayload);
+    
     try {
       const taskRes = await taskCreate(taskPayload);
 
@@ -71,18 +83,35 @@ export default function AdminCreateTask({ admins }: Props) {
       };
 
       await taskUpdateCreate(taskUpdatePayload);
-      if (recipient.user_uuid !== user?.id)
+      if (recipient.id !== user?.id)
         await notificationCreate(notificationPayload, recipient);
     } catch (err) {
       console.error(err);
     }
     setSubmitting(false);
     setVisible(false);
-    setTaskAssignee('');
+    setTaskAssignee(null);
     setTaskDescription('');
     setTaskName('');
     router.refresh();
+  
   };
+
+  const adminOptions = users
+    .filter((a) => a.user_role === 'admin')
+    .map((a) => ({
+      ...a,
+      fullName: `${a.user_name_last}, ${a.user_name_first}`,
+    }))
+    .sort((a: User, b: User) => a.user_name_last.localeCompare(b.user_name_last));
+
+  const clientOptions = users
+    .filter((a) => a.user_role === 'client')
+    .map((a) => ({
+      ...a,
+      fullName: `${a.user_name_last}, ${a.user_name_first}`,
+    }))
+    .sort((a: User, b: User) => a.user_name_last.localeCompare(b.user_name_last));
 
   return (
     <>
@@ -104,6 +133,18 @@ export default function AdminCreateTask({ admins }: Props) {
             options={adminOptions}
             value={selectedAdmin}
           />
+          <div className="column gap-xs">
+            <label>Verknüpfter Kunde (optional)</label>
+            <Dropdown
+              filter
+              filterPlaceholder="Suchen"
+              onChange={(e) => setTaskUser(e.value)}
+              optionLabel="fullName"
+              optionValue="id"
+              options={clientOptions}
+              value={taskUser}
+            />
+          </div>
           <DatePicker
             dateValue={taskDueDate || new Date()}
             label="Fälligkeitsdatum"
@@ -116,7 +157,8 @@ export default function AdminCreateTask({ admins }: Props) {
           />
           <Button
             className="button-primary"
-            disabled={!selectedAdmin || !taskDescription || !taskName}
+            disabled={!selectedAdmin || !taskDescription || !taskName || submitting}
+            icon={submitting ? 'pi pi-spinner' : undefined}
             label="Aufgabe erstellen"
             onClick={createTask}
             style={{ width: 'fit-content' }}

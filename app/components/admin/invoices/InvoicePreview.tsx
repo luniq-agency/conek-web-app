@@ -1,10 +1,14 @@
-import { Client, Invoice, InvoiceItem } from '@/app/types/Database';
+'use client';
+
+import { Client, Invoice, InvoiceItem, User } from '@/app/types/Database';
 import { formatCurrency } from '@/app/utils/formats';
 import Image from 'next/image';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Divider } from 'primereact/divider';
 import DividerBlock from '../../DividerBlock';
+import { useEffect, useState } from 'react';
+import { userLookup } from '@/app/actions/users';
 
 interface Props {
   client: string;
@@ -13,6 +17,18 @@ interface Props {
 }
 
 export default function InvoicePreview({ client, invoice, invoiceItems }: Props) {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (!client) return;
+
+    const fetchData = async () => {
+      const res = await userLookup(client);
+      setUser(res);
+    };
+    fetchData();
+  }, [client]);
+
   return (
     <div className="document-previewer">
       <div className="row space-between align-start">
@@ -32,7 +48,9 @@ export default function InvoicePreview({ client, invoice, invoiceItems }: Props)
         </div>
         <div className="column">
           <label>Rechnungsempfänger</label>
-          <span></span>
+          <span>
+            {user?.user_name_first} {user?.user_name_last}
+          </span>
         </div>
       </div>
       <Divider />

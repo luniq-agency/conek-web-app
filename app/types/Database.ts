@@ -9,6 +9,16 @@ export type Agent = {
   vorname: string;
 };
 
+export type AgencyStats = {
+  client_count: string;
+  created_at: Date;
+  email: string;
+  firma: string;
+  id: string;
+  user_name_first: string;
+  user_name_last: string;
+};
+
 export type Certificate = {
   created_at: Date;
   file: string;
@@ -17,10 +27,19 @@ export type Certificate = {
   year: number;
 };
 
+export type CertificateMonthlyStats = {
+  month: string;
+  certificate_count: number;
+  previous_month_count: number | null;
+  change_absolute: number | null;
+  change_percent: number | null;
+};
+
 export type Client = {
   bearbeiter: string;
   beruf: string;
   berufsstatus: string;
+  certificate: string;
   created_at: Date;
   email: string;
   family_status: string;
@@ -37,6 +56,19 @@ export type Client = {
   user_id: string;
   vorname: string;
   website: string;
+};
+
+export type ClientMonthlyStats = {
+  month: string;
+  total_count: number;
+  previous_month_total: number | null;
+  change_absolute: number | null;
+  employed_count: number;
+  freelancer_count: number;
+  self_employed_count: number;
+  previous_employed_count: number | null;
+  previous_freelancer_count: number | null;
+  previous_self_employed_count: number | null;
 };
 
 export type Document = {
@@ -83,8 +115,8 @@ export type Invoice = {
   client: string;
   created_at: Date;
   id: string;
-  invoice_date: Date;
-  invoice_date_due: Date;
+  invoice_date: Date | null;
+  invoice_date_due: Date | null;
   invoice_date_sent: Date;
   invoice_number: string;
   invoice_status: string;
@@ -92,9 +124,20 @@ export type Invoice = {
   invoice_total_net: number;
   recipient: string;
   tax_amount: number;
+  tax_category: string;
   tax_rate: number;
   total: number;
   user: string;
+};
+
+export type InvoiceMonthlyStats = {
+  month: string;
+  paid_count: number;
+  sent_count: number;
+  paid_total: number;
+  sent_total: number;
+  previous_paid_total: number | null;
+  previous_sent_total: number | null;
 };
 
 export type InvoiceItem = {
@@ -125,6 +168,7 @@ export type Task = {
   created_at: Date;
   created_by: string;
   description: string;
+  due_date: Date | null;
   id: string;
   status: string;
   title: string;
@@ -160,6 +204,9 @@ export type TicketEntry = {
 
 export type User = {
   avatar: string;
+  bearbeiter: string;
+  certificate: string;
+  client_profile: string;
   created_at: Date;
   dob: string;
   email: string;

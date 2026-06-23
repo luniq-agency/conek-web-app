@@ -19,7 +19,7 @@ export default async function AdminTasksPage() {
     <div className="page-content">
       <div className="row space-between">
         <h1>Aufgaben</h1>
-        <AdminCreateTask admins={admins} />
+        <AdminCreateTask />
       </div>
       <DividerBlock height={2} />
       <TaskTable admins={admins} tasks={tasks} />

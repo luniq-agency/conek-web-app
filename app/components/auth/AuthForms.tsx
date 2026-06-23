@@ -4,15 +4,33 @@ import { Button } from 'primereact/button';
 import { clientSignup } from '@/app/actions/clients';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getEmails, login } from '@/app/actions/auth';
 import Link from 'next/link';
 import { PasswordInputIconAuth, TextInputIconAuth } from '../forms/FormElements';
 import { useRouter } from 'next/navigation';
 import { registerBubbleUser } from '@/app/actions/migrate';
+import { Toast } from 'primereact/toast';
+
+const translateError = (message: string): string => {
+  const errors: Record<string, string> = {
+    'User already registered': 'Diese E-Mail-Adresse wird bereits verwendet.',
+    'Invalid login credentials': 'E-Mail oder Passwort ist falsch.',
+    'Email not confirmed': 'Bitte bestätige zuerst deine E-Mail-Adresse.',
+    'Password should be at least 6 characters': 'Das Passwort muss mindestens 6 Zeichen lang sein.',
+    'Unable to validate email address: invalid format':
+      'Bitte gib eine gültige E-Mail-Adresse ein.',
+  };
+
+  return errors[message] ?? 'Ein unbekannter Fehler ist aufgetreten.';
+};
 
 export function ClientSignupForm() {
   const router = useRouter();
+
+  const toast = useRef<Toast | null>(null);
+
+  // INPUTS
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -28,13 +46,21 @@ export function ClientSignupForm() {
     try {
       await clientSignup(email, password);
       router.push('/onboarding');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      const message = err?.message ?? 'Unbekannter Fehler';
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Registrierung nicht möglich',
+        detail: translateError(message),
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="column gap-l">
+      <Toast position="top-center" ref={toast} />
       <form onSubmit={signup}>
         <div className="column gap-s">
           <TextInputIconAuth
@@ -165,17 +191,17 @@ export function SignInMigrateForm() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-  const fetchEmails = async () => {
-    try {
-      const res = await getEmails();
-      setEmailList(res);
-      console.log("Emails:", res)
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  fetchEmails(); // ← fehlte
-}, []);
+    const fetchEmails = async () => {
+      try {
+        const res = await getEmails();
+        setEmailList(res);
+        console.log('Emails:', res);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchEmails(); // ← fehlte
+  }, []);
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,11 +209,10 @@ export function SignInMigrateForm() {
 
     try {
       if (emailList.includes(email)) {
-      await registerBubbleUser(email, password);
+        await registerBubbleUser(email, password);
       } else {
-      await login(email, password);
+        await login(email, password);
       }
-
     } catch (err) {
       console.error(err);
       setError('Keinen Benutzer mit diesen Daten gefunden.');

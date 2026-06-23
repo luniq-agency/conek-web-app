@@ -27,7 +27,7 @@ import InvoicePreview from './InvoicePreview';
 interface Props {
   clients: User[];
   invoice: Invoice;
-  onSubmit: () => void;
+  onSubmit?: () => void;
 }
 
 export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
@@ -38,17 +38,28 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
 
   const op = useRef<OverlayPanel | null>(null);
 
+  const [adding, setAdding] = useState(false);
+
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState<Date | null>(null);
   const [invoiceRecipient, setInvoiceRecipient] = useState('');
   const [invoiceTaxAmount, setInvoiceTaxAmount] = useState(0);
   const [invoiceTotal, setInvoiceTotal] = useState(0);
   const [invoiceTotalNet, setInvoiceTotalNet] = useState(0);
+  const [taxCategory, setTaxCategory] = useState('');
   const [taxRate, setTaxRate] = useState(0);
 
+  useEffect(() => {
+    if (!taxCategory) return;
+    const adding = taxCategory === 'net'; // Steuer wird aufgeschlagen
+    setAdding(adding);
+    setTaxRate(0.19);
+  }, [taxCategory]);
+
   const grossTotal = items.reduce((sum, item) => sum + item.price_total, 0);
-  const netTotal = grossTotal / (1 + taxRate / 100);
-  const taxAmount = grossTotal - netTotal;
+  const netTotal = adding ? grossTotal : grossTotal / (1 + taxRate); // brutto → netto
+  const taxAmount = adding ? grossTotal * taxRate : grossTotal - netTotal;
+  const total = adding ? grossTotal + taxAmount : grossTotal;
 
   useEffect(() => {
     if (!invoice) return;
@@ -56,9 +67,10 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
     if (invoice) {
       setInvoiceNumber(invoice.invoice_number);
       setInvoiceDate(invoice.invoice_date);
-      setInvoiceRecipient(invoice.recipient);
+      setInvoiceRecipient(invoice.user ?? '');
       setInvoiceTotal(invoice.invoice_total_gross);
       setInvoiceTotalNet(invoice.invoice_total_net);
+      setTaxCategory(invoice.tax_category);
       setTaxRate(invoice.tax_rate);
     }
 
@@ -91,12 +103,14 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
     }
   };
 
+  // TEMPLATES
   const clientTemplate = (client: User) => (
     <span>
       {client.user_name_last}, {client.user_name_first}
     </span>
   );
 
+  // TEMPLATES
   const deleteItem = async (id: string) => {
     try {
       await invoiceItemDelete(id);
@@ -144,6 +158,7 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
     />
   );
 
+  // ACTIONS
   const updateItem = (id: string, field: keyof InvoiceItem, value: any) => {
     setItems((prev) =>
       prev.map((item) => {
@@ -163,13 +178,15 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
   const updateInvoice = async () => {
     setUpdating(true);
     const invoicePayload = {
-      invoice_date: invoiceDate || new Date(),
+      invoice_date: invoiceDate,
       invoice_number: invoiceNumber,
       invoice_total_gross: grossTotal,
       invoice_total_net: netTotal,
       recipient: invoiceRecipient,
       tax_amount: taxAmount,
+      tax_category: taxCategory,
       tax_rate: taxRate,
+      user: invoiceRecipient,
     };
 
     try {
@@ -195,9 +212,16 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
       console.error(err);
     } finally {
       setUpdating(false);
-      onSubmit();
+      if (onSubmit) onSubmit();
     }
   };
+
+  const clientOptions = clients
+    .map((c) => ({
+      ...c,
+      fullName: `${c.user_name_last}, ${c.user_name_first}`,
+    }))
+    .sort((a, b) => a.user_name_last.localeCompare(b.user_name_last));
 
   return (
     <div className="column gap-m">
@@ -223,8 +247,9 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
             filterPlaceholder="Kunde suchen..."
             itemTemplate={clientTemplate}
             onChange={(e) => setInvoiceRecipient(e.value)}
+            optionLabel="fullName"
             optionValue="id"
-            options={clients}
+            options={clientOptions}
             value={invoiceRecipient}
             valueTemplate={
               invoiceRecipient
@@ -235,7 +260,12 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
         </div>
         <div className="column gap-xs">
           <label>Steuersatz</label>
-          <Dropdown onChange={(e) => setTaxRate(e.value)} options={tax_rates} value={taxRate} />
+          <Dropdown
+            onChange={(e) => setTaxCategory(e.value)}
+            optionValue="value"
+            options={tax_rates}
+            value={taxCategory}
+          />
         </div>
         <DatePicker
           label="Rechnungsdatum"
@@ -250,18 +280,24 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
           <h5>{formatCurrency(netTotal)}</h5>
         </div>
         <div className="row space-between">
-          <h5>Steuern ({taxRate}%)</h5>
+          <h5>Steuern ({taxRate * 100}%)</h5>
           <h5>{formatCurrency(taxAmount)}</h5>
         </div>
         <div className="row space-between">
           <h4>Gesamtbetrag</h4>
-          <h4>{formatCurrency(grossTotal)}</h4>
+          <h4>{formatCurrency(total)}</h4>
         </div>
       </div>
       <DividerBlock height={0.5} />
       <div className="row space-between">
         <h4>Posten</h4>
-        <Button className="button-round" icon="pi pi-plus" onClick={addItem} text />
+        <Button
+          className="button-round"
+          disabled={!taxRate}
+          icon="pi pi-plus"
+          onClick={addItem}
+          text
+        />
       </div>
       <DataTable emptyMessage="Keine Posten gefunden" value={items}>
         <Column field="index" header="#" />

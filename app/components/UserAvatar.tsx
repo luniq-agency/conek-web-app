@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { User } from '../types/Database';
 
 interface Props {
+  backgroundColor?: string;
+  color?: string;
   collapsed?: boolean;
   fontSize: number;
   height: number;
@@ -13,7 +15,7 @@ interface Props {
   width: number;
 }
 
-export function UserAvatar({ collapsed, fontSize, height, width }: Props) {
+export function UserAvatar({ backgroundColor, color, collapsed, fontSize, height, width }: Props) {
   const { userProfile } = useAuth();
 
   const label = userProfile?.user_name_first[0];
@@ -43,7 +45,7 @@ export function UserAvatar({ collapsed, fontSize, height, width }: Props) {
   );
 }
 
-export function UserAvatarOther({ fontSize, height, user, width }: Props) {
+export function UserAvatarOther({ backgroundColor, color, fontSize, height, user, width }: Props) {
   const label = `${user?.user_name_first[0]}${user?.user_name_last[0]}`;
 
   if (!user?.avatar)
@@ -52,8 +54,8 @@ export function UserAvatarOther({ fontSize, height, user, width }: Props) {
         label={label}
         shape="circle"
         style={{
-          backgroundColor: 'var(--secondary)',
-          color: 'var(--text-primary)',
+           backgroundColor,
+          color,
           fontSize,
           fontWeight: 700,
           height,

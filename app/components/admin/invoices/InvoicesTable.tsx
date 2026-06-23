@@ -23,6 +23,7 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
 import AdminCreateInvoice from './AdminCreateInvoice';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   clients?: User[];
@@ -30,7 +31,8 @@ interface Props {
 }
 
 export default function InvoicesTable({ clients }: Props) {
-  const {userProfile} = useAuth();
+  const { userProfile } = useAuth();
+  const router = useRouter();
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
 
@@ -115,6 +117,9 @@ export default function InvoicesTable({ clients }: Props) {
       });
     } catch (err) {
       console.error(err);
+    } finally {
+      const res = await invoicesLoadAll();
+      setInvoicesList(res);
     }
   };
 
@@ -171,11 +176,9 @@ export default function InvoicesTable({ clients }: Props) {
             />
           </div>
         </OverlayPanel>
-        <Button
-          className="button-square"
-          icon="pi pi-pencil"
-          onClick={(e) => selectInvoice(rowData as Invoice)}
-        />
+        <Link href={`/admin/rechnungen/${rowData.id}`}>
+          <Button className="button-square" icon="pi pi-pencil" />
+        </Link>
         <Button
           className="button-square"
           icon="pi pi-ellipsis-v"
@@ -248,20 +251,16 @@ export default function InvoicesTable({ clients }: Props) {
           </div>
         )}
       </Sidebar>
-      {selectedInvoices.length >= 1 && <Button label="Löschen" onClick={deleteMultipleInvoices} />}
       <DataTable
         emptyMessage="Keine Rechnungen gefunden."
         onSelectionChange={(e: any) => setSelectedInvoices(e.value)}
         paginator
         rows={10}
-        selection={selectedInvoices}
-        selectionMode={rowClick ? null : 'checkbox'}
         sortField="invoice_number"
         sortOrder={-1}
         stripedRows
         value={invoicesList}
       >
-        <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }}></Column>
         <Column field="invoice_number" header="#" sortable />
         <Column body={recipientTemplate} header="Empfänger" hidden={!clients} />
         <Column
@@ -279,7 +278,7 @@ export default function InvoicesTable({ clients }: Props) {
 }
 
 export function InvoicesTableUser({ user }: Props) {
-  const {userProfile} = useAuth();
+  const { userProfile } = useAuth();
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
 
@@ -368,10 +367,10 @@ export function InvoicesTableUser({ user }: Props) {
   };
 
   const refreshInvoices = async () => {
-    if (!user) return
-          const res = await invoicesLoadUser(user.id);
-        setInvoicesList(res);
-  }
+    if (!user) return;
+    const res = await invoicesLoadUser(user.id);
+    setInvoicesList(res);
+  };
 
   const selectInvoice = (rowData: Invoice) => {
     setSelectedInvoice(rowData);
@@ -403,12 +402,7 @@ export function InvoicesTableUser({ user }: Props) {
         <ConfirmDialog />
         <OverlayPanel ref={op}>
           <div className="column gap-xs">
-            <Button
-              className="button-context"
-              icon="pi pi-envelope"
-              label="Rechnung versenden"
-              onClick={() => sendInvoice(rowData as Invoice)}
-            />
+            <Button className="button-context" icon="pi pi-envelope" label="Rechnung versenden" />
             <Button
               className="button-context"
               disabled={rowData.invoice_status === 'paid'}
@@ -426,19 +420,20 @@ export function InvoicesTableUser({ user }: Props) {
             />
           </div>
         </OverlayPanel>
-        {userProfile?.user_role === 'admin' && <>
-        <Button
-          className="button-square"
-          icon="pi pi-pencil"
-          onClick={(e) => selectInvoice(rowData as Invoice)}
-        />
-        <Button
-          className="button-square"
-          icon="pi pi-ellipsis-v"
-          onClick={(e) => op.current?.toggle(e)}
-        />
-        </>
-  }
+        {userProfile?.user_role === 'admin' && (
+          <>
+            <Button
+              className="button-square"
+              icon="pi pi-pencil"
+              onClick={(e) => selectInvoice(rowData as Invoice)}
+            />
+            <Button
+              className="button-square"
+              icon="pi pi-ellipsis-v"
+              onClick={(e) => op.current?.toggle(e)}
+            />
+          </>
+        )}
       </div>
     );
   };
@@ -475,32 +470,39 @@ export function InvoicesTableUser({ user }: Props) {
       <Toast ref={toast} />
       <div className="column gap-m">
         <div className="row space-between">
-        <h3>Rechnungen</h3>
-        <AdminCreateInvoice onCreate={refreshInvoices} secondary={true} user={user} users={user ? [user] : []}/>
+          <h3>Rechnungen</h3>
+          <AdminCreateInvoice
+            onCreate={refreshInvoices}
+            secondary={true}
+            user={user}
+            users={user ? [user] : []}
+          />
         </div>
-      {selectedInvoices.length >= 1 && <Button label="Löschen" onClick={deleteMultipleInvoices} />}
-      <DataTable
-        emptyMessage="Keine Rechnungen gefunden."
-        onSelectionChange={(e: any) => setSelectedInvoices(e.value)}
-        paginator
-        rows={10}
-        selection={selectedInvoices}
-        selectionMode={rowClick ? null : 'checkbox'}
-        stripedRows
-        value={invoicesList}
-      >
-        <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }}></Column>
-        <Column field="invoice_number" header="#" sortable />
-        <Column
-          body={(rowData) => formatDate(rowData.created_at)}
-          field="created_at"
-          header="Datum"
-          sortable
-        />
-        <Column body={totalTemplate} field="invoice_total_gross" header="Betrag" />
-        <Column body={statusTemplate} field="status" header="Status" />
-        <Column body={actionTemplate} header="Aktionen" />
-      </DataTable>
+        {selectedInvoices.length >= 1 && (
+          <Button label="Löschen" onClick={deleteMultipleInvoices} />
+        )}
+        <DataTable
+          emptyMessage="Keine Rechnungen gefunden."
+          onSelectionChange={(e: any) => setSelectedInvoices(e.value)}
+          paginator
+          rows={10}
+          selection={selectedInvoices}
+          selectionMode={rowClick ? null : 'checkbox'}
+          stripedRows
+          value={invoicesList}
+        >
+          <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }}></Column>
+          <Column field="invoice_number" header="#" sortable />
+          <Column
+            body={(rowData) => formatDate(rowData.created_at)}
+            field="created_at"
+            header="Datum"
+            sortable
+          />
+          <Column body={totalTemplate} field="invoice_total_gross" header="Betrag" />
+          <Column body={statusTemplate} field="status" header="Status" />
+          <Column body={actionTemplate} header="Aktionen" />
+        </DataTable>
       </div>
     </>
   );

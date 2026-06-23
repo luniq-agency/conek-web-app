@@ -1,6 +1,6 @@
 'use client';
 
-import { Agent } from '@/app/types/Database';
+import { AgencyStats, Agent, User } from '@/app/types/Database';
 import { agent_status } from '@/app/constants/Constants';
 import { formatDate } from '@/app/utils/formats';
 import { stat } from 'fs';
@@ -10,44 +10,39 @@ import { Tag } from 'primereact/tag';
 import { useRouter } from 'next/navigation';
 
 interface Props {
-  agents: Agent[];
+  agents: AgencyStats[];
 }
 
 export default function AgencyTable({ agents }: Props) {
   const router = useRouter();
 
-  const nameTemplate = (rowData: Agent) => {
+  const nameTemplate = (rowData: AgencyStats) => {
     return (
       <span>
-        {rowData.nachname}, {rowData.vorname}
+        {rowData.user_name_last}, {rowData.user_name_first}
       </span>
     );
   };
 
-  const selectAgent = (rowData: Agent) => {
+  const selectAgent = (rowData: AgencyStats) => {
     router.push(`/admin/agenturen/${rowData.id}`);
-  };
-
-  const statusTemplate = (rowData: Agent) => {
-    const status = agent_status.find((t) => t.value === rowData.status);
-    return <Tag severity={(status?.severity as any) ?? 'info'} value={status?.label ?? ''}></Tag>;
   };
 
   return (
     <DataTable
       emptyMessage="Keine Agenturen gefunden."
-      onRowClick={(e) => selectAgent(e.data as Agent)}
+      onRowClick={(e) => selectAgent(e.data as AgencyStats)}
       paginator
       rows={10}
-      sortField="nachname"
+      sortField="user_name_last"
       sortOrder={1}
       stripedRows
       value={agents}
     >
       <Column body={nameTemplate} header="Name" />
       <Column field="firma" header="Firma" />
+      <Column field="client_count" header="Kunden" />
       <Column body={(rowData) => formatDate(rowData.created_at)} header="Angemeldet seit" />
-      <Column body={statusTemplate} header="Status" />
     </DataTable>
   );
 }

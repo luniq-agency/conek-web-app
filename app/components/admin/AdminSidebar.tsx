@@ -123,6 +123,12 @@ export default function AdminSidebar() {
                 label="Agenturen"
                 target="/admin/agenturen"
               />
+              <AdminSidebarButton
+                collapsed={!expanded}
+                icon="pi pi-chart-bar"
+                label="Statistiken"
+                target="/admin/statistiken"
+              />
               {/* <AdminSidebarButton
                 collapsed={!expanded}
                 icon="pi pi-envelope"

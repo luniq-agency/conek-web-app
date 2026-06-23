@@ -4,6 +4,7 @@ import AdminCreateAgency from '@/app/components/admin/agency/AdminCreateAgency';
 import AgencyTable from '@/app/components/admin/agency/AgencyTable';
 import DividerBlock from '@/app/components/DividerBlock';
 import { Metadata } from 'next';
+import { agencyOverview } from '@/app/actions/stats';
 
 export const metadata: Metadata = {
   title: 'Agenturen | CONEK',
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminAgenciesPage() {
-  const agents = await agencyLoadAll();
+  const agents = await agencyOverview();
 
   return (
     <div className="page-content">

@@ -5,7 +5,12 @@ import { Task, TaskUpdate, User } from '@/app/types/Database';
 import { Timeline } from 'primereact/timeline';
 import { useEffect, useState } from 'react';
 import { UserAvatar } from '../../UserAvatar';
-import { userLookup, userLookupWithId, usersLoadAgentsAdmins } from '@/app/actions/users';
+import {
+  userLookup,
+  userLookupWithId,
+  usersLoadAgentsAdmins,
+  usersLoadAll,
+} from '@/app/actions/users';
 import { useAuth } from '@/app/context/AuthContext';
 import { Button } from 'primereact/button';
 import DividerBlock from '../../DividerBlock';
@@ -34,7 +39,6 @@ export default function TaskEditor({ task }: Props) {
   const [updates, setUpdates] = useState<TaskUpdate[]>([]);
   const [userMap, setUserMap] = useState<Record<string, User>>({});
 
-  const [creator, setCreator] = useState<User | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
 
@@ -63,10 +67,8 @@ export default function TaskEditor({ task }: Props) {
   const fetchUpdates = async () => {
     try {
       const res = await taskUpdatesLoad(task.id);
-      const creatorRes = await userLookupWithId(task.created_by);
-      const adminRes = await usersLoadAgentsAdmins();
+      const adminRes = await usersLoadAll();
       console.log(adminRes);
-      setCreator(creatorRes);
       setUpdates(res);
       setUsers(adminRes);
     } catch (err) {
@@ -126,12 +128,20 @@ export default function TaskEditor({ task }: Props) {
     }
   };
 
+  // STATES
+  const textEmpty = updateType == 'update' && !updateText;
+  const targetEmpty = updateType == 'transfer' && !updateTarget;
+
+  // USER
+  const creator = users.find((t) => t.id === task.created_by);
+
   const userOptions = users
-    .map((u) => ({
-      ...u,
-      fullName: `${u.user_name_last}, ${u.user_name_first}`,
-    }))
-    .sort((a, b) => a.user_name_last.localeCompare(b.user_name_last));
+  .filter((u) => u.user_role === 'admin')
+  .map((u) => ({
+    ...u,
+    fullName: `${u.user_name_last}, ${u.user_name_first}`,
+  }))
+  .sort((a, b) => a.user_name_last.localeCompare(b.user_name_last));
 
   return (
     <div className="row gap-m width-100">
@@ -154,40 +164,47 @@ export default function TaskEditor({ task }: Props) {
           <label>Erstellt am</label>
           <span>{formatDateWithTime(task.created_at)}</span>
         </div>
-        <div className="column gap-s">
-          <label>Update</label>
-          <Dropdown
-            onChange={(e) => setUpdateType(e.value)}
-            optionLabel="label"
-            optionValue="value"
-            options={updateOptions}
-            value={updateType}
-          />
-          {updateType === 'update' && (
-            <InputTextarea
-              onChange={(e) => setUpdateText(e.target.value)}
-              rows={5}
-              value={updateText}
-            />
-          )}
-          {updateType === 'transfer' && (
+        {task.status != 'closed' ? (
+          <div className="column gap-s">
+            <label>Update</label>
             <Dropdown
-              filter
-              filterPlaceholder="Suchen"
-              onChange={(e) => setUpdateTarget(e.value)}
-              optionLabel="fullName"
-              optionValue="id"
-              options={userOptions}
-              value={updateTarget}
+              onChange={(e) => setUpdateType(e.value)}
+              optionLabel="label"
+              optionValue="value"
+              options={updateOptions}
+              value={updateType}
             />
-          )}
-          <Button
-            disabled={!updateType || submitting}
-            icon={submitting ? 'pi pi-spinner' : undefined}
-            label="Speichern"
-            onClick={createUpdate}
-          />
-        </div>
+            {updateType === 'update' && (
+              <InputTextarea
+                onChange={(e) => setUpdateText(e.target.value)}
+                rows={5}
+                value={updateText}
+              />
+            )}
+            {updateType === 'transfer' && (
+              <Dropdown
+                filter
+                filterPlaceholder="Suchen"
+                onChange={(e) => setUpdateTarget(e.value)}
+                optionLabel="fullName"
+                optionValue="id"
+                options={userOptions}
+                value={updateTarget}
+              />
+            )}
+            <Button
+              disabled={!updateType || submitting || task.status === 'closed' || textEmpty || targetEmpty}
+              icon={submitting ? 'pi pi-spinner' : undefined}
+              label="Speichern"
+              onClick={createUpdate}
+            />
+          </div>
+        ) : (
+          <div className="column gap-s">
+            <label>Update</label>
+            <span>Das Ticket ist geschlossen.</span>
+          </div>
+        )}
       </div>
       <div className="container">
         <h3>Verlauf</h3>

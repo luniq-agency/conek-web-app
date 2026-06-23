@@ -59,15 +59,22 @@ export default function TaskTable({ admins, tasks }: Props) {
 
   //TEMPLATES
   const assigneeTemplate = (rowData: Task) => {
-    const assignee = admins.find((t) => t.user_uuid === rowData.assignee);
+    const assignee = admins.find((t) => t.id === rowData.assignee);
     return (
       <div className="row align-center gap-s">
         <UserAvatarOther fontSize={11} height={24} user={assignee} width={24} />
-        <span>{assignee?.user_name_first}</span>
+        <span>{assignee?.user_name_last}, {assignee?.user_name_first}</span>
       </div>
     );
   };
+  
+  const dateTemplate = (rowData: Task) => {
+    if (!rowData.due_date) return <span>–</span>
 
+    return (
+      <span>{formatDate(rowData.due_date)}</span>
+    )
+  }
   const statusTemplate = (rowData: Task) => {
     const statusObj = task_status.find((t) => t.value === rowData.status);
     return <Tag severity={(statusObj?.severity as any) ?? 'info'} value={statusObj?.label ?? ''} />;
@@ -79,7 +86,7 @@ export default function TaskTable({ admins, tasks }: Props) {
       <div className="mobile-hidden">
         <div className="container">
           <DataTable
-            emptyMessage="Keine Kunden gefunden."
+            emptyMessage="Keine Aufgaben gefunden."
             filters={filters}
             globalFilterFields={['vorname', 'nachname']}
             onRowClick={(e) => selectTask(e.data as Task)}
@@ -97,7 +104,7 @@ export default function TaskTable({ admins, tasks }: Props) {
               style={{ width: '12%' }}
             />
             <Column
-              body={(rowData) => formatDate(rowData.due_date)}
+              body={dateTemplate}
               header="Fällig bis"
               sortable
               style={{ width: '12%' }}

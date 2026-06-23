@@ -14,6 +14,8 @@ import { useRouter } from 'next/navigation';
 import { Checkbox, CheckboxChangeEvent } from 'primereact/checkbox';
 import DividerBlock from '../DividerBlock';
 import { useAuth } from '@/app/context/AuthContext';
+import { userCreate } from '@/app/actions/users';
+import { Toast } from 'primereact/toast';
 
 export default function OnboardingClient() {
   const { user, loading, logout } = useAuth();
@@ -32,49 +34,47 @@ export default function OnboardingClient() {
   maxDate.setFullYear(maxDate.getFullYear() - 18);
 
   //INPUTS
+  const [city, setCity] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dob, setDob] = useState<Date | null>(null);
   const [jobCategory, setJobCategory] = useState('');
   const [job, setJob] = useState('');
   const [family, setFamily] = useState('');
+  const [housenumber, setHouseNumber] = useState('');
   const [kids, setKids] = useState<number | null>(null);
   const [phone, setPhone] = useState('');
   const [iban, setIban] = useState('');
   const [services, setServices] = useState<string[]>([]);
+  const [street, setStreet] = useState('');
   const [taxId, setTaxId] = useState('');
+  const [zip, setZip] = useState('');
 
+  // VALIDATION
+  const addressValid = city && housenumber && street && zip;
+
+  // ACTIONS
   const completeOnboarding = async () => {
     setSubmitting(true);
 
     if (!user) console.error('Keine ID gefunden!!');
 
     const userPayload = {
+      anschrift: `${street} ${housenumber}, ${zip} ${city}`,
+      dob: dob ? dob.toISOString().split('T')[0] : '',
       email: user?.email,
-      setup_complete: false,
+      family_status: family,
+      iban: iban,
+      setup_complete: true,
+      status: 'in_review',
       user_name_first: firstName,
       user_name_last: lastName,
       user_uuid: user?.id,
       user_role: 'client',
     };
 
-    const clientPayload = {
-      beruf: job,
-      berufsstatus: jobCategory,
-      email: user?.email,
-      family_status: family,
-      geburtsdatum: dob ? dob.toISOString().split('T')[0] : '',
-      kinder: kids || 0,
-      nachname: lastName,
-      status: 'pending',
-      steuer_id: taxId,
-      telefon: phone,
-      user_id: user?.id,
-      vorname: firstName,
-    };
-
     try {
-      await clientCreateProfile(userPayload, clientPayload);
+      await userCreate(userPayload);
       router.push('/dashboard');
     } catch (err) {
       console.error(err);
@@ -112,7 +112,7 @@ export default function OnboardingClient() {
             maxDate={maxDate}
             onChange={(e) => setDob(e.value || new Date())}
             placeholder="Geburtsdatum"
-            value={dob}
+            value={dob ?? maxDate}
           />
           <Dropdown
             onChange={(e) => setJobCategory(e.value)}
@@ -168,11 +168,32 @@ export default function OnboardingClient() {
             value={phone}
           />
           <InputText onChange={(e) => setIban(e.target.value)} placeholder="IBAN" value={iban} />
-          <InputText placeholder="Anschrift" />
+          <div className="row gap-s">
+            <InputText
+              onChange={(e) => setStreet(e.target.value)}
+              placeholder="Strasse"
+              value={street}
+            />
+            <InputText
+              onChange={(e) => setHouseNumber(e.target.value)}
+              placeholder="Nr."
+              style={{ maxWidth: 80 }}
+              value={housenumber}
+            />
+          </div>
+          <div className="row gap-s">
+            <InputText
+              keyfilter="num"
+              onChange={(e) => setZip(e.target.value)}
+              placeholder="PLZ"
+              value={zip}
+            />
+            <InputText onChange={(e) => setCity(e.target.value)} placeholder="Ort" value={city} />
+          </div>
           <div className="row space-between">
             <Button label="Zurück" onClick={() => stepperRef.current?.prevCallback()} />
             <Button
-              disabled={!phone || !iban}
+              disabled={!phone || !iban || !addressValid}
               label="Weiter"
               onClick={() => stepperRef.current?.nextCallback()}
             />

@@ -50,7 +50,7 @@ export default async function AdminDashboardPage() {
         <div className="container">
           <div className="row space-between align-center">
             <h2 className="container-header">Offene Aufgaben</h2>
-            <Link className="container-link" href="/admin/kunden">
+            <Link className="container-link" href="/admin/aufgaben">
               Alle ansehen
             </Link>
           </div>

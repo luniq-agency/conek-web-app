@@ -37,10 +37,12 @@ export async function agencyLoad(id: string): Promise<User> {
   return data;
 }
 
-export async function agencyLoadAll(): Promise<Agent[]> {
+
+
+export async function agencyLoadAll(): Promise<User[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from('agent').select('*');
+  const { data, error } = await supabase.from('user').select('*').eq('user_role', 'agency');
 
   if (error) throw new Error(error.message);
   return data;

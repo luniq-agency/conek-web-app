@@ -36,6 +36,15 @@ export async function invoiceSend(id: string, email: string) {
   return sent;
 }
 
+export async function invoiceLoadSingle(id:string): Promise<Invoice> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from('invoice').select('*').eq('id', id).single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 export async function invoicesLoadAll(): Promise<Invoice[]> {
   const supabase = await createClient();
 

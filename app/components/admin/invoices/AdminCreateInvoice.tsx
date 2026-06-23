@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { TextInputLabel } from '../../forms/FormElements';
 
 interface Props {
-  onCreate?: ()=>void;
+  onCreate?: () => void;
   secondary?: boolean;
   user?: User;
   users: User[];
@@ -42,36 +42,37 @@ export default function AdminCreateInvoice({ onCreate, secondary, user, users }:
 
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoicePlaceholder, setInvoicePlaceholder] = useState('');
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClient, setSelectedClient] = useState<User | null>(null);
 
   const createInvoice = async () => {
-const payload = user
-  ? {
-      invoice_number: invoiceNumber,
-      invoice_status: 'draft',
-      invoice_total_gross: 0,
-      invoice_total_net: 0,
-      tax_amount: 0,
-      tax_rate: 0,
-      user: user.id,
-    }
-  : {
-      invoice_number: invoiceNumber,
-      invoice_status: 'draft',
-      invoice_total_gross: 0,
-      invoice_total_net: 0,
-      recipient: selectedClient?.id,
-      tax_amount: 0,
-      tax_rate: 0,
-    };
+    const payload = user
+      ? {
+          invoice_number: invoiceNumber,
+          invoice_status: 'draft',
+          invoice_total_gross: 0,
+          invoice_total_net: 0,
+          tax_amount: 0,
+          tax_rate: 0,
+          user: user.id,
+        }
+      : {
+          invoice_number: invoiceNumber,
+          invoice_status: 'draft',
+          invoice_total_gross: 0,
+          invoice_total_net: 0,
+          tax_amount: 0,
+          tax_rate: 0,
+          user: selectedClient?.id,
+        };
+
     try {
-      await invoiceCreate(payload);
+      const res = await invoiceCreate(payload);
+      router.push(`/admin/rechnungen/${res.id}`);
       setVisible(false);
     } catch (err) {
       console.error(err);
     }
     setSelectedClient(null);
-    router.refresh();
   };
 
   const userOptions = users

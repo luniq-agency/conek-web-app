@@ -23,10 +23,10 @@ export default function ClientActions({ client }: Props) {
   const router = useRouter();
   const op = useRef<OverlayPanel | null>(null);
 
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agents, setAgents] = useState<User[]>([]);
   const agentOptions = agents.map((a) => ({
     ...a,
-    fullName: `${a.nachname}, ${a.vorname}`,
+    fullName: `${a.user_name_last}, ${a.user_name_last}`,
   }));
 
   useEffect(() => {

@@ -12,6 +12,7 @@ import NotificationItem from './NotificationItem';
 interface Props {
   user: User;
 }
+
 export default function NotificationButton({ user }: Props) {
   const op = useRef<OverlayPanel | null>(null);
 
@@ -22,7 +23,7 @@ export default function NotificationButton({ user }: Props) {
 
     const loadNotifications = async () => {
       try {
-        const res = await notificationsLoadUser(user.user_uuid);
+        const res = await notificationsLoadUser(user.id);
         setNotifications(res);
       } catch (err) {
         console.error(err);
