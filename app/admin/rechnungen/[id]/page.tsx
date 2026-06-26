@@ -1,15 +1,10 @@
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { Metadata } from 'next';
 import DividerBlock from '@/app/components/DividerBlock';
-import { clientLoadSingle, clientLookup, clientsLoadAll } from '@/app/actions/clients';
-import ClientActions from '@/app/components/admin/clients/ClientActions';
-import { userUpdatesLoad } from '@/app/actions/update';
-import ClientTabs from '@/app/components/admin/clients/ClientTabs';
-import { formatDate } from '@/app/utils/formats';
-import { UserAvatarOther } from '@/app/components/UserAvatar';
-import { userLookup } from '@/app/actions/users';
+import { clientsLoadAll } from '@/app/actions/clients';
 import { invoiceLoadSingle } from '@/app/actions/invoice';
 import InvoiceEditor from '@/app/components/admin/invoices/InvoiceEditor';
+import InvoiceActions from '@/app/components/invoices/InvoicesActions';
 
 export const metadata: Metadata = {
   title: 'Rechnung | CONEK',
@@ -20,7 +15,6 @@ export default async function AdminInvoicePage({ params }: { params: Promise<{ i
   const { id } = await params;
   const invoice = await invoiceLoadSingle(id);
   const clients = await clientsLoadAll();
-  const user = await userLookup(id);
 
   const items = [
     {
@@ -34,13 +28,20 @@ export default async function AdminInvoicePage({ params }: { params: Promise<{ i
 
   const home = { icon: 'pi pi-home', url: '/admin' };
 
-  if (!user) return;
+  // ACTIONS
 
   return (
     <div className="page-content column">
       <BreadCrumb home={home} model={items} />
       <DividerBlock height={2} />
-      <div className="container">
+      <div className="row space-between">
+        <div className="row gap-xs align-center">
+        <h1>Rechnung</h1>
+        </div>
+        <InvoiceActions invoice={invoice} />
+      </div>
+      <DividerBlock height={2} />
+      <div className="container grow">
         <InvoiceEditor clients={clients} invoice={invoice} />
       </div>
     </div>

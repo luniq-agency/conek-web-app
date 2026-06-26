@@ -8,6 +8,7 @@ import type { User as UserProfile } from '../types/Database';
 
 interface AuthContextType {
   clientProfile: Client | null;
+  initialLoading: boolean;
   loading: boolean;
   logout: () => Promise<void>;
   user: User | null;
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   clientProfile: null,
   user: null,
   userProfile: null,
+  initialLoading: true,
   loading: true,
   logout: async () => {},
 });
@@ -28,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [clientProfile, setClientProfile] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = useMemo(() => createClient(), []);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase.from('user').select('*').eq('user_uuid', userId).single();
@@ -45,9 +48,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Aktuelle Session laden
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user ?? null);
-      setLoading(false);
+      if (session?.user) {
+        await fetchProfile(session.user.id);
+      }
+      setInitialLoading(false); // ← erst hier fertig
     });
 
     // Session-Änderungen beobachten
@@ -70,7 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ clientProfile, user, userProfile, loading, logout }}>
+    <AuthContext.Provider
+      value={{ clientProfile, initialLoading, user, userProfile, loading, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

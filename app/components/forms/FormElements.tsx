@@ -16,6 +16,7 @@ interface Props {
   autoComplete?: 'new-password' | 'current-password';
   booleanValue?: boolean;
   dateValue?: Date;
+  height?: string;
   icon?: string;
   image?: string;
   label?: string;
@@ -131,11 +132,11 @@ export function SelectLabel({ label, onChange, optionLabel, optionValue, options
   );
 }
 
-export function SkeletonLoaderLabel({ label, onChange, value }: Props) {
+export function SkeletonLoaderLabel({ height, label, onChange, value }: Props) {
   return (
     <div className="column width-100 gap-xs">
       <label>{label}</label>
-      <Skeleton width="100%" />
+      <Skeleton height={height} width="100%" />
     </div>
   );
 }

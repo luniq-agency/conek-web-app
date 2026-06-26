@@ -6,6 +6,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import { CertificateMonthlyStats, InvoiceMonthlyStats } from '@/app/types/Database';
 import { useEffect, useState } from 'react';
 import DividerBlock from '../DividerBlock';
+import { formatCurrency } from '@/app/utils/formats';
 
 interface Props {
   view: 'month' | 'year' | 'all';
@@ -72,7 +73,7 @@ export default function InvoiceStatCards({ view }: Props) {
               </div>
             </div>
             <DividerBlock height={2} />
-            <h2 className={styles.statValue}>{stat.value.toLocaleString('de-DE')} €</h2>
+            <h2 className={styles.statValue}>{formatCurrency(stat.value)}</h2>
           </div>
         );
       })}

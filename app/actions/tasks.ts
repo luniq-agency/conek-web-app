@@ -71,6 +71,16 @@ export async function taskTransfer(id: string, target: string, user: string): Pr
   return data;
 }
 
+export async function taskUpdate(taskData: Partial<Task>, id: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from('task').update(taskData).eq('id', id).select().single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
+
 export async function taskUpdateCreate(data: Partial<TaskUpdate>) {
   const supabase = await createClient();
 

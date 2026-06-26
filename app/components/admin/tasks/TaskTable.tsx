@@ -147,7 +147,7 @@ export function TaskTableSmall({ admins, tasks }: Props) {
   };
 
   const assigneeTemplate = (rowData: Task) => {
-    const assignee = admins.find((t) => t.user_uuid === rowData.assignee);
+    const assignee = admins.find((t) => t.id === rowData.assignee);
     return (
       <div className="row align-center gap-s">
         <UserAvatarOther fontSize={11} height={24} user={assignee} width={24} />

@@ -1,10 +1,10 @@
 'use client';
 
-import { taskClose, taskUpdateCreate, taskUpdatesLoad } from '@/app/actions/tasks';
+import { taskClose, taskUpdate, taskUpdateCreate, taskUpdatesLoad } from '@/app/actions/tasks';
 import { Task, TaskUpdate, User } from '@/app/types/Database';
 import { Timeline } from 'primereact/timeline';
 import { useEffect, useState } from 'react';
-import { UserAvatar } from '../../UserAvatar';
+import { UserAvatar, UserAvatarOther } from '../../UserAvatar';
 import {
   userLookup,
   userLookupWithId,
@@ -20,10 +20,14 @@ import { InputTextarea } from 'primereact/inputtextarea';
 
 const updateOptions = [
   {
-    label: 'Ticket schließen',
+    label: 'Aufgabe abgeschlossen',
     value: 'close',
   },
-  { label: 'Ticket übertragen', value: 'transfer' },
+  { label: 'Aufgabe übertragen', value: 'transfer' },
+  {
+    label: 'Auf Wiedervorlage',
+    value: 'hold',
+  },
   {
     label: 'Update schreiben',
     value: 'update',
@@ -101,9 +105,10 @@ export default function TaskEditor({ task }: Props) {
     if (!updateType) return;
 
     let body = updateText;
-    if (updateType === 'close') body = 'Das Ticket wurde geschlossen.';
+    if (updateType === 'close') body = 'Aufgabe wurde geschlossen.';
+    if (updateType === 'hold') body = 'Aufgabe auf Wiedervorlage gesetzt.';
     if (updateType === 'transfer')
-      body = `Das Ticket wurde an ${updateTarget?.user_name_first} ${updateTarget?.user_name_last} übertragen.`;
+      body = `Die Aufgabe wurde an ${updateTarget?.user_name_first} ${updateTarget?.user_name_last} übertragen.`;
     setSubmitting(true);
 
     const payload = {
@@ -114,9 +119,14 @@ export default function TaskEditor({ task }: Props) {
       task: task.id,
     };
 
+    const taskPayload = {
+      status: 'on_hold',
+    };
+
     try {
       await taskUpdateCreate(payload);
       if (updateType === 'close') await taskClose(task.id);
+      if (updateType === 'hold') await taskUpdate(taskPayload, task.id);
       fetchUpdates();
     } catch (err) {
       console.error(err);
@@ -134,14 +144,15 @@ export default function TaskEditor({ task }: Props) {
 
   // USER
   const creator = users.find((t) => t.id === task.created_by);
+  const assignee = users.find((t) => t.id === task.assignee);
 
   const userOptions = users
-  .filter((u) => u.user_role === 'admin')
-  .map((u) => ({
-    ...u,
-    fullName: `${u.user_name_last}, ${u.user_name_first}`,
-  }))
-  .sort((a, b) => a.user_name_last.localeCompare(b.user_name_last));
+    .filter((u) => u.user_role === 'admin')
+    .map((u) => ({
+      ...u,
+      fullName: `${u.user_name_last}, ${u.user_name_first}`,
+    }))
+    .sort((a, b) => a.user_name_last.localeCompare(b.user_name_last));
 
   return (
     <div className="row gap-m width-100">
@@ -154,9 +165,18 @@ export default function TaskEditor({ task }: Props) {
         <div className="column">
           <label>Erstellt von</label>
           <div className="row align-center gap-s">
-            {creator && <UserAvatar fontSize={12} height={24} user={creator} width={24} />}
+            {creator && <UserAvatar fontSize={14} height={30} user={creator} width={30} />}
             <span>
               {creator?.user_name_first} {creator?.user_name_last}
+            </span>
+          </div>
+        </div>
+        <div className="column">
+          <label>Aktueller Bearbeiter</label>
+          <div className="row align-center gap-s">
+            {assignee && <UserAvatarOther fontSize={14} height={30} user={assignee} width={30} />}
+            <span>
+              {assignee?.user_name_first} {assignee?.user_name_last}
             </span>
           </div>
         </div>
@@ -193,7 +213,9 @@ export default function TaskEditor({ task }: Props) {
               />
             )}
             <Button
-              disabled={!updateType || submitting || task.status === 'closed' || textEmpty || targetEmpty}
+              disabled={
+                !updateType || submitting || task.status === 'closed' || textEmpty || targetEmpty
+              }
               icon={submitting ? 'pi pi-spinner' : undefined}
               label="Speichern"
               onClick={createUpdate}

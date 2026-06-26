@@ -3,7 +3,8 @@
 import { createClient } from '@/app/utils/supabase/server';
 import { Resend } from 'resend';
 import { TemplateInvite } from '../components/emails/TemplateInvite';
-import { Email } from '../types/Database';
+import { Email, Invoice, InvoiceItem, User } from '../types/Database';
+import { generateInvoicePDF } from './pdf';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -28,26 +29,73 @@ export async function fetchEmails(): Promise<Email[]> {
 }
 
 export async function sendEmail(templateId: string, to: string, props: any) {
-  const templates: Record<string, (props: any) => React.ReactElement> = {
-    agencyInvite: TemplateInvite,
-  };
-
-  const subjects: Record<string, string> = {
-    agencyInvite: 'Du wurdest zu CONEK eingeladen',
-  };
-
-  const template = templates[templateId];
-  if (!template) throw new Error(`Template '${templateId}' nicht gefunden`);
-
   const { data, error } = await resend.emails.send({
     from: 'CONEK <info@conek.de>',
     to,
-    subject: subjects[templateId],
-    react: template(props),
-  });
+    template: { id: templateId, variables: props },
+  } as any);
 
-  console.log('Resend data:', data);
-  console.log('Resend error:', error);
+  if (error) throw new Error(JSON.stringify(error));
+  return data;
+}
+
+export async function sendEmailWithAttachment({
+  to,
+  subject,
+  recipientName,
+  invoiceNumber,
+  pdfBuffer,
+  pdfFilename,
+}: {
+  to: string;
+  subject: string;
+  recipientName: string;
+  invoiceNumber: string;
+  pdfBuffer: Buffer;
+  pdfFilename: string;
+}) {
+  const { data, error } = await resend.emails.send({
+    from: 'CONEK <info@conek.de>',
+    to,
+    subject,
+    template: {
+      id: 'rechnung',
+      variables: { name: recipientName, invoice: invoiceNumber },
+    },
+    attachments: [
+      {
+        filename: pdfFilename,
+        content: pdfBuffer.toString('base64'),
+      },
+    ],
+  } as any);
+
+  if (error) throw new Error(JSON.stringify(error));
+  return data;
+}
+
+export async function sendInvoiceEmail(invoice: Invoice, items: InvoiceItem[], recipient: User) {
+  // PDF direkt hier generieren – kein Transfer zum Client
+  const buffer = await generateInvoicePDF(invoice, items, recipient);
+
+  const { data, error } = await resend.emails.send({
+    from: 'CONEK <info@conek.de>',
+    to: recipient.email,
+    subject: `Rechnung ${invoice.invoice_number}`,
+    template: {
+      id: 'rechnung',
+      variables: {
+        name: recipient.user_name_first,
+        invoice: invoice.invoice_number,
+      },
+    },
+    attachments: [
+      {
+        filename: `Rechnung-${invoice.invoice_number}.pdf`,
+        content: buffer.toString('base64'),
+      },
+    ],
+  } as any);
 
   if (error) throw new Error(JSON.stringify(error));
   return data;

@@ -9,6 +9,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { documentUpdate } from '@/app/actions/documents';
 import { Toast } from 'primereact/toast';
 import Image from 'next/image';
+import { imageUploadReplace } from '@/app/actions/image';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   document: Document;
@@ -17,7 +19,53 @@ interface Props {
 }
 
 export default function DocumentEditor({ document, onSave, users }: Props) {
+  const router = useRouter();
   const toast = useRef<Toast | null>(null);
+
+  const [rotation, setRotation] = useState(0);
+  const [savingRotation, setSavingRotation] = useState(false);
+
+  const rotateImage = () => {
+    setRotation((prev) => (prev + 90) % 360);
+  };
+
+  const saveRotation = async () => {
+    setSavingRotation(true);
+    try {
+      // Canvas verwenden um das Bild zu drehen und als Blob zu speichern
+      const img = new window.Image();
+      img.crossOrigin = 'anonymous';
+      img.src = document.document_file;
+
+      await new Promise((resolve) => (img.onload = resolve));
+
+      const canvas = window.document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+
+      const isRotated90or270 = rotation % 180 !== 0;
+      canvas.width = isRotated90or270 ? img.height : img.width;
+      canvas.height = isRotated90or270 ? img.width : img.height;
+
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+      const blob = await new Promise<Blob>((resolve) =>
+        canvas.toBlob((b) => resolve(b!), 'image/webp')
+      );
+
+      const file = new File([blob], 'rotated.webp', { type: 'image/webp' });
+      await imageUploadReplace(file, document.document_file, document.id);
+      setRotation(0);
+      onSave();
+      router.refresh();
+      toast.current?.show({ severity: 'success', summary: 'Bild gespeichert' });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingRotation(false);
+    }
+  };
 
   const [documentName, setDocumentName] = useState('');
   const [documentOwner, setDocumentOwner] = useState('');
@@ -51,7 +99,8 @@ export default function DocumentEditor({ document, onSave, users }: Props) {
   };
 
   const userOptions = users
-    ?.map((u: User) => ({
+    ?.filter((a) => a.user_role === 'client')
+    .map((u: User) => ({
       ...u,
       fullName: `${u.user_name_last}, ${u.user_name_first}`,
     }))
@@ -61,6 +110,22 @@ export default function DocumentEditor({ document, onSave, users }: Props) {
     <div className="row gap-l height-100">
       <Toast ref={toast} />
       <div className="column gap-m width-100" style={{ maxWidth: 360 }}>
+        <Button
+          icon="pi pi-refresh"
+          label="Drehen"
+          onClick={rotateImage}
+          severity="secondary"
+          size="small"
+        />
+        {rotation !== 0 && (
+          <Button
+            icon={savingRotation ? 'pi pi-spinner' : 'pi pi-save'}
+            label="Speichern"
+            onClick={saveRotation}
+            size="small"
+            loading={savingRotation}
+          />
+        )}
         <TextInputLabel
           label="Name des Dokuments"
           onChange={setDocumentName}
@@ -100,7 +165,16 @@ export default function DocumentEditor({ document, onSave, users }: Props) {
           />
         ) : (
           <div style={{ height: '100%', objectFit: 'cover', position: 'relative', width: '100%' }}>
-            <Image alt="" fill={true} src={document?.document_file} />
+            <Image
+              alt=""
+              fill={true}
+              src={document?.document_file}
+              style={{
+                objectFit: 'contain',
+                transform: `rotate(${rotation}deg)`,
+                transition: 'transform 0.3s',
+              }}
+            />
           </div>
         )}
       </div>

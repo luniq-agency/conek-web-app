@@ -60,7 +60,7 @@ export const document_options = [
   },
   {
     label: 'ZIP',
-    icon: 'icons/zip.svg',
+    icon: '/icons/zip.svg',
     value: 'zip',
   },
 ];
@@ -167,6 +167,11 @@ export const task_status = [
     severity: 'error',
     value: 'overdue',
   },
+  {
+    label: 'Wiedervorlage',
+    severity: 'info',
+    value: 'on_hold'
+  }
 ];
 
 export const tax_rates = [

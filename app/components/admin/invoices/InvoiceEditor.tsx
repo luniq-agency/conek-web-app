@@ -4,6 +4,7 @@ import { Client, Invoice, InvoiceItem, User } from '@/app/types/Database';
 import { Button } from 'primereact/button';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
+import { PDFViewer } from '@react-pdf/renderer';
 import { useEffect, useRef, useState } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import {
@@ -20,9 +21,12 @@ import { tax_rates } from '@/app/constants/Constants';
 import DividerBlock from '../../DividerBlock';
 import { formatCurrency } from '@/app/utils/formats';
 import { Calendar } from 'primereact/calendar';
-import { DatePicker, SelectLabel } from '../../forms/FormElements';
+import { DatePicker, SelectLabel, SkeletonLoaderLabel } from '../../forms/FormElements';
 import { Dialog } from 'primereact/dialog';
 import InvoicePreview from './InvoicePreview';
+import { Skeleton } from 'primereact/skeleton';
+import { InvoicePDF } from '../../pdf/InvoicePDF';
+import { useAuth } from '@/app/context/AuthContext';
 
 interface Props {
   clients: User[];
@@ -31,6 +35,8 @@ interface Props {
 }
 
 export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
+  const { userProfile } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [previewing, setPreviewing] = useState(false);
   const [updating, setUpdating] = useState(false);
 
@@ -66,7 +72,7 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
 
     if (invoice) {
       setInvoiceNumber(invoice.invoice_number);
-      setInvoiceDate(invoice.invoice_date);
+      setInvoiceDate(invoice.invoice_date ? new Date(invoice.invoice_date) : null);
       setInvoiceRecipient(invoice.user ?? '');
       setInvoiceTotal(invoice.invoice_total_gross);
       setInvoiceTotalNet(invoice.invoice_total_net);
@@ -83,6 +89,7 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
       }
     };
     fetchItems();
+    setLoading(false);
   }, [invoice]);
 
   const addItem = async () => {
@@ -110,7 +117,6 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
     </span>
   );
 
-  // TEMPLATES
   const deleteItem = async (id: string) => {
     try {
       await invoiceItemDelete(id);
@@ -178,11 +184,10 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
   const updateInvoice = async () => {
     setUpdating(true);
     const invoicePayload = {
-      invoice_date: invoiceDate,
+      invoice_date: invoiceDate ? (invoiceDate.toISOString().split('T')[0] as any) : null,
       invoice_number: invoiceNumber,
-      invoice_total_gross: grossTotal,
+      invoice_total_gross: total,
       invoice_total_net: netTotal,
-      recipient: invoiceRecipient,
       tax_amount: taxAmount,
       tax_category: taxCategory,
       tax_rate: taxRate,
@@ -223,6 +228,44 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
     }))
     .sort((a, b) => a.user_name_last.localeCompare(b.user_name_last));
 
+  if (loading)
+    return (
+      <div className="column gap-m">
+        <div className="grid columns-two gap-m mobile-column">
+          <SkeletonLoaderLabel height="38.1px" label="Rechnugsnummer" />
+          <SkeletonLoaderLabel height="38.1px" label="Empfänger" />
+          <SkeletonLoaderLabel height="38.1px" label="Steuersatz" />
+          <SkeletonLoaderLabel height="38.1px" label="Rechnungsdatum" />
+        </div>
+        <DividerBlock height={0.5} />
+        <div className="column">
+          <div className="row space-between">
+            <h5>Zwischensumme</h5>
+            <Skeleton height="16px" width="120px" />
+          </div>
+          <div className="row space-between">
+            <h5>Steuern ({taxRate * 100}%)</h5>
+            <Skeleton height="16px" width="120px" />
+          </div>
+          <div className="row space-between">
+            <h4>Gesamtbetrag</h4>
+            <Skeleton height="24px" width="120px" />
+          </div>
+        </div>
+        <DividerBlock height={0.5} />
+        <div className="row space-between">
+          <h4>Posten</h4>
+          <Button
+            className="button-round"
+            disabled={!taxRate}
+            icon="pi pi-plus"
+            onClick={addItem}
+            text
+          />
+        </div>
+      </div>
+    );
+
   return (
     <div className="column gap-m">
       <Dialog
@@ -233,7 +276,15 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
         style={{ maxHeight: '80vh', maxWidth: 850, width: '100%' }}
         visible={previewing}
       >
-        <InvoicePreview client={invoiceRecipient} invoice={invoice} invoiceItems={items} />
+        {invoice.user && (
+          <PDFViewer style={{ width: '100%', height: '70vh', border: 'none' }}>
+            <InvoicePDF
+              invoice={invoice}
+              items={items}
+              recipient={clients.find((t) => t.id === invoice.user) || clients[0]}
+            />
+          </PDFViewer>
+        )}
       </Dialog>
       <div className="grid columns-two gap-m mobile-column">
         <div className="column gap-xs">
@@ -267,11 +318,10 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
             value={taxCategory}
           />
         </div>
-        <DatePicker
-          label="Rechnungsdatum"
-          onDateChange={setInvoiceDate}
-          dateValue={invoiceDate || new Date()}
-        />
+        <div className="column gap-xs">
+          <label>Rechnungsdatum</label>
+          <Calendar onChange={(e) => setInvoiceDate(e.value || null)} value={invoiceDate} />
+        </div>
       </div>
       <DividerBlock height={0.5} />
       <div className="column">

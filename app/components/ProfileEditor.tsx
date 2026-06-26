@@ -174,7 +174,7 @@ export default function ProfileEditor() {
             {user.avatar !== null && <Button label="Bild entfernen" size="small" />}
           </div>
         </div>
-        <TabView className="tabview-vertical">
+        <TabView className="tabview-vertical" style={{height:"100%"}}>
           <TabPanel
             contentClassName="tabview-vertical-content"
             header="Login & Passwort"

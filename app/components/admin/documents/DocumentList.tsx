@@ -96,6 +96,7 @@ export default function DocumentList() {
     <>
       <Toast ref={toast} />
       <Dialog
+        draggable={false}
         header="Dokument bearbeiten"
         onHide={() => setVisible(false)}
         style={{ height: '80vh', maxWidth: '70vw', width: '100%' }}

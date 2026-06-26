@@ -24,6 +24,10 @@ import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
 import AdminCreateInvoice from './AdminCreateInvoice';
 import { useRouter } from 'next/navigation';
+import { sendEmail, sendEmailWithAttachment } from '@/app/actions/email';
+import { userLookup } from '@/app/actions/users';
+import { invoiceItemsLoad } from '@/app/actions/invoiceitem';
+import { generateInvoicePDF } from '@/app/actions/pdf';
 
 interface Props {
   clients?: User[];
@@ -56,134 +60,13 @@ export default function InvoicesTable({ clients }: Props) {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedInvoices, setSelectedInvoices] = useState<Invoice[]>([]);
 
-  const deleteDialog = (invoice: Invoice) => {
-    confirmDialog({
-      message: 'Bist du sicher, dass du diese Rechnung löschen möchtest?',
-      header: 'Rechnung löschen',
-      accept: () => acceptDelete(invoice),
-      acceptLabel: 'Löschen',
-      reject: rejectDelete,
-      rejectLabel: 'Abbrechen',
-    });
-  };
-
-  //AKTIONEN
-  const acceptDelete = async (invoice: Invoice) => {
-    if (!selectedInvoice) return;
-
-    try {
-      await invoiceDelete(selectedInvoice.id);
-      const res = await invoicesLoadAll();
-      setInvoicesList(res);
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Rechnung gelöscht',
-        detail: 'Die Rechnung wurde gelöscht.',
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const deleteMultipleInvoices = async () => {
-    if (selectedInvoices.length === 0) return;
-
-    try {
-      await invoicesDeleteMultiple(selectedInvoices.map((i) => i.id));
-      const res = await invoicesLoadAll();
-      setInvoicesList(res);
-      setSelectedInvoices([]);
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Rechnungen gelöscht',
-        detail: 'Die Rechnungen wurden erfolgreich gelöscht.',
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const markInvoicePaid = async (rowData: Invoice) => {
-    const payload = {
-      invoice_status: 'paid',
-    };
-
-    try {
-      await invoiceUpdate(payload, rowData.id);
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Rechnung aktualisiert',
-        detail: 'Die Rechnung wurde als bezahlt markiert.',
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      const res = await invoicesLoadAll();
-      setInvoicesList(res);
-    }
-  };
-
-  const selectInvoice = (rowData: Invoice) => {
-    setSelectedInvoice(rowData);
-    setVisible(true);
-  };
-
-  const selectInvoiceforDelete = (rowData: Invoice) => {
-    op.current?.hide();
-    deleteDialog(rowData);
-  };
-
-  const sendInvoice = async (rowData: Invoice) => {
-    console.log('Rechnung:', rowData);
-    try {
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Rechnung versendet',
-        detail: 'Die Rechnung wurde an den Kunden versendet.',
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   //TEMPLATES
   const actionTemplate = (rowData: Invoice) => {
     return (
       <div className="row gap-xs">
-        <ConfirmDialog />
-        <OverlayPanel ref={op}>
-          <div className="column gap-xs">
-            <Button
-              className="button-context"
-              icon="pi pi-envelope"
-              label="Rechnung versenden"
-              onClick={() => sendInvoice(rowData as Invoice)}
-            />
-            <Button
-              className="button-context"
-              disabled={rowData.invoice_status === 'paid'}
-              icon="pi pi-euro"
-              label="Als bezahlt markieren"
-              onClick={() => markInvoicePaid(rowData as Invoice)}
-            />
-            <Button
-              className="button-context"
-              disabled={rowData.invoice_status === 'paid' || rowData.invoice_status === 'sent'}
-              icon="pi pi-trash"
-              label="Rechnung löschen"
-              onClick={() => selectInvoiceforDelete(rowData as Invoice)}
-              style={{ color: 'red' }}
-            />
-          </div>
-        </OverlayPanel>
         <Link href={`/admin/rechnungen/${rowData.id}`}>
           <Button className="button-square" icon="pi pi-pencil" />
         </Link>
-        <Button
-          className="button-square"
-          icon="pi pi-ellipsis-v"
-          onClick={(e) => op.current?.toggle(e)}
-        />
       </div>
     );
   };
@@ -200,8 +83,11 @@ export default function InvoicesTable({ clients }: Props) {
     );
   };
 
-  const rejectDelete = () => {
-    op.current?.hide();
+  // TEMPLATES
+  const dateTemplate = (rowData: Invoice) => {
+    if (!rowData.invoice_date) return <span>–</span>;
+
+    return <span>{formatDate(rowData.invoice_date)}</span>;
   };
 
   const statusTemplate = (rowData: Invoice) => {
@@ -263,12 +149,7 @@ export default function InvoicesTable({ clients }: Props) {
       >
         <Column field="invoice_number" header="#" sortable />
         <Column body={recipientTemplate} header="Empfänger" hidden={!clients} />
-        <Column
-          body={(rowData) => formatDate(rowData.created_at)}
-          field="created_at"
-          header="Datum"
-          sortable
-        />
+        <Column body={dateTemplate} header="Rechnungsdatum" sortable />
         <Column body={totalTemplate} field="invoice_total_gross" header="Betrag" />
         <Column body={statusTemplate} field="status" header="Status" />
         <Column body={actionTemplate} header="Aktionen" />

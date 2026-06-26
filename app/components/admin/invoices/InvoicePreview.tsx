@@ -51,6 +51,12 @@ export default function InvoicePreview({ client, invoice, invoiceItems }: Props)
           <span>
             {user?.user_name_first} {user?.user_name_last}
           </span>
+          <span>
+            {user?.anschrift}
+          </span>
+          <span>
+            {user?.plz} {user?.city}
+          </span>
         </div>
       </div>
       <Divider />
@@ -85,10 +91,10 @@ export default function InvoicePreview({ client, invoice, invoiceItems }: Props)
         <span>{formatCurrency(invoice.invoice_total_gross)}</span>
       </div>
       <DividerBlock height={2} />
-      {invoice.tax_rate === 19 ? (
+      {invoice.tax_rate >= 0 ? (
         <span>
-          Die Rechnung enthält die Mehrwertsteuer ({invoice.tax_rate}%) in Höhe von{' '}
-          {formatCurrency(invoice.invoice_total_net)}.
+          Die Rechnung enthält die Mehrwertsteuer ({invoice.tax_rate * 100}%) in Höhe von{' '}
+          {formatCurrency(invoice.tax_amount)}.
         </span>
       ) : (
         <span>Die Rechnung enthält keine Mehrwertsteuer.</span>

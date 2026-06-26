@@ -29,3 +29,35 @@ export async function imageUpload(file: File, user: string) {
 
   return `${urlData.publicUrl}?t=${Date.now()}`;
 }
+
+export async function imageUploadReplace(file: File, existingUrl: string, documentId: string) {
+  const supabase = getServiceClient();
+
+  let filePath: string;
+
+  if (existingUrl.includes('/uploads/')) {
+    // Bereits in Supabase
+    const urlParts = existingUrl.split('/uploads/');
+    filePath = urlParts[1].split('?')[0];
+  } else {
+    // Extern (Bubble etc.) – neuen Pfad erstellen
+    const extension = existingUrl.split('.').pop()?.split('?')[0] || 'jpg';
+    filePath = `documents/${documentId}/${Date.now()}.${extension}`;
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const { error } = await supabase.storage
+    .from('uploads')
+    .upload(filePath, buffer, { contentType: file.type, upsert: true });
+
+  if (error) throw new Error(error.message);
+
+  const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(filePath);
+
+  // URL in DB aktualisieren
+  await supabase.from('document').update({ document_file: urlData.publicUrl }).eq('id', documentId);
+
+  return urlData.publicUrl;
+}

@@ -203,9 +203,11 @@ export type TicketEntry = {
 };
 
 export type User = {
+  anschrift: string;
   avatar: string;
   bearbeiter: string;
   certificate: string;
+  city: string;
   client_profile: string;
   created_at: Date;
   dob: string;
@@ -221,6 +223,7 @@ export type User = {
   linkedin: string;
   permission_notifications_email: boolean;
   permission_notifications_push: boolean;
+  plz: string;
   setup_complete: boolean;
   status: string;
   telefon: string;

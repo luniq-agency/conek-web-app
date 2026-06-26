@@ -17,7 +17,8 @@ export default function AdminSidebar() {
 
   const [expanded, setExpanded] = useState(true);
   const router = useRouter();
-  if (!userProfile) return;
+
+  if (!userProfile) return <div className={styles.sidebar} style={{ visibility: 'hidden' }} />;
 
   return (
     <>
