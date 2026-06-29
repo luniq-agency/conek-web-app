@@ -14,8 +14,9 @@ import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
 import Link from 'next/link';
 import { Dropdown } from 'primereact/dropdown';
-import { UserAvatarOther } from '../../UserAvatar';
-import TaskBox from './TaskBox';
+import { UserAvatarOther } from '../UserAvatar';
+import TaskBox from '../admin/tasks/TaskBox';
+import EmptyListWidget from '../ui/EmptyListWidget';
 
 interface Props {
   admins: User[];
@@ -63,18 +64,18 @@ export default function TaskTable({ admins, tasks }: Props) {
     return (
       <div className="row align-center gap-s">
         <UserAvatarOther fontSize={11} height={24} user={assignee} width={24} />
-        <span>{assignee?.user_name_last}, {assignee?.user_name_first}</span>
+        <span>
+          {assignee?.user_name_last}, {assignee?.user_name_first}
+        </span>
       </div>
     );
   };
-  
-  const dateTemplate = (rowData: Task) => {
-    if (!rowData.due_date) return <span>–</span>
 
-    return (
-      <span>{formatDate(rowData.due_date)}</span>
-    )
-  }
+  const dateTemplate = (rowData: Task) => {
+    if (!rowData.due_date) return <span>–</span>;
+
+    return <span>{formatDate(rowData.due_date)}</span>;
+  };
   const statusTemplate = (rowData: Task) => {
     const statusObj = task_status.find((t) => t.value === rowData.status);
     return <Tag severity={(statusObj?.severity as any) ?? 'info'} value={statusObj?.label ?? ''} />;
@@ -103,12 +104,7 @@ export default function TaskTable({ admins, tasks }: Props) {
               sortable
               style={{ width: '12%' }}
             />
-            <Column
-              body={dateTemplate}
-              header="Fällig bis"
-              sortable
-              style={{ width: '12%' }}
-            />
+            <Column body={dateTemplate} header="Fällig bis" sortable style={{ width: '12%' }} />
             <Column
               body={statusTemplate}
               filter
@@ -132,7 +128,7 @@ export default function TaskTable({ admins, tasks }: Props) {
       </div>
       <div className="mobile-visible">
         {tasks.map((t, i) => (
-          <TaskBox key={i} task={t} />
+          <TaskBox admins={admins} key={i} task={t} />
         ))}
       </div>
     </>
@@ -145,6 +141,8 @@ export function TaskTableSmall({ admins, tasks }: Props) {
   const selectRow = (rowData: Task) => {
     router.push(`/admin/aufgaben/${rowData.id}`);
   };
+
+  const hasTasks = tasks.length >= 1;
 
   const assigneeTemplate = (rowData: Task) => {
     const assignee = admins.find((t) => t.id === rowData.assignee);
@@ -162,16 +160,15 @@ export function TaskTableSmall({ admins, tasks }: Props) {
   };
 
   return (
-    <DataTable
-      emptyMessage="Keine Kunden gefunden."
-      onRowClick={(e) => selectRow(e.data as Task)}
-      rows={5}
-      stripedRows
-      value={tasks}
-    >
-      <Column field="title" header="Name" />
-      <Column body={assigneeTemplate} header="Bearbeiter" />
-      <Column body={statusTemplate} header="Status" style={{ width: '18%' }} />
-    </DataTable>
+    <>
+      {hasTasks ? (
+        <DataTable onRowClick={(e) => selectRow(e.data as Task)} rows={5} stripedRows value={tasks}>
+          <Column field="title" header="Name" />
+          <Column body={assigneeTemplate} header="Bearbeiter" />
+          <Column body={statusTemplate} header="Status" style={{ width: '18%' }} />
+        </DataTable>
+      ) : (<EmptyListWidget text="Keine offenen Aufgaben gefunden" />
+      )}
+    </>
   );
 }

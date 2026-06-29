@@ -9,10 +9,11 @@ import { SelectLabel, TextAreaLabel, TextInputLabel } from '../forms/FormElement
 import { taskCreate, tasksLoadUser } from '@/app/actions/tasks';
 
 interface Props {
+  admins: User[];
   user: User;
 }
 
-export default function TasksGrid({ user }: Props) {
+export default function TasksGrid({ admins, user }: Props) {
   // STATES
   const [creating, setCreating] = useState(false);
 
@@ -98,7 +99,7 @@ export default function TasksGrid({ user }: Props) {
           />
         </div>
         {tasks.map((t, i) => (
-          <TaskBox task={t} />
+          <TaskBox admins={admins} task={t} />
         ))}
         <div className="grid columns-three gap-m"></div>
       </div>

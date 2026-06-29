@@ -1,6 +1,5 @@
-import DocumentList from '@/app/components/admin/documents/DocumentList';
+import DocumentList from '@/app/components/documents/DocumentList';
 import DividerBlock from '@/app/components/DividerBlock';
-import UserSettings from '@/app/components/UserSettings';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

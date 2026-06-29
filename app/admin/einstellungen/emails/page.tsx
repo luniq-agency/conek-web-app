@@ -4,7 +4,7 @@ import { tasksLoadAll } from '@/app/actions/tasks';
 import AdminTemplateCreate from '@/app/components/admin/emails/AdminTemplateCreate';
 import EmailTemplatesTable from '@/app/components/admin/emails/EmailTemplatesTable';
 import AdminCreateTask from '@/app/components/admin/tasks/AdminCreateTask';
-import TaskTable from '@/app/components/admin/tasks/TaskTable';
+import TaskTable from '@/app/components/aufgaben/TaskTable';
 import DividerBlock from '@/app/components/DividerBlock';
 import UserSettings from '@/app/components/UserSettings';
 import { Metadata } from 'next';

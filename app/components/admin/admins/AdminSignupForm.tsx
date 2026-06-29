@@ -65,7 +65,7 @@ export default function AdminSignupForm({ email, role, user }: Props) {
         />
         <Button
           disabled={!password || !passwordRepeat}
-          icon={submitting ? 'pi pi-spinner' : undefined}
+          icon={submitting ? 'pi pi-spinner pi-spin' : undefined}
           label="Konto erstellen"
           onClick={createAccount}
         />

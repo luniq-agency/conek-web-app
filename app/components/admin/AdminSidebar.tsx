@@ -9,7 +9,7 @@ import NotificationButton from '../notifications/NotificationButton';
 import { UserAvatar } from '../UserAvatar';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
 
 export default function AdminSidebar() {
@@ -17,6 +17,16 @@ export default function AdminSidebar() {
 
   const [expanded, setExpanded] = useState(true);
   const router = useRouter();
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1028);
+    check();
+    if (window.innerWidth < 1028) setExpanded(false);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   if (!userProfile) return <div className={styles.sidebar} style={{ visibility: 'hidden' }} />;
 

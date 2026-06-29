@@ -1,6 +1,6 @@
 'use client';
 
-import { Client, User } from '@/app/types/Database';
+import { User } from '@/app/types/Database';
 import { client_status, job_categories } from '@/app/constants/Constants';
 import { FilterMatchMode } from 'primereact/api';
 import { formatDate } from '@/app/utils/formats';
@@ -10,17 +10,14 @@ import { Tag } from 'primereact/tag';
 import { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
 import { useRouter } from 'next/navigation';
-import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
 import Link from 'next/link';
 import { Dropdown } from 'primereact/dropdown';
-import { UserAvatarOther } from '../../UserAvatar';
+import { UserAvatarOther } from '@/app/components/UserAvatar';
 import { clientsLoadAgency, clientsLoadAll, clientUpdate } from '@/app/actions/clients';
 import { Dialog } from 'primereact/dialog';
-import { SelectLabel } from '../../forms/FormElements';
 import { agencyLoadAll } from '@/app/actions/agency';
 import { userUpdate } from '@/app/actions/users';
-import { stat } from 'fs';
 
 interface Props {
   bearbeiter?: User;
@@ -30,6 +27,15 @@ export default function ClientTable({ bearbeiter }: Props) {
   const router = useRouter();
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1025);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   //
   const [agents, setAgents] = useState<User[]>([]);
@@ -244,7 +250,7 @@ export default function ClientTable({ bearbeiter }: Props) {
           stripedRows
           value={clients}
         >
-          <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }}></Column>
+          <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }} hidden={isMobile}></Column>
           <Column body={nameTemplate} field="nachname" header="Name" sortable />
           <Column
             body={categoryTemplates}
@@ -262,12 +268,14 @@ export default function ClientTable({ bearbeiter }: Props) {
               />
             )}
             header="Berufsstatus"
+            hidden={isMobile}
           />
-          <Column body={certificateTemplate} header="Zertifikatsdatei" />
+          <Column body={certificateTemplate} header="Zertifikatsdatei" hidden={isMobile}/>
           <Column
             body={(rowData) => formatDate(rowData.created_at)}
             field="created_at"
             header="Angemeldet seit"
+            hidden={isMobile}
             sortable
             style={{ width: '15%' }}
           />
@@ -288,9 +296,10 @@ export default function ClientTable({ bearbeiter }: Props) {
               />
             )}
             header="Status"
+            hidden={isMobile}
             sortable
           />
-          <Column body={actionTemplate} header="Aktionen" />
+          <Column body={actionTemplate} header="Aktionen" hidden={isMobile}/>
         </DataTable>
       </div>
     </>

@@ -97,7 +97,7 @@ export default function AdminCreateAgency() {
           <Button
             className="button-primary"
             disabled={!agentVorname || !agentNachname || !agentCompany || !agentEmail || submitting}
-            icon={submitting ? 'pi pi-spinner' : undefined}
+            icon={submitting ? 'pi pi-spin pi-spinner' : undefined}
             label="Einladung versenden"
             onClick={sendInvite}
             style={{ width: 'fit-content' }}

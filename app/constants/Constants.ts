@@ -49,16 +49,19 @@ export const client_status = [
 
 export const document_options = [
   {
+    bg: '#01c785',
     label: 'Bild',
     icon: '/icons/image.svg',
     value: 'image',
   },
   {
+    bg: '#e5242a',
     label: 'PDF',
     icon: '/icons/pdf.svg',
     value: 'pdf',
   },
   {
+    bg: '#fe7130',
     label: 'ZIP',
     icon: '/icons/zip.svg',
     value: 'zip',
@@ -153,21 +156,29 @@ export const service_options = [
 
 export const task_status = [
   {
+    bg: 'var(--success)',
+    color: '',
     label: 'Offen',
     severity: 'primary',
     value: 'open',
   },
   {
+    bg: 'var(--success-text)',
+    color: 'white',
     label: 'Geschlossen',
     severity: 'success',
     value: 'closed',
   },
   {
+    bg: 'var(--error-text)',
+    color: 'white',
     label: 'Überfällig',
     severity: 'error',
     value: 'overdue',
   },
   {
+    bg: 'var(--warning-bg)',
+    color: 'black',
     label: 'Wiedervorlage',
     severity: 'info',
     value: 'on_hold'

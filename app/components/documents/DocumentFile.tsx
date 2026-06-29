@@ -52,3 +52,41 @@ export default function DocumentFile({
     </div>
   );
 }
+
+export function DocumentListItem({
+  document,
+  draggable,
+  onClick,
+  onDragStart,
+  onDragEnd,
+}: Props) {
+  const fileMenu = useRef<ContextMenu | null>(null);
+
+  const items = [
+    {
+      label: 'Umbenennen',
+    },
+    {
+      label: 'Löschen',
+      command: () => deleteFile(),
+    },
+  ];
+
+  const deleteFile = async () => {};
+
+  const fileIcon = document_options.find((t) => t.value === document.file_type)?.icon;
+
+  return (
+    <div
+      className="row gap-xs align-center"
+      draggable={draggable}
+      onClick={onClick}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      style={{padding: "0.25rem 0rem"}}
+    >
+      <Image alt="" height={16} src={fileIcon || ''} width={16} />
+      <span style={{ fontSize: 14 }}>{document.document_name}</span>
+    </div>
+  );
+}

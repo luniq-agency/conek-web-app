@@ -1,10 +1,10 @@
 'use client';
 
 import { Client, Document, DocumentFolder, User } from '@/app/types/Database';
-import DocumentFile from './DocumentFile';
+import DocumentFile, { DocumentListItem } from './DocumentFile';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import DocumentFolderBox from './DocumentFolder';
+import DocumentFolderBox, { FolderListItem } from './DocumentFolder';
 import { useEffect, useRef, useState } from 'react';
 import { FileUpload, FileUploadHandlerEvent } from 'primereact/fileupload';
 import {
@@ -15,7 +15,7 @@ import {
 } from '@/app/actions/documents';
 import { useRouter } from 'next/navigation';
 import { InputText } from 'primereact/inputtext';
-import DividerBlock from '../../DividerBlock';
+import DividerBlock from '@/app/components/DividerBlock';
 import { useAuth } from '@/app/context/AuthContext';
 import { ContextMenu } from 'primereact/contextmenu';
 import { folderCreate, foldersLoadUser } from '@/app/actions/folders';
@@ -23,6 +23,7 @@ import Image from 'next/image';
 import styles from './Documents.module.css';
 import DocumentEditor from './DocumentEditor';
 import { Toast } from 'primereact/toast';
+import { DataScroller } from 'primereact/datascroller';
 
 interface Props {
   backgroundColor?: string;
@@ -247,11 +248,11 @@ export default function DocumentViewer({ backgroundColor, client, user }: Props)
       >
         <div className="row height-100 width-100 gap-l">
           {editing && selectedDocument && (
-            <div className="width-100" style={{ maxWidth: 300 }}>
+            <div className="width-100">
               <DocumentEditor document={selectedDocument} onSave={updateDocument} />
             </div>
           )}
-          {selectedDocument?.file_type === 'pdf' ? (
+          {!editing && selectedDocument?.file_type === 'pdf' ? (
             <iframe
               src={
                 selectedDocument?.document_file.endsWith('.pdf')
@@ -260,13 +261,18 @@ export default function DocumentViewer({ backgroundColor, client, user }: Props)
               }
               style={{ border: 'none', height: '70vh', width: '100%' }}
             />
-          ) : (
+          ) : !editing && selectedDocument?.file_type === 'image' ? (
             <div
               style={{ height: '100%', objectFit: 'cover', position: 'relative', width: '100%' }}
             >
-              <Image alt="" fill={true} src={selectedDocument?.document_file || ''} />
+              <Image
+                alt=""
+                fill={true}
+                src={selectedDocument?.document_file || ''}
+                style={{ objectFit: 'contain' }}
+              />
             </div>
-          )}
+          ) : null}
         </div>
       </Dialog>
       <Dialog
@@ -314,6 +320,34 @@ export default function DocumentViewer({ backgroundColor, client, user }: Props)
           style={{ width: 'fit-content' }}
         />
       )}
+      {/*
+      <DataScroller
+        buffer={0.5}
+        itemTemplate={(item) => (
+          <FolderListItem
+            folder={item}
+            onClick={() => setSelectedFolder(item.id)}
+            onDelete={deleteFolder}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => dropOnFolder(item.id)}
+          />
+        )}
+        rows={5}
+        value={visibleFolders}
+      />
+      <DataScroller
+        buffer={0.5}
+        itemTemplate={(item) => (
+          <DocumentListItem
+            document={item}
+            onClick={() => selectDocument(item)}
+            onDragStart={() => setDraggingDocument(item)}
+            onDragEnd={() => setDraggingDocument(null)}
+          />
+        )}
+        rows={10}
+        value={visibleDocuments}
+      />*/}
       <div
         className={styles.documentGrid}
         onContextMenu={(e) => folderMenu.current?.show(e)}

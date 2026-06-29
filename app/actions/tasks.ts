@@ -47,6 +47,15 @@ export async function tasksLoadAll(): Promise<Task[]> {
   return data || [];
 }
 
+export async function tasksLoadOpen(): Promise<Task[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from('task').select('*').eq('status', 'open');
+
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
 export async function tasksLoadUser(id: string): Promise<Task[]> {
   const supabase = await createClient();
 
@@ -74,7 +83,12 @@ export async function taskTransfer(id: string, target: string, user: string): Pr
 export async function taskUpdate(taskData: Partial<Task>, id: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from('task').update(taskData).eq('id', id).select().single();
+  const { data, error } = await supabase
+    .from('task')
+    .update(taskData)
+    .eq('id', id)
+    .select()
+    .single();
 
   if (error) throw new Error(error.message);
 

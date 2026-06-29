@@ -10,7 +10,7 @@ import {
   NumberInputLabel,
   SelectLabel,
   TextInputLabel,
-} from '../../forms/FormElements';
+} from '@/app/components/forms/FormElements';
 import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';

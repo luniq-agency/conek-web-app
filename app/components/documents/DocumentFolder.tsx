@@ -126,3 +126,103 @@ export default function DocumentFolderBox({
     </div>
   );
 }
+
+export function FolderListItem({
+  backgroundColor,
+  folder,
+  onClick,
+  onDelete,
+  onDragOver,
+  onDrop,
+}: Props) {
+  const [editing, setEditing] = useState(false);
+
+  const [dragOver, setDragOver] = useState(false);
+
+  const [folderName, setFolderName] = useState('');
+  const folderInputRef = useRef<HTMLInputElement | null>(null);
+
+  const op = useRef<OverlayPanel | null>(null);
+
+  const editName = () => {
+    setEditing(true);
+    setTimeout(() => folderInputRef.current?.focus(), 50);
+  };
+
+  const confirmEdit = async () => {
+    const payload = {
+      name: folderName,
+    };
+
+    try {
+      await folderUpdate(folder.id, payload);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteFolder = async () => {
+    try {
+      await folderDelete(folder.id);
+      onDelete();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <div
+      onClick={onClick}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+        onDragOver?.(e);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={() => {
+        setDragOver(false);
+        onDrop?.();
+      }}
+      style={{ padding: '0.5rem 0rem' }}
+    >
+      <OverlayPanel ref={op}>
+        <div className="column">
+          <Button
+            className="button-context"
+            label="Umbennen"
+            onClick={(e) => {
+              e.stopPropagation();
+              editName();
+            }}
+          />
+          <Button
+            className="button-context"
+            label="Löschen"
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteFolder();
+            }}
+          />
+        </div>
+      </OverlayPanel>
+      <div className="row gap-xs align-center">
+        <Image alt="" height={16} src="/icons/folder.svg" width={16} />
+        {editing ? (
+          <input
+            className={styles.folderInput}
+            onBlur={confirmEdit}
+            onChange={(e) => setFolderName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') folderInputRef.current?.blur();
+              if (e.key === 'Escape') setEditing(false);
+            }}
+            ref={folderInputRef}
+            value={folderName}
+          />
+        ) : (
+          <span style={{ fontSize: 14 }}>{folder.name}</span>
+        )}
+      </div>
+    </div>
+  );
+}

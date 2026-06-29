@@ -1,7 +1,7 @@
 'use client';
 
 import { Document, User } from '@/app/types/Database';
-import { TextInputLabel } from '../../forms/FormElements';
+import { TextInputLabel } from '@/app/components/forms/FormElements';
 import { document_options } from '@/app/constants/Constants';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from 'primereact/button';
@@ -14,11 +14,12 @@ import { useRouter } from 'next/navigation';
 
 interface Props {
   document: Document;
+  preview?: boolean;
   onSave: () => void;
   users?: User[];
 }
 
-export default function DocumentEditor({ document, onSave, users }: Props) {
+export default function DocumentEditor({ document, onSave, preview, users }: Props) {
   const router = useRouter();
   const toast = useRef<Toast | null>(null);
 
@@ -107,7 +108,7 @@ export default function DocumentEditor({ document, onSave, users }: Props) {
     .sort((a: User, b: User) => a.user_name_last.localeCompare(b.user_name_last));
 
   return (
-    <div className="row gap-l height-100">
+    <div className="row gap-l height-100 width-100">
       <Toast ref={toast} />
       <div className="column gap-m width-100" style={{ maxWidth: 360 }}>
         <Button
@@ -157,27 +158,29 @@ export default function DocumentEditor({ document, onSave, users }: Props) {
         )}
         <Button label="Änderungen speichern" onClick={updateDocument} />
       </div>
-      <div style={{ width: '100%', overflow: 'hidden' }}>
-        {document.file_type === 'pdf' ? (
-          <iframe
-            src={document.document_file}
-            style={{ height: '100%', width: '100%', maxWidth: '100%', display: 'block' }}
-          />
-        ) : (
-          <div style={{ height: '100%', objectFit: 'cover', position: 'relative', width: '100%' }}>
-            <Image
-              alt=""
-              fill={true}
-              src={document?.document_file}
-              style={{
-                objectFit: 'contain',
-                transform: `rotate(${rotation}deg)`,
-                transition: 'transform 0.3s',
-              }}
+        <div style={{ width: '100%', overflow: 'hidden' }}>
+          {document.file_type === 'pdf' ? (
+            <iframe
+              src={document.document_file}
+              style={{ height: '100%', width: '100%', maxWidth: '100%', display: 'block' }}
             />
-          </div>
-        )}
-      </div>
+          ) : (
+            <div
+              style={{ height: '100%', objectFit: 'cover', position: 'relative', width: '100%' }}
+            >
+              <Image
+                alt=""
+                fill={true}
+                src={document?.document_file}
+                style={{
+                  objectFit: 'contain',
+                  transform: `rotate(${rotation}deg)`,
+                  transition: 'transform 0.3s',
+                }}
+              />
+            </div>
+          )}
+        </div>
     </div>
   );
 }

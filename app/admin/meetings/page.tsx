@@ -1,4 +1,3 @@
-import ClientTable from '@/app/components/admin/clients/ClientTable';
 import styles from '../../components/admin/Admin.module.css';
 import { Metadata } from 'next';
 import DividerBlock from '@/app/components/DividerBlock';

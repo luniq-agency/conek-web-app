@@ -29,6 +29,13 @@ export default function CertificateStatCard({ view }: Props) {
 
   if (!current) return null;
 
+  const text =
+    view === 'month'
+      ? 'diesen Monat ausgestellt'
+      : view === 'year'
+        ? 'dieses Jahr ausgestellt'
+        : 'ausgestellt';
+
   const isNegative = (current.change_absolute ?? 0) < 0;
   const isPositive = (current.change_absolute ?? 0) > 0;
 
@@ -40,7 +47,7 @@ export default function CertificateStatCard({ view }: Props) {
         </div>
         <div className="column">
           <span className={styles.label}>Zertifikate</span>
-          <span className={styles.description}>diesen Monat ausgestellt</span>
+          <span className={styles.description}>{text}</span>
         </div>
       </div>
       <DividerBlock height={2} />

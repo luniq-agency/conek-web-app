@@ -159,7 +159,7 @@ export default function ProfileEditor() {
             <DividerBlock height={1} />
             <Button
               disabled={!avatarFile}
-              icon={submitting ? 'pi pi-spinner' : undefined}
+              icon={submitting ? 'pi pi-spinner pi-spin' : undefined}
               label="Profilbild speichern"
               onClick={uploadImage}
             />

@@ -1,4 +1,4 @@
-import DocumentViewer from '@/app/components/admin/documents/DocumentViewer';
+import DocumentViewer from '@/app/components/documents/DocumentViewer';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

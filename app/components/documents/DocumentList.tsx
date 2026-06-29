@@ -1,25 +1,20 @@
 'use client';
 
-import { Client, Document, User } from '@/app/types/Database';
-import { client_status, job_categories } from '@/app/constants/Constants';
+import { Document, User } from '@/app/types/Database';
 import { FilterMatchMode } from 'primereact/api';
-import { formatDate } from '@/app/utils/formats';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Tag } from 'primereact/tag';
 import { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
 import { useRouter } from 'next/navigation';
-import { Avatar } from 'primereact/avatar';
-import { Button } from 'primereact/button';
-import Link from 'next/link';
-import { Dropdown } from 'primereact/dropdown';
-import { UserAvatarOther } from '../../UserAvatar';
+import { UserAvatarOther } from '@/app/components/UserAvatar';
 import { documentsLoadAll } from '@/app/actions/documents';
 import { usersLoadAll } from '@/app/actions/users';
 import { Sidebar } from 'primereact/sidebar';
 import DocumentEditor from './DocumentEditor';
 import { Dialog } from 'primereact/dialog';
+import { document_options } from '@/app/constants/Constants';
 
 export default function DocumentList() {
   const router = useRouter();
@@ -79,12 +74,21 @@ export default function DocumentList() {
   };
 
   //TEMPLATES
+  const fileTypeTemplate = (rowData: Document) => {
+    const type = document_options.find((t) => t.value === rowData.file_type);
+
+    if (!rowData.file_type) return <Tag style={{ backgroundColor: 'grey' }} value="Ohne" />;
+
+    return <Tag style={{ backgroundColor: type?.bg }} value={type?.label} />;
+  };
+
   const nameTemplate = (rowData: Document) => {
-    if (!users) return;
+    if (!users || !rowData.user) return;
     const profile = users.find((t) => t.id === rowData.user);
 
     return (
       <div className="row gap-s align-center">
+        <UserAvatarOther fontSize={12} height={32} user={profile} width={32} />
         <span>
           {profile?.user_name_last || ''}, {profile?.user_name_first || ''}
         </span>
@@ -123,6 +127,7 @@ export default function DocumentList() {
         value={documents}
       >
         <Column field="document_name" header="Name" sortable />
+        <Column body={fileTypeTemplate} header="Dateityp" sortable />
         <Column body={nameTemplate} header="Kunde" />
       </DataTable>
     </>

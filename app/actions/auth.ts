@@ -4,10 +4,10 @@ import { createClient } from '@/app/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
 export async function getEmails() {
-const supabase = await createClient();
-const {data,error} = await supabase.from('user').select('email').is('user_uuid', null);
-if(error) throw new Error(error.message);
-return data.map((u) => u.email);
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('user').select('email').is('user_uuid', null);
+  if (error) throw new Error(error.message);
+  return data.map((u) => u.email);
 }
 
 export async function login(email: string, password: string) {
@@ -35,6 +35,14 @@ export async function login(email: string, password: string) {
     default:
       redirect('/onboarding');
   }
+}
+
+export async function resetPassword(email: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+  if (error) return error;
+  return data;
 }
 
 export async function signOut() {

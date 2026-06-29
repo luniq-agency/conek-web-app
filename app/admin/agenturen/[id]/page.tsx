@@ -1,12 +1,11 @@
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { Metadata } from 'next';
-import { TabPanel, TabView } from 'primereact/tabview';
 import DividerBlock from '@/app/components/DividerBlock';
 import { clientsLoadAgency } from '@/app/actions/clients';
 import { agencyLoad } from '@/app/actions/agency';
-import ClientTable from '@/app/components/admin/clients/ClientTable';
 import AgencyTabs from '@/app/components/admin/agency/AgencyTabs';
 import { usersLoadAll } from '@/app/actions/users';
+import AgencyActions from '@/app/components/agency/AgencyActions';
 
 export const metadata: Metadata = {
   title: 'Agentur | CONEK',
@@ -44,6 +43,7 @@ export default async function AdminAgencyPage({ params }: { params: Promise<{ id
           </h1>
           <span className="meta">{agency.firma}</span>
         </div>
+        <AgencyActions agent={agency} />
       </div>
       <DividerBlock height={1} />
       <div className="dashboard-container">

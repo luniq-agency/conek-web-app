@@ -1,10 +1,8 @@
-import ClientTable from '@/app/components/admin/clients/ClientTable';
+import ClientTable from '@/app/components/clients/ClientTable';
 import styles from '../../components/admin/Admin.module.css';
 import { Metadata } from 'next';
 import DividerBlock from '@/app/components/DividerBlock';
-import { clientsLoadAll } from '@/app/actions/clients';
-import AdminClientCreate from '@/app/components/admin/clients/AdminClientCreate';
-import { usersLoadAll } from '@/app/actions/users';
+import AdminClientCreate from '@/app/components/clients/AdminClientCreate';
 
 export const metadata: Metadata = {
   title: 'Kunden | CONEK',

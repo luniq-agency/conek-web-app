@@ -5,17 +5,17 @@ import styles from '../components/admin/Admin.module.css';
 import DividerBlock from '../components/DividerBlock';
 import StatCard from '../components/admin/StatCard';
 import { clientsLoadAll } from '../actions/clients';
-import { ClientTableLatest } from '../components/admin/clients/ClientTable';
-import { TaskTableSmall } from '../components/admin/tasks/TaskTable';
+import { ClientTableLatest } from '@/app/components/clients/ClientTable';
+import { TaskTableSmall } from '../components/aufgaben/TaskTable';
 import { adminsLoadAll } from '../actions/admin';
-import { tasksLoadAll } from '../actions/tasks';
+import { tasksLoadAll, tasksLoadOpen } from '../actions/tasks';
 import { registrationsLoadMonthly } from '../actions/stats';
 
 export default async function AdminDashboardPage() {
   const admins = await adminsLoadAll();
   const clients = await clientsLoadAll();
   const registrations = await registrationsLoadMonthly();
-  const tasks = await tasksLoadAll();
+  const tasks = await tasksLoadOpen();
 
   //STATS
   const currentMonthRegistrations = registrations.filter((r) => {

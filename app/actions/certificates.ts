@@ -10,3 +10,16 @@ export async function certificatesLoadUser(id: string): Promise<Certificate[]> {
   if (error) throw new Error(error.message);
   return data || [];
 }
+
+export async function certificateUpdate(id: string, data: Partial<Certificate>) {
+  const supabase = await createClient();
+  const { data: created, error } = await supabase
+    .from('certificate')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return created;
+}
