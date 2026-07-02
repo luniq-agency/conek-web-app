@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #e7e8ee;
@@ -8,9 +8,9 @@
   --background-sidebar: #060231;
   --foreground: #171717;
 
-  --primary: #4B39EF;
-  --primary-dark: #091E7C;
-  --secondary: #48F5B6;
+  --primary: #4b39ef;
+  --primary-dark: #091e7c;
+  --secondary: #48f5b6;
 
   --button-secondary: #f6f5f8;
 
@@ -20,15 +20,15 @@
 
   --success-bg: ;
   --error-text: #ee5447;
-  --error-bg: #FFECEB;
+  --error-bg: #ffeceb;
   --success-text: #249427;
-  --success-bg: #DCFFF1;
-  --warning-text: #946F00;
-  --warning-bg: #FEF7C8;
+  --success-bg: #dcfff1;
+  --warning-text: #946f00;
+  --warning-bg: #fef7c8;
 
-  --text-primary: #2B3674;
-  --text-secondary: #67686A;
-  --text-tertiary: #A3AED0;
+  --text-primary: #2b3674;
+  --text-secondary: #67686a;
+  --text-tertiary: #a3aed0;
 
   --padding-s: 0.5rem;
   --padding-m: 1rem;
@@ -64,7 +64,7 @@ body {
   height: 100vh;
 }
 
-.accordion-content>.p-accordion-content {
+.accordion-content > .p-accordion-content {
   background-color: transparent;
   padding: 0px 1rem;
 }
@@ -73,7 +73,7 @@ body {
   border: none;
 }
 
-.accordion-header>.p-accordion-header-link {
+.accordion-header > .p-accordion-header-link {
   background-color: transparent;
   border: none;
   padding: 0px;
@@ -175,7 +175,7 @@ button {
 .container {
   background-color: var(--background-container);
   border-radius: 20px;
-  box-shadow: 0px 0px 4px 0px rgba(0,0,8,0,0.05);
+  box-shadow: 0px 0px 4px 0px rgba(0, 0, 8, 0, 0.05);
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
@@ -265,7 +265,7 @@ button {
 }
 
 .grow {
-  flex-grow: 1
+  flex-grow: 1;
 }
 
 h1,
@@ -339,7 +339,7 @@ textarea {
 input::placeholder,
 select::placeholder,
 textarea::placeholder {
-  color: rgba(0,0,0,0.3);
+  color: rgba(0, 0, 0, 0.3);
 }
 
 .mobile-visible {
@@ -360,7 +360,7 @@ textarea::placeholder {
   justify-content: space-between;
 }
 
-.p-accordion-header-link>svg {
+.p-accordion-header-link > svg {
   order: 2;
 }
 
@@ -387,7 +387,7 @@ textarea::placeholder {
   border-radius: 20px;
 }
 
-.p-datatable-thead>tr>th {
+.p-datatable-thead > tr > th {
   background: transparent;
 }
 
@@ -457,7 +457,7 @@ p-datepicker-next {
   width: 100%;
 }
 
-.p-fileupload-choose>.p-button-label {
+.p-fileupload-choose > .p-button-label {
   width: fit-content;
 }
 
@@ -467,16 +467,16 @@ p-datepicker-next {
   padding-left: 32px;
 }
 
-.p-icon-field>.p-inputtext,
-.p-icon-field>.p-password,
-.p-icon-field>.p-password>.p-password-input {
+.p-icon-field > .p-inputtext,
+.p-icon-field > .p-password,
+.p-icon-field > .p-password > .p-password-input {
   background: transparent;
   background-color: transparent;
   border: none;
   box-shadow: none;
 }
 
-.p-menuitem-separator>svg {
+.p-menuitem-separator > svg {
   width: 10px;
 }
 
@@ -502,7 +502,7 @@ p-datepicker-next {
   color: var(--text-tertiary);
   font-size: 0.7rem;
   height: 12px;
-  width: 12px
+  width: 12px;
 }
 
 .p-stepper-action {
@@ -550,6 +550,8 @@ p-datepicker-next {
 }
 
 .page-content {
+  display: flex;
+  flex-direction: column;
   padding: var(--padding-l);
   width: 100%;
 }
@@ -557,6 +559,7 @@ p-datepicker-next {
 .page-dashboard {
   background-color: var(--background);
   display: flex;
+  flex-direction: row;
   height: 100%;
 }
 
@@ -582,11 +585,11 @@ p-datepicker-next {
   flex-direction: row;
 }
 
-.tabview-vertical>div>div {
+.tabview-vertical > div > div {
   height: 100%;
 }
 
-.tabview-vertical>div>div>ul {
+.tabview-vertical > div > div > ul {
   border-width: 0px 1px 0px 0px;
   display: flex;
   flex-direction: column;
@@ -594,7 +597,7 @@ p-datepicker-next {
   padding: 0.5rem;
 }
 
-.tabview-vertical>div>div>ul>li>a {
+.tabview-vertical > div > div > ul > li > a {
   border: none;
   display: flex;
   gap: 0.5rem;
@@ -603,17 +606,17 @@ p-datepicker-next {
   transition: all 0.3s ease-out;
 }
 
-.tabview-vertical>div>div>ul>.p-highlight {
+.tabview-vertical > div > div > ul > .p-highlight {
   background-color: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
 }
 
-.tabview-vertical>div>div>ul>.p-highlight>a,
-.tabview-vertical>div>div>ul>.p-highlight>.p-tabview-nav-link>.p-tabview-title {
+.tabview-vertical > div > div > ul > .p-highlight > a,
+.tabview-vertical > div > div > ul > .p-highlight > .p-tabview-nav-link > .p-tabview-title {
   color: var(--primary) !important;
 }
 
-.tabview-vertical>.p-tabview-panels {
+.tabview-vertical > .p-tabview-panels {
   padding: 0px;
 }
 
@@ -669,9 +672,7 @@ td {
   width: 100%;
 }
 
-
-
-@media only screen and (max-width:768px) {
+@media only screen and (max-width: 768px) {
   h1 {
     font-size: 24px;
   }

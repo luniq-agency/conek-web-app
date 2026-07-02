@@ -1,8 +1,6 @@
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { Metadata } from 'next';
 import DividerBlock from '@/app/components/DividerBlock';
-import { clientLoadSingle, clientLookup } from '@/app/actions/clients';
-import { userUpdatesLoad } from '@/app/actions/update';
 import ClientTabs from '@/app/components/clients/ClientTabs';
 import { formatDate } from '@/app/utils/formats';
 import { UserAvatarOther } from '@/app/components/UserAvatar';

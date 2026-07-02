@@ -157,6 +157,7 @@ export type Notification = {
   id: string;
   message: string;
   read: boolean;
+  ref: string;
   recipient: string;
   title: string;
   type: string;

@@ -4,7 +4,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <main className="page-dashboard" style={{ backgroundColor: 'white' }}>
       <DashboardSidebar />
-      <div className="page-content">{children}</div>
+      <div className="page-content" style={{padding:0}}>{children}</div>
     </main>
   );
 }

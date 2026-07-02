@@ -6,10 +6,12 @@ import styles from './Documents.module.css';
 import { useRef } from 'react';
 import Image from 'next/image';
 import { document_options } from '@/app/constants/Constants';
+import { Skeleton } from 'primereact/skeleton';
 
 interface Props {
   document: Document;
   draggable?: boolean;
+  loading?: boolean;
   onClick: () => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
@@ -18,6 +20,7 @@ interface Props {
 export default function DocumentFile({
   document,
   draggable,
+  loading,
   onClick,
   onDragStart,
   onDragEnd,
@@ -36,7 +39,13 @@ export default function DocumentFile({
 
   const deleteFile = async () => {};
 
-  const fileIcon = document_options.find((t) => t.value === document.file_type)?.icon;
+  const fileIcon = document.file_type ? document_options.find((t) => t.value === document.file_type)?.icon : '/icons/image.svg';
+
+  if (!fileIcon) return;
+
+    if (loading) return (
+    <Skeleton height="140px" width="100%" />
+  )
 
   return (
     <div
@@ -47,7 +56,7 @@ export default function DocumentFile({
       onDragEnd={onDragEnd}
       style={{ backgroundColor: 'var(--background)' }}
     >
-      <Image alt="" height={48} src={fileIcon || ''} width={48} />
+      <Image alt="" height={48} src={fileIcon} width={48} />
       <span style={{ fontSize: 11 }}>{document.document_name}</span>
     </div>
   );
@@ -74,7 +83,7 @@ export function DocumentListItem({
 
   const deleteFile = async () => {};
 
-  const fileIcon = document_options.find((t) => t.value === document.file_type)?.icon;
+  const fileIcon = document_options.find((t) => t.value === document.file_type)?.icon || '/icons/image.svg' ;
 
   return (
     <div
@@ -85,7 +94,7 @@ export function DocumentListItem({
       onDragEnd={onDragEnd}
       style={{padding: "0.25rem 0rem"}}
     >
-      <Image alt="" height={16} src={fileIcon || ''} width={16} />
+      <Image alt="" height={16} src={fileIcon} width={16} />
       <span style={{ fontSize: 14 }}>{document.document_name}</span>
     </div>
   );

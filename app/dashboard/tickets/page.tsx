@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function DashboardTicketsPage() {
   return (
-    <div className="content-wrapper" style={{ height: '100%' }}>
+    <div className="content-wrapper" style={{ height: '100%', padding: 16}}>
       <TicketsClient />
     </div>
   );

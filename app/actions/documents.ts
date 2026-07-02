@@ -3,6 +3,7 @@
 import { createClient } from '@/app/utils/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { Document } from '../types/Database';
+import { sanitizeFileName } from '../utils/sanitize';
 
 const getServiceClient = () =>
   createServiceClient(
@@ -38,6 +39,8 @@ export async function documentUpdate(data: Partial<Document>, id: string) {
 
 export async function documentUpload(
   file: File,
+  fileName: string,
+  fileType: string,
   name: string,
   user: string,
   folderId?: string | null
@@ -45,7 +48,7 @@ export async function documentUpload(
   const supabase = getServiceClient();
 
   const extension = file.type === 'application/pdf' ? 'pdf' : 'docx';
-  const filePath = `${user}/${name}.${extension}`;
+  const filePath = `${user}/${fileName}.${extension}`;
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
@@ -63,6 +66,7 @@ export async function documentUpload(
     .insert({
       document_name: name,
       document_file: urlData.publicUrl,
+      file_type: fileType || null,
       folder: folderId ?? null,
       user,
     })

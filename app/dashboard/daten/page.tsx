@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function UserProfilePage() {
   return (
-    <div className="content-wrapper" style={{ height: '100%' }}>
+    <div className="content-wrapper" style={{ height: '100%', padding: 16}}>
       <div className="row space-between">
         <h1>Meine Daten</h1>
       </div>

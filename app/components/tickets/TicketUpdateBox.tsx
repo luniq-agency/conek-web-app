@@ -18,7 +18,7 @@ export default function TicketUpdateBox({ creator, entry }: Props) {
 
   return (
     <div className="row gap-s">
-      <Avatar style={{ marginTop: 8 }} />
+      <Avatar style={{ flexShrink:0, marginTop: 8 }} />
       <div
         className={styles.chatBubble}
         style={userIsSender ? { backgroundColor: '#efeefd' } : undefined}

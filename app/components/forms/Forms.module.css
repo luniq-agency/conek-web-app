@@ -1,0 +1,21 @@
+.uploader {
+  align-items: center;
+  background-color: var(--background);
+  border: 1px dashed var(--border-color);
+  border-radius: 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  font-size: 14px;
+  justify-content: center;
+  height: 150px;
+  text-transform: none;
+  transition: all 0.3s ease-out;
+  width: 100%;
+}
+
+.uploader:hover {
+  border-color: var(--primary);
+}

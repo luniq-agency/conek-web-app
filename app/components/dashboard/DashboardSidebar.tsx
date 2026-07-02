@@ -6,6 +6,7 @@ import DividerBlock from '../DividerBlock';
 import Image from 'next/image';
 import { useAuth } from '@/app/context/AuthContext';
 import NotificationButton from '../notifications/NotificationButton';
+import { UserAvatar } from '../UserAvatar';
 
 export default function AdminSidebar() {
   const { user, userProfile, logout } = useAuth();
@@ -17,8 +18,11 @@ export default function AdminSidebar() {
       <div className={styles.sidebarTop}>
         <Image alt="CONEK Logo" height={20} src="/conek-logo-weiss.svg" width={100} />
         <DividerBlock height={1} />
-        <div className="row space-between">
-          <span style={{ color: 'white' }}>{userProfile?.user_name_first}</span>
+        <div className="row space-between align-center gap-s">
+          <UserAvatar fontSize={16} height={32} user={userProfile} width={32} />
+          <span className="grow" style={{ color: 'white' }}>
+            {userProfile?.user_name_first}
+          </span>
           <NotificationButton user={userProfile} />
         </div>
       </div>

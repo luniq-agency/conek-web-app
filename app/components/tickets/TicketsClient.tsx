@@ -60,8 +60,7 @@ export default function TicketsClient({ onSubmit }: Props) {
   };
 
   const selectTicket = async (rowData: Ticket) => {
-    setSelectedTicket(rowData);
-    setTicketInspect(true);
+    router.push(`/dashboard/tickets/${rowData.id}`)
   };
 
   const submitTicket = async () => {
@@ -106,13 +105,6 @@ export default function TicketsClient({ onSubmit }: Props) {
 
   return (
     <>
-      <Sidebar
-        header={<h2>{selectedTicket?.name}</h2>}
-        onHide={() => setTicketInspect(false)}
-        position="right"
-        style={{ maxWidth: 560, width: '100%' }}
-        visible={ticketInspect}
-      ></Sidebar>
       <Dialog
         draggable={false}
         header="Neues Ticket"
@@ -153,7 +145,6 @@ export default function TicketsClient({ onSubmit }: Props) {
         />
       </div>
       <DividerBlock height={2} />
-      <div className="container">
         <DataTable
           emptyMessage="Du hast noch keine Tickets erstellt."
           paginator
@@ -166,7 +157,6 @@ export default function TicketsClient({ onSubmit }: Props) {
           <Column body={(rowData) => formatDate(rowData.created_at)} header="Erstellt am" />
           <Column body={statusTemplate} header="Status" />
         </DataTable>
-      </div>
     </>
   );
 }

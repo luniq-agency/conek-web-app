@@ -4,6 +4,7 @@ import { Avatar } from 'primereact/avatar';
 import { Tag } from 'primereact/tag';
 import { formatDate } from '@/app/utils/formats';
 import { ticket_options, ticket_status } from '@/app/constants/Constants';
+import { UserAvatar } from '../UserAvatar';
 
 interface Props {
   onClick: () => void;
@@ -24,7 +25,6 @@ export default function TicketBox({ onClick, selected, ticket }: Props) {
       className={selected ? `${styles.wrapper} ${styles.selected}` : styles.wrapper}
       onClick={onClick}
     >
-      <Avatar className="width-100" size="normal" />
       <div className="column width-100">
         <div className="row space-between">
           <div className="column">

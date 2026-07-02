@@ -11,6 +11,7 @@ import { Toast } from 'primereact/toast';
 import Image from 'next/image';
 import { imageUploadReplace } from '@/app/actions/image';
 import { useRouter } from 'next/navigation';
+import DocumentPreviewer from './DocumentPreviewer';
 
 interface Props {
   document: Document;
@@ -111,21 +112,25 @@ export default function DocumentEditor({ document, onSave, preview, users }: Pro
     <div className="row gap-l height-100 width-100">
       <Toast ref={toast} />
       <div className="column gap-m width-100" style={{ maxWidth: 360 }}>
-        <Button
-          icon="pi pi-refresh"
-          label="Drehen"
-          onClick={rotateImage}
-          severity="secondary"
-          size="small"
-        />
-        {rotation !== 0 && (
-          <Button
-            icon={savingRotation ? 'pi pi-spinner' : 'pi pi-save'}
-            label="Speichern"
-            onClick={saveRotation}
-            size="small"
-            loading={savingRotation}
-          />
+        {document.file_type === 'image' && (
+          <div className="column gap-m">
+            <Button
+              icon="pi pi-refresh"
+              label="Drehen"
+              onClick={rotateImage}
+              severity="secondary"
+              size="small"
+            />
+            {rotation !== 0 && (
+              <Button
+                icon={savingRotation ? 'pi pi-spinner' : 'pi pi-save'}
+                label="Speichern"
+                onClick={saveRotation}
+                size="small"
+                loading={savingRotation}
+              />
+            )}
+          </div>
         )}
         <TextInputLabel
           label="Name des Dokuments"
@@ -158,29 +163,24 @@ export default function DocumentEditor({ document, onSave, preview, users }: Pro
         )}
         <Button label="Änderungen speichern" onClick={updateDocument} />
       </div>
-        <div style={{ width: '100%', overflow: 'hidden' }}>
-          {document.file_type === 'pdf' ? (
-            <iframe
-              src={document.document_file}
-              style={{ height: '100%', width: '100%', maxWidth: '100%', display: 'block' }}
+      <div style={{ width: '100%', overflow: 'hidden' }}>
+        {document.file_type !== 'image' ? (
+          <DocumentPreviewer doc={document} />
+        ) : (
+          <div style={{ height: '100%', objectFit: 'cover', position: 'relative', width: '100%' }}>
+            <Image
+              alt=""
+              fill={true}
+              src={document?.document_file}
+              style={{
+                objectFit: 'contain',
+                transform: `rotate(${rotation}deg)`,
+                transition: 'transform 0.3s',
+              }}
             />
-          ) : (
-            <div
-              style={{ height: '100%', objectFit: 'cover', position: 'relative', width: '100%' }}
-            >
-              <Image
-                alt=""
-                fill={true}
-                src={document?.document_file}
-                style={{
-                  objectFit: 'contain',
-                  transform: `rotate(${rotation}deg)`,
-                  transition: 'transform 0.3s',
-                }}
-              />
-            </div>
-          )}
-        </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

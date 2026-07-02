@@ -36,14 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data } = await supabase.from('user').select('*').eq('user_uuid', userId).single();
     setUserProfile(data);
 
-    if (data?.user_role === 'client') {
-      fetchClient(userId);
-    }
-  };
-
-  const fetchClient = async (userId: string) => {
-    const { data } = await supabase.from('client').select('*').eq('user_id', userId).single();
-    setClientProfile(data);
   };
 
   useEffect(() => {

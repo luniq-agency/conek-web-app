@@ -55,10 +55,34 @@ export const document_options = [
     value: 'image',
   },
   {
+    bg: '',
+    label: 'Excel-Datei',
+    icon: '/icons/xls.svg',
+    value: 'xls',
+  },
+  {
+    bg: '',
+    label: 'Excel-Datei',
+    icon: '/icons/xls.svg',
+    value: 'xlsx',
+  },
+  {
     bg: '#e5242a',
     label: 'PDF',
     icon: '/icons/pdf.svg',
     value: 'pdf',
+  },
+  {
+    bg: '',
+    label: 'Word-Dokument',
+    icon: '/icons/doc.svg',
+    value: 'doc',
+  },
+  {
+    bg: '',
+    label: 'Word-Dokument',
+    icon: '/icons/doc.svg',
+    value: 'docx',
   },
   {
     bg: '#fe7130',
@@ -129,12 +153,12 @@ export const job_categories = [
 
 export const notification_types = [
   {
-    value: 'client'
+    value: 'client',
   },
   {
-    value: 'task'
-  }
-]
+    value: 'task',
+  },
+];
 
 export const service_options = [
   {
@@ -181,8 +205,8 @@ export const task_status = [
     color: 'black',
     label: 'Wiedervorlage',
     severity: 'info',
-    value: 'on_hold'
-  }
+    value: 'on_hold',
+  },
 ];
 
 export const tax_rates = [

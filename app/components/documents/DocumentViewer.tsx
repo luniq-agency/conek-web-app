@@ -28,35 +28,39 @@ import { DataScroller } from 'primereact/datascroller';
 interface Props {
   backgroundColor?: string;
   client?: Client;
+  header?: boolean;
+  hl?: boolean;
   user?: User;
 }
 
-export default function DocumentViewer({ backgroundColor, client, user }: Props) {
-  const owner = user?.id;
+export default function DocumentViewer({ backgroundColor, header, client, hl, user }: Props) {
+  const { userProfile } = useAuth();
+  const owner = user?.id || userProfile?.id;
 
   const folderMenu = useRef<ContextMenu | null>(null);
   const router = useRouter();
   const toast = useRef<Toast | null>(null);
 
+  // STATES
   const [draggingDocument, setDraggingDocument] = useState<Document | null>(null);
-
   const [editing, setEditing] = useState(false);
   const [inspecting, setInspecting] = useState(false);
   const [visible, setVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  //FOLDERS
+  // FOLDERS
   const [folders, setFolders] = useState<DocumentFolder[]>([]);
   const [pendingFolder, setPendingFolder] = useState<{ id: string; name: string } | null>(null);
   const pendingInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
+  // DOCUMENTS
   const [documents, setDocuments] = useState<Document[]>([]);
   const [documentFile, setDocumentFile] = useState<{ file: File } | null>(null);
   const [documentName, setDocumentName] = useState('');
 
-  //CONTEXT MENU FOLDERS
+  // CONTEXT MENU FOLDERS
   const items = [
     {
       label: 'Neuen Ordner anlegen',
@@ -82,12 +86,6 @@ export default function DocumentViewer({ backgroundColor, client, user }: Props)
   useEffect(() => {
     if (!owner) return;
     fetchAll();
-  }, [owner]);
-
-  useEffect(() => {
-    console.log('Owner:', owner);
-    console.log('Client:', client);
-    console.log('User:', user);
   }, [owner]);
 
   const visibleFolders = folders.filter((f) => f.parent === selectedFolder);
@@ -223,7 +221,14 @@ export default function DocumentViewer({ backgroundColor, client, user }: Props)
     if (!documentFile || !owner) return;
 
     try {
-      await documentUpload(documentFile.file, documentName, owner, selectedFolder);
+      await documentUpload(
+        documentFile.file,
+        'docx',
+        documentName,
+        documentName,
+        owner,
+        selectedFolder
+      );
       setDocumentFile(null);
       setDocumentName('');
       router.refresh();
@@ -300,15 +305,17 @@ export default function DocumentViewer({ backgroundColor, client, user }: Props)
           />
         </div>
       </Dialog>
-      <div className="row space-between">
-        <h3>Dokumente</h3>
-        <Button
-          className="button-secondary"
-          icon="pi pi-upload"
-          label="Dokument hochladen"
-          onClick={() => setVisible(true)}
-        />
-      </div>
+      {header && (
+        <div className="row space-between">
+          {hl ? <h1>Dokumente</h1> : <h3>Dokumente</h3>}
+          <Button
+            className="button-secondary"
+            icon="pi pi-upload"
+            label="Dokument hochladen"
+            onClick={() => setVisible(true)}
+          />
+        </div>
+      )}
       <DividerBlock height={2} />
       <ContextMenu model={items} ref={folderMenu} breakpoint="767px" />
       {selectedFolder && (
@@ -320,34 +327,6 @@ export default function DocumentViewer({ backgroundColor, client, user }: Props)
           style={{ width: 'fit-content' }}
         />
       )}
-      {/*
-      <DataScroller
-        buffer={0.5}
-        itemTemplate={(item) => (
-          <FolderListItem
-            folder={item}
-            onClick={() => setSelectedFolder(item.id)}
-            onDelete={deleteFolder}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={() => dropOnFolder(item.id)}
-          />
-        )}
-        rows={5}
-        value={visibleFolders}
-      />
-      <DataScroller
-        buffer={0.5}
-        itemTemplate={(item) => (
-          <DocumentListItem
-            document={item}
-            onClick={() => selectDocument(item)}
-            onDragStart={() => setDraggingDocument(item)}
-            onDragEnd={() => setDraggingDocument(null)}
-          />
-        )}
-        rows={10}
-        value={visibleDocuments}
-      />*/}
       <div
         className={styles.documentGrid}
         onContextMenu={(e) => folderMenu.current?.show(e)}

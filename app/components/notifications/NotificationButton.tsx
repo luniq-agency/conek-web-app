@@ -36,7 +36,10 @@ export default function NotificationButton({ user }: Props) {
     await notificationsMarkAllRead(user.user_uuid);
   };
 
-  const target = {};
+  const reloadNotifications = async () => {
+    const res = await notificationsLoadUser(user.id);
+    setNotifications(res);
+  };
 
   return (
     <>
@@ -55,7 +58,7 @@ export default function NotificationButton({ user }: Props) {
         </div>
         {notifications.length >= 1 ? (
           <DataScroller
-            itemTemplate={(item) => <NotificationItem notification={item} />}
+            itemTemplate={(item) => <NotificationItem notification={item} onClick={reloadNotifications}/>}
             rows={5}
             value={notifications}
           />

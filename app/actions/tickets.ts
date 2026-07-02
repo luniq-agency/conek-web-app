@@ -13,6 +13,15 @@ export async function ticketCreate(data: Partial<Ticket>) {
   return data;
 }
 
+export async function ticketLoadSingle(id: string): Promise<Ticket> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from('ticket').select('*').eq('id', id).select().single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 export async function ticketsLoadAll() {
   const supabase = await createClient();
 

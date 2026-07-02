@@ -29,18 +29,18 @@ const NotificationContext = createContext<NotificationContextType>({
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const supabase = createClient();
 
   useEffect(() => {
-    if (!user) return;
+    if (!userProfile) return;
 
     // Initial laden
     const fetchNotifications = async () => {
       const { data } = await supabase
         .from('notification')
         .select('*')
-        .eq('recipient', user.id)
+        .eq('recipient', userProfile.id)
         .order('created_at', { ascending: false });
       setNotifications(data ?? []);
     };
@@ -56,7 +56,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           event: 'INSERT',
           schema: 'public',
           table: 'notification',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${user?.id}`,
         },
         (payload) => {
           setNotifications((prev) => [payload.new as Notification, ...prev]);
