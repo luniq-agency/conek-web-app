@@ -16,6 +16,7 @@ import DividerBlock from '../DividerBlock';
 import { useAuth } from '@/app/context/AuthContext';
 import { userCreate } from '@/app/actions/users';
 import { Toast } from 'primereact/toast';
+import { sanitizeInput, sanitizeInputFinal } from '@/app/utils/sanitize';
 
 export default function OnboardingClient() {
   const { user, loading, logout } = useAuth();
@@ -65,8 +66,12 @@ export default function OnboardingClient() {
       email: user?.email,
       family_status: family,
       iban: iban,
-      setup_complete: true,
+      job: job,
+      job_status: jobCategory,
+      kinder: kids || 0,
+      setup_complete: false,
       status: 'in_review',
+      telefon: phone,
       user_name_first: firstName,
       user_name_last: lastName,
       user_uuid: user?.id,
@@ -99,12 +104,14 @@ export default function OnboardingClient() {
             <span>Vervollständige dein CONEK-Profil.</span>
           </div>
           <InputText
-            onChange={(e) => setFirstName(e.target.value)}
+            onBlur={(e) => setFirstName(sanitizeInputFinal(e.target.value))}
+            onChange={(e) => setFirstName(sanitizeInput(e.target.value))}
             value={firstName}
             placeholder="Vorname"
           />
           <InputText
-            onChange={(e) => setLastName(e.target.value)}
+            onBlur={(e) => setLastName(sanitizeInputFinal(e.target.value))}
+            onChange={(e) => setLastName(sanitizeInput(e.target.value))}
             value={lastName}
             placeholder="Nachname"
           />
@@ -122,7 +129,12 @@ export default function OnboardingClient() {
             placeholder="Berufsverhältnis"
             value={jobCategory}
           />
-          <InputText onChange={(e) => setJob(e.target.value)} placeholder="Beruf" value={job} />
+          <InputText
+            onBlur={(e) => setJob(sanitizeInputFinal(e.target.value))}
+            onChange={(e) => setJob(sanitizeInput(e.target.value))}
+            placeholder="Beruf"
+            value={job}
+          />
           <Button
             disabled={!firstName || !lastName || !job || !dob}
             label="Weiter"
@@ -167,7 +179,11 @@ export default function OnboardingClient() {
             placeholder="Telefonnummer"
             value={phone}
           />
-          <InputText onChange={(e) => setIban(e.target.value)} placeholder="IBAN" value={iban} />
+          <InputText
+            onChange={(e) => setIban(e.target.value)}
+            placeholder="IBAN (optional)"
+            value={iban}
+          />
           <div className="row gap-s">
             <InputText
               onChange={(e) => setStreet(e.target.value)}
@@ -193,7 +209,7 @@ export default function OnboardingClient() {
           <div className="row space-between">
             <Button label="Zurück" onClick={() => stepperRef.current?.prevCallback()} />
             <Button
-              disabled={!phone || !iban || !addressValid}
+              disabled={!phone || !addressValid}
               label="Weiter"
               onClick={() => stepperRef.current?.nextCallback()}
             />

@@ -2,6 +2,7 @@
 
 import { Button } from 'primereact/button';
 import { clientSignup } from '@/app/actions/clients';
+import { createClient } from '@/app/utils/supabase/client';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { useEffect, useRef, useState } from 'react';
@@ -44,7 +45,12 @@ export function ClientSignupForm() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await clientSignup(email, password);
+      const data = await clientSignup(email, password);
+      const supabase = createClient();
+      await supabase.auth.setSession({
+        access_token: data.session?.access_token!,
+        refresh_token: data.session?.refresh_token!,
+      });
       router.push('/onboarding');
     } catch (err: any) {
       const message = err?.message ?? 'Unbekannter Fehler';

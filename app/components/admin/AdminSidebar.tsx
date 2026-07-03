@@ -40,6 +40,7 @@ export default function AdminSidebar() {
                 alt="CONEK Logo"
                 className="logo-sidebar"
                 height={20}
+                loading="eager" 
                 src="/conek-logo-weiss.svg"
                 width={80}
               />
