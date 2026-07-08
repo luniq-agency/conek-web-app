@@ -1,7 +1,7 @@
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { Metadata } from 'next';
 import DividerBlock from '@/app/components/DividerBlock';
-import { clientsLoadAll } from '@/app/actions/clients';
+import { clientsLoadAdmin, clientsLoadAll } from '@/app/actions/clients';
 import { invoiceLoadSingle } from '@/app/actions/invoice';
 import InvoiceEditor from '@/app/components/admin/invoices/InvoiceEditor';
 import InvoiceActions from '@/app/components/invoices/InvoicesActions';
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function AdminInvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const invoice = await invoiceLoadSingle(id);
-  const clients = await clientsLoadAll();
+  const clients = await clientsLoadAdmin();
 
   const items = [
     {

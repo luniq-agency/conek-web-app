@@ -56,13 +56,13 @@ export const document_options = [
   },
   {
     bg: '',
-    label: 'Excel-Datei',
+    label: 'Excel-Datei (XLS)',
     icon: '/icons/xls.svg',
     value: 'xls',
   },
   {
     bg: '',
-    label: 'Excel-Datei',
+    label: 'Excel-Datei (XLSX)',
     icon: '/icons/xls.svg',
     value: 'xlsx',
   },
@@ -74,13 +74,13 @@ export const document_options = [
   },
   {
     bg: '',
-    label: 'Word-Dokument',
+    label: 'Word-Dokument (DOC)',
     icon: '/icons/doc.svg',
     value: 'doc',
   },
   {
     bg: '',
-    label: 'Word-Dokument',
+    label: 'Word-Dokument (DOCX)',
     icon: '/icons/doc.svg',
     value: 'docx',
   },

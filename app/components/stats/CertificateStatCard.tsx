@@ -19,7 +19,21 @@ export default function CertificateStatCard({ view }: Props) {
   useEffect(() => {
     certificateStatsLoad(view).then((data) => {
       if (view === 'month') {
-        setCurrent(data[0]);
+        if (data[0]) {
+          setCurrent(data[0]);
+        } else {
+          // Kein Eintrag für diesen Monat – letzten Monat als Vergleich laden
+          certificateStatsLoad('all').then((allData) => {
+            const lastMonth = allData[0]; // neuester Eintrag
+            setCurrent({
+              certificate_count: 0,
+              change_absolute: lastMonth ? -lastMonth.certificate_count : 0,
+              change_percent: lastMonth ? -100 : 0,
+              previous_month_count: lastMonth?.certificate_count ?? 0,
+              month: new Date().toISOString(),
+            });
+          });
+        }
       } else {
         const total = data.reduce((sum, d) => sum + (d.certificate_count ?? 0), 0);
         setCurrent({ ...data[0], certificate_count: total });

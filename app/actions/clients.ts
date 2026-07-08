@@ -54,17 +54,25 @@ export async function clientCreateProfile(data: Partial<User>, clientData: Parti
   return created;
 }
 
-export async function clientsLoadAll(): Promise<User[]> {
+export async function clientsLoadAll(role: string, agentId?: string): Promise<User[]> {
   const supabase = await createClient();
 
-  const { data: created, error } = await supabase
-    .from('user')
-    .select('*')
-    .eq('user_role', 'client');
+  let query = supabase.from('user').select('*').eq('user_role', 'client');
+
+  if (role === 'agency') {
+    if (!agentId) {
+      throw new Error('agentId ist erforderlich, wenn role "agency" ist.');
+    }
+    query = query.eq('bearbeiter', agentId);
+  } else if (role !== 'admin') {
+    throw new Error(`Unbekannte Rolle: ${role}`);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
 
-  return created;
+  return data;
 }
 
 export async function clientLoadSingle(id: string): Promise<Client> {
@@ -75,6 +83,15 @@ export async function clientLoadSingle(id: string): Promise<Client> {
   if (error) throw new Error(error.message);
 
   return created;
+}
+
+export async function clientsLoadAdmin(): Promise<User[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from('user').select('*').eq('user_role', 'client');
+
+  if (error) throw new Error(error.message);
+  return data || [];
 }
 
 export async function clientsLoadAgency(id: string): Promise<User[]> {

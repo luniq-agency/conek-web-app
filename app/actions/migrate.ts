@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/app/utils/supabase/server';
+import { redirect } from 'next/navigation';
 
 export async function registerBubbleUser(email: string, password: string) {
   const supabase = await createClient();
@@ -25,6 +26,9 @@ export async function registerBubbleUser(email: string, password: string) {
       .single();
     if (clientError) throw new Error(clientError.message);
   }
+
+  if (userProfile.user_role === 'agency' || userProfile.user.role === 'admin') redirect ('/admin');
+  if (userProfile.user_role === 'client') redirect ('/dashboard');
 
   return signupData;
 }

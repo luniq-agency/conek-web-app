@@ -21,9 +21,11 @@ import { userUpdate } from '@/app/actions/users';
 
 interface Props {
   bearbeiter?: User;
+  clients?: User[];
+  search?: string;
 }
 
-export default function ClientTable({ bearbeiter }: Props) {
+export default function ClientTable({ bearbeiter, clients, search }: Props) {
   const router = useRouter();
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
@@ -36,6 +38,13 @@ export default function ClientTable({ bearbeiter }: Props) {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  useEffect(() => {
+    if (search !== undefined) {
+      setFilters((prev) => ({ ...prev, global: { ...prev.global, value: search } }));
+      setGlobalFilterValue(search);
+    }
+  }, [search]);
 
   //
   const [agents, setAgents] = useState<User[]>([]);
@@ -62,31 +71,10 @@ export default function ClientTable({ bearbeiter }: Props) {
   }, []);
 
   //DATA
-  const [clients, setClients] = useState<User[]>([]);
   const [selectedClients, setSelectedClients] = useState<User[]>([]);
 
   const [rowClick, setRowClick] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (bearbeiter)
-        try {
-          const clientRes = await clientsLoadAgency(bearbeiter.id);
-          setClients(clientRes);
-        } catch (err) {
-          console.error(err);
-        }
-      if (!bearbeiter)
-        try {
-          const clientRes = await clientsLoadAll();
-          setClients(clientRes);
-          const agencyRes = await agencyLoadAll();
-          setAgents(agencyRes);
-        } catch (err) {}
-    };
-
-    fetchData();
-  }, []);
 
   //FILTER
   const [filters, setFilters] = useState<{
@@ -250,7 +238,13 @@ export default function ClientTable({ bearbeiter }: Props) {
           stripedRows
           value={clients}
         >
-          <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }} hidden={isMobile}></Column>
+          {/*
+          <Column
+            selectionMode="multiple"
+            header=""
+            headerStyle={{ width: '3rem' }}
+            hidden={isMobile}
+          ></Column>*/}
           <Column body={nameTemplate} field="nachname" header="Name" sortable />
           <Column
             body={categoryTemplates}
@@ -270,7 +264,7 @@ export default function ClientTable({ bearbeiter }: Props) {
             header="Berufsstatus"
             hidden={isMobile}
           />
-          <Column body={certificateTemplate} header="Zertifikatsdatei" hidden={isMobile}/>
+          <Column body={certificateTemplate} header="Zertifikatsdatei" hidden={isMobile} />
           <Column
             body={(rowData) => formatDate(rowData.created_at)}
             field="created_at"
@@ -299,59 +293,9 @@ export default function ClientTable({ bearbeiter }: Props) {
             hidden={isMobile}
             sortable
           />
-          <Column body={actionTemplate} header="Aktionen" hidden={isMobile}/>
+          <Column body={actionTemplate} header="Aktionen" hidden={isMobile} />
         </DataTable>
       </div>
     </>
-  );
-}
-
-export function ClientTableLatest() {
-  //DATA
-  const [clients, setClients] = useState<User[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const clientRes = await clientsLoadAll();
-        setClients(clientRes);
-      } catch (err) {}
-    };
-
-    fetchData();
-  }, []);
-
-  const actionTemplate = (rowData: User) => {
-    return (
-      <Link href={`/admin/kunden/${rowData.id}`}>
-        <Button className="button-square" icon="pi pi-search" text />
-      </Link>
-    );
-  };
-
-  const userTemplate = (rowData: User) => {
-    return (
-      <div className="row gap-s align-center">
-        <UserAvatarOther fontSize={11} height={30} user={rowData} width={30} />
-        <div className="column">
-          <span style={{ fontSize: 14, fontWeight: 700 }}>
-            {rowData.user_name_last}, {rowData.user_name_first}
-          </span>
-          <span style={{ fontSize: 12 }}>Angemeldet seit: {formatDate(rowData.created_at)}</span>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <DataTable
-      emptyMessage="Keine Kunden gefunden."
-      value={clients
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 5)}
-    >
-      <Column body={userTemplate} header="Kunde" />
-      <Column body={actionTemplate} header="Aktionen" />
-    </DataTable>
   );
 }

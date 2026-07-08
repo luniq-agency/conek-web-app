@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import DividerBlock from '@/app/components/DividerBlock';
 import CertificateStatCard from '@/app/components/stats/CertificateStatCard';
@@ -19,8 +19,8 @@ const viewOptions = [
   },
   {
     label: 'Gesamt',
-    value: 'all'
-  }
+    value: 'all',
+  },
 ];
 export default function StatPageClient() {
   const [view, setView] = useState<'month' | 'year' | 'all'>('month');
@@ -36,14 +36,13 @@ export default function StatPageClient() {
         <RevealBox delay={0.5}>
           <div className="column gap-m">
             <h3>Zertifikate</h3>
-            <CertificateStatCard view={view}/>
+            <CertificateStatCard view={view} />
           </div>
         </RevealBox>
         <RevealBox delay={1}>
           <div className="column gap-m">
             <h3>Rechnungen</h3>
-
-            <InvoiceStatCards view={view}/>
+            <InvoiceStatCards view={view} />
           </div>
         </RevealBox>
       </div>
@@ -52,7 +51,7 @@ export default function StatPageClient() {
         <div className="column">
           <h3>Anmeldungen</h3>
           <DividerBlock height={1} />
-          <ClientStatCards view={view}/>
+          <ClientStatCards view={view} />
         </div>
       </RevealBox>
     </div>

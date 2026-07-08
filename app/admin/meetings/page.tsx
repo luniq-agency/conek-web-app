@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminClientsPage() {
-  const clients = await clientsLoadAll();
 
   return (
     <div className="page-content" style={{ height: '100%' }}>

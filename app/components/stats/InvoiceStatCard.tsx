@@ -18,7 +18,23 @@ export default function InvoiceStatCards({ view }: Props) {
   useEffect(() => {
     invoiceMonthlyStatsLoad(view).then((data) => {
       if (view === 'month') {
-        setCurrent(data[0]);
+        if (data[0]) {
+          setCurrent(data[0]);
+        } else {
+          invoiceMonthlyStatsLoad('all').then((allData) => {
+            if (allData[0]) {
+              setCurrent({
+                ...allData[0],
+                paid_total: 0,
+                sent_total: 0,
+                paid_count: 0,
+                sent_count: 0,
+                previous_paid_total: allData[0].paid_total,
+                previous_sent_total: allData[0].sent_total,
+              });
+            }
+          });
+        }
       } else {
         const total = data.reduce(
           (acc, d) => ({

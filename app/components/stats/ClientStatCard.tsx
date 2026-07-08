@@ -17,7 +17,25 @@ export default function ClientStatCards({ view }: Props) {
   useEffect(() => {
     clientMonthlyStatsLoad(view).then((data) => {
       if (view === 'month') {
-        setCurrent(data[0]);
+        if (data[0]) {
+          setCurrent(data[0]);
+        } else {
+          clientMonthlyStatsLoad('all').then((allData) => {
+            if (allData[0]) {
+              setCurrent({
+                ...allData[0],
+                total_count: 0,
+                employed_count: 0,
+                freelancer_count: 0,
+                self_employed_count: 0,
+                previous_month_total: allData[0].total_count,
+                previous_employed_count: allData[0].employed_count,
+                previous_freelancer_count: allData[0].freelancer_count,
+                previous_self_employed_count: allData[0].self_employed_count,
+              });
+            }
+          });
+        }
       } else {
         const total = data.reduce(
           (acc, d) => ({

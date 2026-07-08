@@ -4,7 +4,7 @@ import DividerBlock from '@/app/components/DividerBlock';
 import InvoicesTable from '@/app/components/admin/invoices/InvoicesTable';
 import { invoicesLoadAll } from '@/app/actions/invoice';
 import AdminCreateInvoice from '@/app/components/admin/invoices/AdminCreateInvoice';
-import { clientsLoadAll } from '@/app/actions/clients';
+import { clientsLoadAdmin, clientsLoadAll } from '@/app/actions/clients';
 
 export const metadata: Metadata = {
   title: 'Rechnungen | CONEK',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminInvoicesPage() {
-  const clients = await clientsLoadAll();
+  const clients = await clientsLoadAdmin();
   const invoices = await invoicesLoadAll();
 
   return (

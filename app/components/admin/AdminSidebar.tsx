@@ -40,7 +40,7 @@ export default function AdminSidebar() {
                 alt="CONEK Logo"
                 className="logo-sidebar"
                 height={20}
-                loading="eager" 
+                loading="eager"
                 src="/conek-logo-weiss.svg"
                 width={80}
               />
@@ -55,19 +55,21 @@ export default function AdminSidebar() {
           </div>
           <DividerBlock height={2} />
           <div className="row gap-s align-center width-100">
-            <div
-              className="row gap-s width-100"
-              onClick={() => {
-                router.push('/admin/profil');
-              }}
-            >
-              <div style={{ width: 32 }}>
+            <div className="row gap-s width-100">
+              <div
+                onClick={() => {
+                  router.push('/admin/profil');
+                }}
+                style={{ cursor: 'pointer', width: 32 }}
+              >
                 <UserAvatar fontSize={16} height={32} width={32} />
               </div>
               {expanded && (
                 <div className="row width-100">
-                  <div className="column" style={{ cursor: 'pointer', flexGrow: 1 }}>
-                    <span style={{ color: 'white' }}>{userProfile?.user_name_first}</span>
+                  <div className="column" style={{flexGrow: 1 }}>
+                    <span style={{ color: 'white', lineHeight: '1.1em' }}>
+                      {userProfile?.user_name_first}
+                    </span>
                     <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>
                       {userProfile.email}
                     </span>
