@@ -128,7 +128,7 @@ export default function AdminSidebar() {
               <AdminSidebarButton
                 collapsed={!expanded}
                 icon="pi pi-crown"
-                label="Admins"
+                label="Mitarbeiter"
                 target="/admin/admins"
               />
               <AdminSidebarButton

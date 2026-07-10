@@ -18,10 +18,10 @@ import { ClientTableSmall } from '../../clients/ClientTableSmall';
 
 export default function AdminDashboard() {
   const mounted = useRef(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const { user, userProfile } = useAuth();
   useProfilePolling(user, userProfile);
 
+  // DATA
   const [admins, setAdmins] = useState<User[]>([]);
   const [clients, setClients] = useState<User[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);

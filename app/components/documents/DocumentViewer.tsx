@@ -24,6 +24,7 @@ import styles from './Documents.module.css';
 import DocumentEditor from './DocumentEditor';
 import { Toast } from 'primereact/toast';
 import { DataScroller } from 'primereact/datascroller';
+import DocumentUploader from './DocumentUploader';
 
 interface Props {
   backgroundColor?: string;
@@ -241,6 +242,8 @@ export default function DocumentViewer({ backgroundColor, header, client, hl, us
     }
   };
 
+  if (!owner) return;
+
   return (
     <div className="column height-100">
       <Toast ref={toast} />
@@ -305,17 +308,10 @@ export default function DocumentViewer({ backgroundColor, header, client, hl, us
           />
         </div>
       </Dialog>
-      {header && (
         <div className="row space-between">
           {hl ? <h1>Dokumente</h1> : <h3>Dokumente</h3>}
-          <Button
-            className="button-secondary"
-            icon="pi pi-upload"
-            label="Dokument hochladen"
-            onClick={() => setVisible(true)}
-          />
+          <DocumentUploader folder={selectedFolder} onUpload={updateDocuments} owner={owner}/>
         </div>
-      )}
       <DividerBlock height={2} />
       <ContextMenu model={items} ref={folderMenu} breakpoint="767px" />
       {selectedFolder && (

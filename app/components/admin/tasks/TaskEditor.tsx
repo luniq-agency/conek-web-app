@@ -14,9 +14,12 @@ import {
 import { useAuth } from '@/app/context/AuthContext';
 import { Button } from 'primereact/button';
 import DividerBlock from '../../DividerBlock';
-import { formatDateWithTime } from '@/app/utils/formats';
+import { formatDate, formatDateWithTime } from '@/app/utils/formats';
 import { Dropdown } from 'primereact/dropdown';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { DatePicker } from '../../forms/FormElements';
+import { PrimaryButton } from '../../buttons/Buttons';
+import { LoaderCircle } from 'lucide-react';
 
 const updateOptions = [
   {
@@ -50,6 +53,8 @@ export default function TaskEditor({ task }: Props) {
   const [updateTarget, setUpdateTarget] = useState<User | null>(null);
   const [updateText, setUpdateText] = useState('');
   const [updateType, setUpdateType] = useState('');
+
+  const [date, setDate] = useState<Date | undefined>(undefined);
 
   const customMarker = (item: TaskUpdate) => {
     const user = userMap[item.created_by];
@@ -106,7 +111,8 @@ export default function TaskEditor({ task }: Props) {
 
     let body = updateText;
     if (updateType === 'close') body = 'Aufgabe wurde geschlossen.';
-    if (updateType === 'hold') body = 'Aufgabe auf Wiedervorlage gesetzt.';
+    if (updateType === 'hold' && date)
+      body = `Aufgabe auf Wiedervorlage mit Datum ${formatDate(date)} gesetzt.`;
     if (updateType === 'transfer')
       body = `Die Aufgabe wurde an ${updateTarget?.user_name_first} ${updateTarget?.user_name_last} übertragen.`;
     setSubmitting(true);
@@ -116,6 +122,7 @@ export default function TaskEditor({ task }: Props) {
       created_at: new Date(),
       created_by: userProfile?.id,
       creator: `${userProfile?.user_name_first} ${userProfile?.user_name_last}`,
+      due_date: date || null,
       task: task.id,
     };
 
@@ -139,6 +146,7 @@ export default function TaskEditor({ task }: Props) {
   };
 
   // STATES
+  const dateEmpty = updateType == 'hold' && !date;
   const textEmpty = updateType == 'update' && !updateText;
   const targetEmpty = updateType == 'transfer' && !updateTarget;
 
@@ -194,6 +202,7 @@ export default function TaskEditor({ task }: Props) {
               options={updateOptions}
               value={updateType}
             />
+            <DividerBlock height={0.25} />
             {updateType === 'update' && (
               <InputTextarea
                 onChange={(e) => setUpdateText(e.target.value)}
@@ -212,11 +221,18 @@ export default function TaskEditor({ task }: Props) {
                 value={updateTarget}
               />
             )}
-            <Button
+            {updateType === 'hold' && (
+              <DatePicker
+                label="Erinnerung am"
+                minDate={new Date()}
+                onDateChange={setDate}
+                dateValue={date}
+              />
+            )}
+            <PrimaryButton
               disabled={
-                !updateType || submitting || task.status === 'closed' || textEmpty || targetEmpty
+                !updateType || submitting || task.status === 'closed' || textEmpty || targetEmpty || dateEmpty
               }
-              icon={submitting ? 'pi pi-spinner' : undefined}
               label="Speichern"
               onClick={createUpdate}
             />

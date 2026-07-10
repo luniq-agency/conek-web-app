@@ -1,8 +1,11 @@
+import { Metadata } from 'next';
 import StatPageClient from '@/app/components/admin/stats/StatPageClient';
 
-export default function Page() {
+export const metadata: Metadata = {
+  title: 'Statistiken | CONEK',
+  description: '',
+};
 
-  return (
-    <StatPageClient />
-  );
+export default function Page() {
+  return <StatPageClient />;
 }

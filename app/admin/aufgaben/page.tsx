@@ -1,6 +1,8 @@
 import { adminsLoadAll } from '@/app/actions/admin';
 import { tasksLoadAll } from '@/app/actions/tasks';
+import AdminPageHeader from '@/app/components/admin/AdminPageHeader';
 import AdminCreateTask from '@/app/components/admin/tasks/AdminCreateTask';
+import TaskKanban from '@/app/components/aufgaben/TaskKanban';
 import TaskTable from '@/app/components/aufgaben/TaskTable';
 import DividerBlock from '@/app/components/DividerBlock';
 import { Metadata } from 'next';
@@ -15,13 +17,17 @@ export default async function AdminTasksPage() {
   const tasks = await tasksLoadAll();
 
   return (
-    <div className="page-content">
-      <div className="row space-between">
-        <h1>Aufgaben</h1>
-        <AdminCreateTask />
+    <div className="page-content" style={{ padding: 0 }}>
+      <AdminPageHeader>
+        <div className="row space-between">
+          <h1>Aufgaben</h1>
+          <AdminCreateTask />
+        </div>
+      </AdminPageHeader>
+      <div className="content-alt" style={{ flexGrow: 1, padding: '1.5rem' }}>
+        <TaskKanban admins={admins} tasks={tasks} />
       </div>
-      <DividerBlock height={2} />
-      <TaskTable admins={admins} tasks={tasks} />
+      {/*<TaskTable admins={admins} tasks={tasks} />*/}
     </div>
   );
 }

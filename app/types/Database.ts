@@ -171,6 +171,7 @@ export type Task = {
   description: string;
   due_date: Date | null;
   id: string;
+  priority: string;
   status: string;
   title: string;
 };
@@ -222,11 +223,13 @@ export type User = {
   iban: string;
   kinder: number;
   linkedin: string;
+  notizen: string;
   permission_notifications_email: boolean;
   permission_notifications_push: boolean;
   plz: string;
   setup_complete: boolean;
   status: string;
+  steuer_id?: string;
   telefon: string;
   user_name_first: string;
   user_name_last: string;

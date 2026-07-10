@@ -14,6 +14,7 @@ import {
   SelectLabel,
   SkeletonLoaderLabel,
   SocialMediaInput,
+  TextAreaLabel,
   TextInputLabel,
 } from '../../forms/FormElements';
 import DividerBlock from '../../DividerBlock';
@@ -43,10 +44,10 @@ export default function ClientEditor({ user: userProp }: Props) {
   const [clientJobType, setClientJobType] = useState(user.job_status || '');
   const [clientKids, setClientKids] = useState(user.kinder || 0);
   const [clientNachname, setClientNachname] = useState(user.user_name_last || '');
+  const [clientNotes, setClientNotes] = useState(user.notizen || '');
   const [clientVorname, setClientVorname] = useState(user.user_name_first || '');
   const [clientStatus, setClientStatus] = useState(user.status || '');
-
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [clientTaxId, setClientTaxId] = useState(user.steuer_id || '');
 
   const originalDob = user?.dob ? new Date(user.dob).toDateString() : null;
   const currentDob = clientDob ? clientDob.toDateString() : null;
@@ -83,6 +84,8 @@ export default function ClientEditor({ user: userProp }: Props) {
       family_status: clientFamily,
       iban: clientIban,
       kinder: clientKids,
+      notizen: clientNotes,
+      steuer_id: clientTaxId,
       user_name_last: clientNachname,
       status: clientStatus,
       user_name_first: clientVorname,
@@ -130,6 +133,8 @@ export default function ClientEditor({ user: userProp }: Props) {
         />
         <NumberInputLabel label="Kinder" numberValue={clientKids} onNumberChange={setClientKids} />
         <TextInputLabel label="IBAN" onChange={setClientIban} value={clientIban} />
+        <TextInputLabel label="Steuer-ID" onChange={setClientTaxId} value={clientTaxId} />
+        <TextAreaLabel label="Notizen" onChange={setClientNotes} value={clientNotes}/>
         {userProfile?.user_role === 'admin' && (
           <SelectLabel
             label="Status"

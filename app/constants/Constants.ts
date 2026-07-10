@@ -160,6 +160,27 @@ export const notification_types = [
   },
 ];
 
+export const priority_options = [
+  {
+    bg: 'var(--success-bg)',
+    color: 'var(--success-text)',
+    label: 'Gering',
+    value: 'low',
+  },
+  {
+    bg: 'var(--warning-bg)',
+    color: 'var(--warning-text)',
+    label: 'Mittel',
+    value: 'medium',
+  },
+  {
+    bg: 'var(--error-bg)',
+    color: 'var(--error-text)',
+    label: 'Hoch',
+    value: 'high',
+  },
+];
+
 export const service_options = [
   {
     label: 'Behördenkommunikation',

@@ -14,17 +14,18 @@ interface Props {
 export default function AgencyEditor({ user: userProp }: Props) {
   const { userProfile } = useAuth();
 
-  const user = userProp ?? userProfile; // ← Fallback auf eingeloggten User
+  const user = userProp ?? userProfile;
 
   if (!user) return null;
 
   // STATES
-  const [statusChanged, setStatusChanged] = useState(false);
   const [updating, setUpdating] = useState(false);
 
   // CLIENT DATA
   const [agentCompany, setAgentCompany] = useState(user.firma || '');
+  const [agentEmail, setAgentEmail] = useState(user.email || '');
   const [agentNachname, setAgentNachname] = useState(user.user_name_last || '');
+  const [agentPhone, setAgentPhone] = useState(user.telefon || '');
   const [agentVorname, setAgentVorname] = useState(user.user_name_first || '');
 
   const isChanged =
@@ -36,7 +37,9 @@ export default function AgencyEditor({ user: userProp }: Props) {
     setUpdating(true);
 
     const payload = {
+      email: agentEmail,
       firma: agentCompany,
+      telefon: agentPhone,
       user_name_last: agentNachname,
       user_name_first: agentVorname,
     };
@@ -57,6 +60,8 @@ export default function AgencyEditor({ user: userProp }: Props) {
         <TextInputLabel label="Vorname" onChange={setAgentVorname} value={agentVorname} />
         <TextInputLabel label="Nachname" onChange={setAgentNachname} value={agentNachname} />
         <TextInputLabel label="Firma" onChange={setAgentCompany} value={agentCompany} />
+        <TextInputLabel label="E-Mail" onChange={setAgentEmail} value={agentEmail} />
+        <TextInputLabel label="Telefon" onChange={setAgentPhone} value={agentPhone} />
       </div>
       <Button
         className="button-primary"

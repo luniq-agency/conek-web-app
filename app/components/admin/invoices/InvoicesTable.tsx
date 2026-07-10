@@ -28,6 +28,8 @@ import { sendEmail, sendEmailWithAttachment } from '@/app/actions/email';
 import { userLookup } from '@/app/actions/users';
 import { invoiceItemsLoad } from '@/app/actions/invoiceitem';
 import { generateInvoicePDF } from '@/app/actions/pdf';
+import Floater from '../../ui/Floater';
+import { PrimaryButton } from '../../buttons/Buttons';
 
 interface Props {
   clients?: User[];
@@ -59,6 +61,27 @@ export default function InvoicesTable({ clients }: Props) {
   const [rowClick, setRowClick] = useState(true);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedInvoices, setSelectedInvoices] = useState<Invoice[]>([]);
+
+  // ACTIONS
+  const markAsPaid = async () => {
+    if (selectedInvoices.length === 0) return;
+
+    try {
+      await Promise.all(
+        selectedInvoices.map((invoice) => invoiceUpdate({ invoice_status: 'paid' }, invoice.id))
+      );
+      const res = await invoicesLoadAll();
+      setInvoicesList(res);
+      setSelectedInvoices([]);
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Rechnungen aktualisiert',
+        detail: 'Die Rechnungen wurden als bezahlt markiert.',
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   //TEMPLATES
   const actionTemplate = (rowData: Invoice) => {
@@ -116,6 +139,14 @@ export default function InvoicesTable({ clients }: Props) {
   return (
     <>
       <Toast ref={toast} />
+      {selectedInvoices.length >= 1 && (
+        <Floater>
+          <div className="column gap-s">
+            <span className="text-s">{selectedInvoices.length} Rechnung(en) ausgewählt</span>
+          <PrimaryButton label="Als bezahlt markieren" onClick={markAsPaid} size="small" />
+          </div>
+        </Floater>
+      )}
       <Sidebar
         header={sidebarHeader}
         onHide={() => setVisible(false)}
@@ -142,11 +173,14 @@ export default function InvoicesTable({ clients }: Props) {
         onSelectionChange={(e: any) => setSelectedInvoices(e.value)}
         paginator
         rows={10}
+        selection={selectedInvoices}
+        selectionMode={rowClick ? null : 'checkbox'}
         sortField="invoice_number"
         sortOrder={-1}
         stripedRows
         value={invoicesList}
       >
+        <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }} />
         <Column field="invoice_number" header="#" sortable />
         <Column body={recipientTemplate} header="Empfänger" hidden={!clients} />
         <Column body={dateTemplate} header="Rechnungsdatum" sortable />

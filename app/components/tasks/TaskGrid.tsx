@@ -2,7 +2,7 @@
 
 import { Task, User } from '@/app/types/Database';
 import { Button } from 'primereact/button';
-import TaskBox from '../admin/tasks/TaskBox';
+import TaskBox from '../aufgaben/TaskBox';
 import { useEffect, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { SelectLabel, TextAreaLabel, TextInputLabel } from '../forms/FormElements';

@@ -42,7 +42,7 @@ export async function documentUpload(
   fileName: string,
   fileType: string,
   name: string,
-  user: string,
+  user: string | number,
   folderId?: string | null
 ) {
   const supabase = getServiceClient();

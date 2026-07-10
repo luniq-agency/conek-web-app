@@ -8,11 +8,12 @@ import { InputText } from 'primereact/inputtext';
 import { FormEvent, useState } from 'react';
 import { FileUploader } from '../forms/Uploaders';
 import { sanitizeFileName } from '@/app/utils/sanitize';
+import { PrimaryButton, SecondaryButton } from '../buttons/Buttons';
 
 interface Props {
   folder: string | null;
   onUpload: () => void;
-  owner: string;
+  owner: string | number;
 }
 
 export default function DocumentUploader({ folder, onUpload, owner }: Props) {
@@ -26,7 +27,12 @@ export default function DocumentUploader({ folder, onUpload, owner }: Props) {
   const [documentName, setDocumentName] = useState('');
 
   // ACTIONS
-
+  const cancel = () => {
+    setVisible(false);
+    setDocumentFile(null);
+    setDocumentFileType('');
+    setDocumentName('');
+  };
   const handleUpload = (file: File, fileType: string) => {
     setDocumentFile({ file });
     setDocumentFileType(fileType);
@@ -70,12 +76,14 @@ export default function DocumentUploader({ folder, onUpload, owner }: Props) {
             placeholder="Name (z. B. Steuererklärung 2024)"
             value={documentName}
           />
-          <Button
-            disabled={!documentFile || !documentName || submitting}
-            icon={submitting ? 'pi pi-spinner' : undefined}
-            label="Dokument hochladen"
-            onClick={uploadDocument}
-          />
+          <div className="row gap-s width-100 space-between">
+            <SecondaryButton label="Abbrechen" onClick={cancel} />
+            <PrimaryButton
+              disabled={!documentFile || !documentName}
+              label="Hochladen"
+              onClick={uploadDocument}
+            />
+          </div>
         </div>
       </Dialog>
       <Button

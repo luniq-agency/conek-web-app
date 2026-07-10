@@ -71,6 +71,12 @@
     width: 100%;
 }
 
+.pageHeader {
+    background-color: white;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
 .selected {
     background-color: azure;
     color: red;

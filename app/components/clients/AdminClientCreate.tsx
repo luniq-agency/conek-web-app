@@ -157,7 +157,7 @@ maxDate.setFullYear(maxDate.getFullYear() - 18);
       <Button
         className="button-primary"
         icon="pi pi-plus"
-        label="Einladung versenden"
+        label="Kunden anlegen"
         onClick={() => setVisible(true)}
       />
     </>

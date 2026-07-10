@@ -1,7 +1,7 @@
 'use server';
 
-import { createClient } from '@/app/utils/supabase/server';
 import { Client, User } from '../types/Database';
+import { createClient } from '@/app/utils/supabase/server';
 
 export async function clientInvite(clientData: Partial<Client>, userData: Partial<User>) {
   const supabase = await createClient();
@@ -98,6 +98,18 @@ export async function clientsLoadAgency(id: string): Promise<User[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase.from('user').select('*').eq('bearbeiter', id);
+
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function clientsLoadLatest(): Promise<Partial<User>[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('user')
+    .select('id, user_name_last, user_name_first, created_at')
+    .range(0, 5);
 
   if (error) throw new Error(error.message);
   return data || [];

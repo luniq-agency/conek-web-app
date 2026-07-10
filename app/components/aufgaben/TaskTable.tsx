@@ -15,7 +15,7 @@ import { Button } from 'primereact/button';
 import Link from 'next/link';
 import { Dropdown } from 'primereact/dropdown';
 import { UserAvatarOther } from '../UserAvatar';
-import TaskBox from '../admin/tasks/TaskBox';
+import TaskBox from './TaskBox';
 import EmptyListWidget from '../ui/EmptyListWidget';
 
 interface Props {

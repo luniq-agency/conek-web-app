@@ -79,7 +79,6 @@ export default function ClientTabs({ user }: Props) {
         </div>
       </TabPanel>
       <TabPanel header="Dokumente">
-        <h3>Dokumente</h3>
         <DocumentViewer user={user} />
       </TabPanel>
       <TabPanel header="Rechnungen">

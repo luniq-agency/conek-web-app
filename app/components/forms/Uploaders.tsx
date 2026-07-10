@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import styles from './Forms.module.css';
+import { TertiaryButton } from '../buttons/Buttons';
 
 interface Props {
   label: string;
@@ -48,7 +49,7 @@ export function FileUploader({ label, onUpload }: Props) {
           if (file) {
             const fileType = getFileType(file);
             onUpload(file, fileType);
-            console.log("Type:", fileType)
+            console.log('Type:', fileType);
             setSelected(true);
           }
         }}
@@ -57,14 +58,13 @@ export function FileUploader({ label, onUpload }: Props) {
       />
       <span>{label}</span>
       {selected && (
-        <button
-          onClick={(e) => {
+        <TertiaryButton
+          label="Löschen"
+          onClick={(e: any) => {
             e.preventDefault();
             resetValue();
           }}
-        >
-          Löschen
-        </button>
+        />
       )}
     </label>
   );

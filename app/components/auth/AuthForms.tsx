@@ -125,8 +125,6 @@ export function SignInForm() {
     try {
       await login(email, password);
     } catch (err) {
-      console.error(err);
-      setError('Keinen Benutzer mit diesen Daten gefunden.');
       setSubmitting(false);
     }
   };

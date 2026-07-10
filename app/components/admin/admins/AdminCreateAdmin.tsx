@@ -13,9 +13,11 @@ export default function AdminCreateAdmin() {
 
   const router = useRouter();
 
-  const [adminVorname, setAdminVorname] = useState('');
-  const [adminNachname, setAdminNachname] = useState('');
+  // INPUTS
   const [adminEmail, setAdminEmail] = useState('');
+  const [adminNachname, setAdminNachname] = useState('');
+  const [adminRole, setAdminRole] = useState('');
+  const [adminVorname, setAdminVorname] = useState('');
 
   const sendInvite = async () => {
     const payload = {

@@ -29,6 +29,7 @@
   flex-direction: column;
   font-weight: 600;
   font-size: 14px;
+  gap: 0.5rem;
   justify-content: center;
   height: 150px;
   text-transform: none;

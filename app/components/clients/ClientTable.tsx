@@ -27,7 +27,6 @@ interface Props {
 
 export default function ClientTable({ bearbeiter, clients, search }: Props) {
   const router = useRouter();
-  const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
 
   const [isMobile, setIsMobile] = useState(false);
