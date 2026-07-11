@@ -1,3 +1,4 @@
+import { KeyRound, Lock } from 'lucide-react';
 import Image from 'next/image';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
@@ -90,8 +91,8 @@ export function NumberInputLabel({ additional, label, onNumberChange, numberValu
 
 export function PasswordInputIconAuth({ autoComplete, icon, onChange, placeholder, value }: Props) {
   return (
-    <IconField iconPosition="left">
-      <InputIcon className={icon}></InputIcon>
+    <IconField className="row gap-xs align-center" iconPosition="left">
+      <KeyRound color="var(--primary" size={18}/>
       <Password
         autoComplete={autoComplete}
         feedback={false}
@@ -197,3 +198,4 @@ export function TextInputLabel({
     </div>
   );
 }
+

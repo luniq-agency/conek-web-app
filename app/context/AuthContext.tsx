@@ -35,7 +35,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase.from('user').select('*').eq('user_uuid', userId).single();
     setUserProfile(data);
-
   };
 
   useEffect(() => {
@@ -45,7 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         await fetchProfile(session.user.id);
       }
-      setInitialLoading(false); // ← erst hier fertig
+      setInitialLoading(false);
+      setLoading(false);
     });
 
     // Session-Änderungen beobachten
@@ -62,9 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase.auth]);
 
   const logout = async () => {
-    await signOut();
-    setUser(null);
-    setUserProfile(null);
+    const supabase = createClient(); // Browser Client
+    await supabase.auth.signOut(); // Browser Session löschen
+    await signOut(); // Server Session löschen + redirect
   };
 
   return (

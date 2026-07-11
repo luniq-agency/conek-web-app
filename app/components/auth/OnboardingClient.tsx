@@ -10,7 +10,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import { clientCreateProfile } from '@/app/actions/clients';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { Checkbox, CheckboxChangeEvent } from 'primereact/checkbox';
 import DividerBlock from '../DividerBlock';
 import { useAuth } from '@/app/context/AuthContext';
@@ -19,7 +19,7 @@ import { Toast } from 'primereact/toast';
 import { sanitizeInput, sanitizeInputFinal } from '@/app/utils/sanitize';
 
 export default function OnboardingClient() {
-  const { user, loading, logout } = useAuth();
+  const { user, userProfile, loading, logout } = useAuth();
 
   const stepperRef = useRef<Stepper | null>(null);
   const router = useRouter();
@@ -28,6 +28,7 @@ export default function OnboardingClient() {
 
   useEffect(() => {
     console.log('User:', user);
+    console.log('UserProfile:', userProfile)
   });
 
   //CONSTRAINTS
@@ -85,6 +86,18 @@ export default function OnboardingClient() {
       console.error(err);
     }
   };
+
+  if (userProfile)
+    switch (userProfile.user_role) {
+      case 'admin':
+        redirect('/admin');
+      case 'agency':
+        redirect('/admin');
+      case 'client':
+        redirect('/onboarding');
+      default:
+        redirect('/onboarding');
+    }
 
   const onServiceChange = (e: CheckboxChangeEvent) => {
     let _services = [...services];

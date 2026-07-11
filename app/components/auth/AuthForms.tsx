@@ -6,12 +6,14 @@ import { createClient } from '@/app/utils/supabase/client';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { useEffect, useRef, useState } from 'react';
-import { getEmails, login } from '@/app/actions/auth';
+import { getEmails, login, resetPassword } from '@/app/actions/auth';
 import Link from 'next/link';
-import { PasswordInputIconAuth, TextInputIconAuth } from '../forms/FormElements';
+import { PasswordInputIconAuth, TextInputIconAuth, TextInputLabel } from '../forms/FormElements';
 import { useRouter } from 'next/navigation';
 import { registerBubbleUser } from '@/app/actions/migrate';
 import { Toast } from 'primereact/toast';
+import { Dialog } from 'primereact/dialog';
+import { PrimaryButton } from '../buttons/Buttons';
 
 const translateError = (message: string): string => {
   const errors: Record<string, string> = {
@@ -186,7 +188,14 @@ export function SignInForm() {
 }
 
 export function SignInMigrateForm() {
+  // STATES
+  const [resetting, setResetting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  // INPUTS
   const [email, setEmail] = useState('');
+  const [emailReset, setEmailReset] = useState('');
   const [password, setPassword] = useState('');
 
   const [emailList, setEmailList] = useState<string[]>([]);
@@ -207,6 +216,19 @@ export function SignInMigrateForm() {
     fetchEmails(); // ← fehlte
   }, []);
 
+  const sendResetRequest = async () => {
+    if (!emailReset) return;
+    console.log('Sending reset for:', emailReset);
+    setResetting(true);
+    try {
+      await resetPassword(emailReset);
+      setSubmitted(true);
+      setResetting(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -215,6 +237,12 @@ export function SignInMigrateForm() {
       if (emailList.includes(email)) {
         await registerBubbleUser(email, password);
       } else {
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) throw new Error(error.message);
+
+        // Dann Server-seitig die Rolle prüfen und weiterleiten
         await login(email, password);
       }
     } catch (err) {
@@ -226,6 +254,31 @@ export function SignInMigrateForm() {
 
   return (
     <div className="column gap-l">
+      <Dialog
+        header="Passwort zurücksetzen"
+        onHide={() => setVisible(false)}
+        style={{ maxWidth: 400, width: '100%' }}
+        visible={visible}
+      >
+        {submitted ? (
+          <div className="column gap-m">
+            Wir haben dir eine E-Mail mit einem Link zum Zurücksetzen deines Passworts gesendet.
+          </div>
+        ) : (
+          <div className="column gap-m">
+            <span className="text-s">
+              Du hast dein Passwort vergessen? Dann gib einfach deine E-Mail-Adresse ein und wir
+              senden dir einen Link zum Zurücksetzen deines Passworts.
+            </span>
+            <TextInputLabel label="E-Mail-Adresse" onChange={setEmailReset} value={emailReset} />
+            <PrimaryButton
+              disabled={!emailReset || resetting}
+              label="Passwort zurücksetzen"
+              onClick={sendResetRequest}
+            />
+          </div>
+        )}
+      </Dialog>
       <form onSubmit={signIn}>
         <div className="column gap-m">
           <InputText
@@ -245,6 +298,10 @@ export function SignInMigrateForm() {
             <Button
               className="container-link"
               label="Passwort vergessen?"
+              onClick={(e) => {
+                e.preventDefault();
+                setVisible(true);
+              }}
               style={{
                 backgroundColor: 'transparent',
                 color: 'white',

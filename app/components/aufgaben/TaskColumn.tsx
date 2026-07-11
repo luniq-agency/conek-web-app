@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import TaskBox from './TaskBox';
 import DividerBlock from '../DividerBlock';
@@ -15,11 +15,6 @@ interface Props {
 }
 
 export function TaskColumn({ admins, color, header, tasks }: Props) {
-
-  const addNew = async () => {
-
-  }
-
   return (
     <div className={styles.taskColumn}>
       <div className={styles.taskHeader} style={{ borderColor: color }}>
@@ -27,7 +22,6 @@ export function TaskColumn({ admins, color, header, tasks }: Props) {
           <h3 className={styles.taskLabel}>{header}</h3>
           <span className={styles.taskCounter}>{tasks?.length || 0}</span>
         </div>
-        <HeaderButton icon={Plus} onClick={addNew} />
       </div>
       <DividerBlock height={2} />
       {tasks && tasks.map((t, i) => <TaskBox admins={admins} key={i} task={t} />)}

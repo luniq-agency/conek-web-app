@@ -38,20 +38,40 @@ export async function taskLoad(id: string): Promise<Task> {
   return data;
 }
 
-export async function tasksLoadAll(): Promise<Task[]> {
+export async function tasksLoadAll(role: string, id: string): Promise<Task[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from('task').select('*');
+  let query = supabase.from('task').select('*');
 
+  if (role === 'agency') {
+    if (!id) {
+      throw new Error('agentId ist erforderlich, wenn role "agency" ist.');
+    }
+    query = query.eq('assignee', id);
+  } else if (role !== 'admin') {
+    throw new Error(`Unbekannte Rolle: ${role}`);
+  }
+
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
   return data || [];
 }
 
-export async function tasksLoadOpen(): Promise<Task[]> {
+export async function tasksLoadOpen(role: string, id: string): Promise<Task[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from('task').select('*').eq('status', 'open');
+  let query = supabase.from('task').select('*').eq('status', 'open');
 
+  if (role === 'agency') {
+    if (!id) {
+      throw new Error('agentId ist erforderlich, wenn role "agency" ist.');
+    }
+    query = query.eq('assignee', id);
+  } else if (role !== 'admin') {
+    throw new Error(`Unbekannte Rolle: ${role}`);
+  }
+
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
   return data || [];
 }

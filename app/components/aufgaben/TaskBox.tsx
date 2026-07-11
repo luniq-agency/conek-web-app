@@ -23,14 +23,13 @@ export default function TaskBox({ admins, task }: Props) {
 
   return (
     <Link className={styles.taskBox} href={`/admin/aufgaben/${task.id}`}>
-      <Tag
-        bgColor={priority?.bg || 'var(--primary)'}
-        color={priority?.color || 'white'}
-        text={priority?.label || 'Status'}
-      />
-      <DividerBlock height={0.5} />
       <div className="row space-between">
         <span style={{ fontWeight: 600 }}>{task.title}</span>
+        <Tag
+          bgColor={priority?.bg || 'var(--primary)'}
+          color={priority?.color || 'white'}
+          text={priority?.label || 'Status'}
+        />
       </div>
       <DividerBlock height={1} />
       <DividerLine />

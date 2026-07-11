@@ -18,7 +18,7 @@ import { ClientTableSmall } from '../../clients/ClientTableSmall';
 
 export default function AdminDashboard() {
   const mounted = useRef(false);
-  const { user, userProfile } = useAuth();
+  const { loading, user, userProfile } = useAuth();
   useProfilePolling(user, userProfile);
 
   // DATA
@@ -39,7 +39,7 @@ export default function AdminDashboard() {
           adminsLoadAll(),
           clientsLoadAll(userProfile.user_role, userProfile.id),
           registrationsLoadMonthly(),
-          tasksLoadOpen(),
+          tasksLoadOpen(userProfile.user_role, userProfile.id),
         ]);
         console.log('Kunden:', clientRes);
         setAdmins(adminRes);
@@ -59,7 +59,9 @@ export default function AdminDashboard() {
 
   const openTasks = tasks.filter((t) => t.status === 'open');
 
-  if (!user || !userProfile) return <Loader text="Dein Profil wird eingerichtet" />;
+  if (loading) return <Loader text="Wird geladen..." />;
+  if (!user) return null;
+  if (!userProfile) return <Loader text="Profil wird eingerichtet..." />;
 
   return (
     <div className="page-content">
