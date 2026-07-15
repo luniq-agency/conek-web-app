@@ -28,7 +28,7 @@ export default function OnboardingClient() {
 
   useEffect(() => {
     console.log('User:', user);
-    console.log('UserProfile:', userProfile)
+    console.log('UserProfile:', userProfile);
   });
 
   //CONSTRAINTS

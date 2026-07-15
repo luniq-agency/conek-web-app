@@ -1,12 +1,14 @@
 'use client';
 
+import { clientStatsLoad } from '@/app/actions/stats';
 import DividerBlock from '@/app/components/DividerBlock';
 import CertificateStatCard from '@/app/components/stats/CertificateStatCard';
 import ClientStatCards from '@/app/components/stats/ClientStatCard';
 import InvoiceStatCards from '@/app/components/stats/InvoiceStatCard';
 import RevealBox from '@/app/components/ui/RevealBox';
 import { Dropdown } from 'primereact/dropdown';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import LineChart from '../../charts/LineChart';
 
 const viewOptions = [
   {
@@ -23,7 +25,46 @@ const viewOptions = [
   },
 ];
 export default function StatPageClient() {
+  const [chartData, setChartData] = useState<
+    {
+      month: string;
+      count: number;
+      freelancer_count: number;
+      employed_count: number;
+      self_employed_count: number;
+      cumulative_count: number;
+    }[]
+  >([]);
   const [view, setView] = useState<'month' | 'year' | 'all'>('month');
+
+  useEffect(() => {
+    clientStatsLoad(view).then((data) => setChartData(data));
+  }, [view]);
+
+  const labels = chartData.map((d) =>
+    new Date(d.month).toLocaleDateString('de-DE', { month: 'short', year: '2-digit' })
+  );
+
+  const isAll = view === 'all';
+
+  const series = [
+    {
+      name: 'Gesamt',
+      data: chartData.map((d, i) => ({ x: labels[i], y: isAll ? d.cumulative_count : d.count })),
+    },
+    {
+      name: 'Angestellt',
+      data: chartData.map((d, i) => ({ x: labels[i], y: d.employed_count })),
+    },
+    {
+      name: 'Freelancer',
+      data: chartData.map((d, i) => ({ x: labels[i], y: d.freelancer_count })),
+    },
+    {
+      name: 'Selbstständig',
+      data: chartData.map((d, i) => ({ x: labels[i], y: d.self_employed_count })),
+    },
+  ];
 
   return (
     <div className="page-content">
@@ -47,11 +88,16 @@ export default function StatPageClient() {
         </RevealBox>
       </div>
       <DividerBlock height={2} />
-      <RevealBox delay={1.5}>
+      <RevealBox className="container" delay={1.5}>
         <div className="column">
           <h3>Anmeldungen</h3>
           <DividerBlock height={1} />
-          <ClientStatCards view={view} />
+          <LineChart
+            colors={['#4b39ef', '#48F5B6', '#f59e0b', '#6366f1']}
+            height={300}
+            series={series}
+          />
+          {/*<ClientStatCards view={view} />*/}
         </div>
       </RevealBox>
     </div>

@@ -43,6 +43,25 @@ export async function certificateStatsLoad(view: 'month' | 'year' | 'all') {
   return data;
 }
 
+export async function clientStatsLoad(view: 'month' | 'year' | 'all') {
+  const supabase = await createClient();
+  const now = new Date();
+
+  let query = supabase.from('stats_clients').select('*');
+
+  if (view === 'month') {
+    query = query
+      .gte('month', `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`)
+      .lt('month', `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}-01`);
+  } else if (view === 'year') {
+    query = query.gte('month', `${now.getFullYear()}-01-01`);
+  }
+
+  const { data, error } = await query.order('month', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
 export async function clientMonthlyStatsLoad(view: 'month' | 'year' | 'all' = 'month') {
   const supabase = await createClient();
   const now = new Date();

@@ -206,13 +206,6 @@ export default function TicketsAdmin({ tickets }: Props) {
             </span>
             <span>{ticketCreator.job || '–'}</span>
           </div>
-          <DividerBlock height={1} />
-          <div className="column">
-            <span>
-              <strong>Geburtsdatum</strong>
-            </span>
-            <span>{formatDate(ticketCreator.dob) || '–'}</span>
-          </div>
         </div>
       )}
     </div>

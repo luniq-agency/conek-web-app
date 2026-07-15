@@ -17,16 +17,6 @@ export async function registerBubbleUser(email: string, password: string) {
     .single();
   if (userError) throw new Error(userError.message);
 
-  if (userProfile.user_role === 'client') {
-    const { data: clientProfile, error: clientError } = await supabase
-      .from('client')
-      .update({ user_id: signupData.user?.id, user: userProfile.id })
-      .eq('email', email)
-      .select()
-      .single();
-    if (clientError) throw new Error(clientError.message);
-  }
-
   if (userProfile.user_role === 'agency' || userProfile.user.role === 'admin') redirect ('/admin');
   if (userProfile.user_role === 'client') redirect ('/dashboard');
 
