@@ -47,17 +47,28 @@ export async function clientStatsLoad(view: 'month' | 'year' | 'all') {
   const supabase = await createClient();
   const now = new Date();
 
-  let query = supabase.from('stats_clients').select('*');
-
   if (view === 'month') {
-    query = query
-      .gte('month', `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`)
-      .lt('month', `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}-01`);
-  } else if (view === 'year') {
-    query = query.gte('month', `${now.getFullYear()}-01-01`);
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const { data, error } = await supabase
+      .from('stats_clients_daily')
+      .select('*')
+      .gte('day', `${now.getFullYear()}-${month}-01`)
+      .lt('day', `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}-01`)
+      .order('day', { ascending: true });
+    if (error) throw error;
+    return data;
   }
 
-  const { data, error } = await query.order('month', { ascending: true });
+  const query = supabase
+    .from('stats_clients_monthly')
+    .select('*')
+    .order('month', { ascending: true });
+
+  if (view === 'year') {
+    query.gte('month', `${now.getFullYear()}-01-01`);
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
   return data;
 }

@@ -27,6 +27,7 @@ const viewOptions = [
 export default function StatPageClient() {
   const [chartData, setChartData] = useState<
     {
+      day: string;
       month: string;
       count: number;
       freelancer_count: number;
@@ -41,9 +42,12 @@ export default function StatPageClient() {
     clientStatsLoad(view).then((data) => setChartData(data));
   }, [view]);
 
-  const labels = chartData.map((d) =>
-    new Date(d.month).toLocaleDateString('de-DE', { month: 'short', year: '2-digit' })
-  );
+  const labels = chartData.map((d) => {
+  const date = new Date(d.day ?? d.month);
+  if (view === 'month') return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
+  if (view === 'year') return date.toLocaleDateString('de-DE', { month: 'short' });
+  return date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' });
+});
 
   const isAll = view === 'all';
 
