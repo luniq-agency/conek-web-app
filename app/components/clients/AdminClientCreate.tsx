@@ -13,20 +13,22 @@ import {
 } from '@/app/components/forms/FormElements';
 import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import Grid from '../layout/Grid';
+import { Toast } from 'primereact/toast';
 
 export default function AdminClientCreate() {
   const { userProfile } = useAuth();
   const [visible, setVisible] = useState(false);
 
   const router = useRouter();
-
+  const toast = useRef<Toast | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const maxDate = new Date();
-maxDate.setFullYear(maxDate.getFullYear() - 18);
+  maxDate.setFullYear(maxDate.getFullYear() - 18);
 
   //FORM
   const [beruf, setBeruf] = useState('');
@@ -37,38 +39,34 @@ maxDate.setFullYear(maxDate.getFullYear() - 18);
   const [geburtsdatum, setGeburtsdatum] = useState<Date | null>(null);
   const [kinder, setKinder] = useState(0);
   const [nachname, setNachname] = useState('');
+  const [notizen, setNotizen] = useState('');
   const [vorname, setVorname] = useState('');
 
   const isValid = vorname && nachname && email;
 
   //USER EINLADEN
   const createUser = async () => {
-    if (!geburtsdatum) return;
+    const isAgent = userProfile?.user_role == 'agency';
 
     setSubmitting(true);
     const clientPayload = {
-      beruf,
-      berufsstatus,
-      created_by: userProfile?.id,
+      bearbeiter: isAgent ? userProfile.id : null,
+      dob: geburtsdatum?.toISOString().split('T')[0] || null,
       email,
       family_status: family || 'unmarried',
-      geburtsdatum: geburtsdatum.toISOString().split('T')[0],
       iban,
+      job: beruf,
+      job_status: berufsstatus,
       kinder,
-      nachname,
-      status: 'pending',
-      vorname,
-    };
-
-    const userPayload = {
-      email,
-      user_name_first: vorname,
+      notizen,
       user_name_last: nachname,
+      status: 'pending',
       user_role: 'client',
+      user_name_first: vorname,
     };
 
     try {
-      await clientInvite(clientPayload, userPayload);
+      await clientInvite(clientPayload);
       setVisible(false);
       setSubmitting(false);
       setBeruf('');
@@ -79,11 +77,23 @@ maxDate.setFullYear(maxDate.getFullYear() - 18);
       setIban('');
       setKinder(0);
       setNachname('');
+      setNotizen('');
     } catch (err) {
       console.error(err);
+      setSubmitting(false);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'Der Kunde konnte nicht erstellt werden. Bitte prüfen Sie ihre Angaben.',
+      });
     }
     setSelectedClient(null);
     router.refresh();
+    toast.current?.show({
+        severity: 'success',
+        summary: 'Erfolg',
+        detail: 'Der Kunde wurde erfolgreich angelegt.',
+      });
   };
 
   return (
@@ -96,20 +106,18 @@ maxDate.setFullYear(maxDate.getFullYear() - 18);
         style={{ maxWidth: 640, width: '100%' }}
         visible={visible}
       >
+        <Toast ref={toast} />
         <div className="column gap-m">
           <div className="column gap-m">
-            <div className="row gap-m mobile-column width-100">
+            <Grid columns={2} gap="1rem">
               <TextInputLabel label="Vorname" onChange={setVorname} value={vorname} />
               <TextInputLabel label="Nachname" onChange={setNachname} value={nachname} />
-            </div>
-            <TextInputLabel label="E-Mail" onChange={setEmail} value={email} />
-            <div className="row gap-m mobile-column width-100">
+              <TextInputLabel label="E-Mail" onChange={setEmail} value={email} />
               <DatePicker
                 dateValue={geburtsdatum || maxDate}
                 label="Geburtsdatum"
                 maxDate={maxDate}
                 onDateChange={setGeburtsdatum}
-                placeholder="dd.mm.yyyy"
               />
               <TextInputLabel
                 additional="(Optional)"
@@ -117,8 +125,6 @@ maxDate.setFullYear(maxDate.getFullYear() - 18);
                 onChange={setIban}
                 value={iban}
               />
-            </div>
-            <div className="row gap-m mobile-column width-100">
               <TextInputLabel
                 additional="(Optional)"
                 label="Beruf"
@@ -133,8 +139,6 @@ maxDate.setFullYear(maxDate.getFullYear() - 18);
                 optionValue="value"
                 options={job_categories}
               />
-            </div>
-            <div className="row gap-m mobile-column width-100">
               <SelectLabel
                 label="Familenstand"
                 onChange={setFamily}
@@ -144,10 +148,11 @@ maxDate.setFullYear(maxDate.getFullYear() - 18);
                 value={family}
               />
               <NumberInputLabel label="Kinder" onNumberChange={setKinder} numberValue={kinder} />
-            </div>
+            </Grid>
+
             <Button
               disabled={!isValid || submitting}
-              icon={submitting ? 'pi pi-spinner' : undefined}
+              icon={submitting ? 'pi pi-spin pi-spinner' : undefined}
               label="Kunde erstellen"
               onClick={createUser}
             />

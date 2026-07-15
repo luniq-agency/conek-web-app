@@ -3,24 +3,17 @@
 import { Client, User } from '../types/Database';
 import { createClient } from '@/app/utils/supabase/server';
 
-export async function clientInvite(clientData: Partial<Client>, userData: Partial<User>) {
+export async function clientInvite(userData: Partial<User>) {
   const supabase = await createClient();
 
   //CLIENT
-  const { data: client, error: clientError } = await supabase
-    .from('client')
-    .insert(clientData)
-    .select()
-    .single();
-  if (clientError) throw new Error(clientError.message);
-
-  //USER
-  const { data: user, error: userError } = await supabase
+  const { data: user, error: clientError } = await supabase
     .from('user')
     .insert(userData)
     .select()
     .single();
-  if (userError) throw new Error(userError.message);
+  if (clientError) throw new Error(clientError.message);
+
 
   return user;
 }

@@ -57,6 +57,7 @@ export function DatePicker({
         minDate={minDate}
         maxDate={maxDate}
         onChange={(e) => onDateChange?.((e.value as Date) || new Date())}
+        placeholder="dd.mm.yyyy"
         showOnFocus={showCalendar || true}
         value={dateValue}
       />

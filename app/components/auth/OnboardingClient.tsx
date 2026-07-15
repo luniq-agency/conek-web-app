@@ -62,7 +62,8 @@ export default function OnboardingClient() {
     if (!user) console.error('Keine ID gefunden!!');
 
     const userPayload = {
-      anschrift: `${street} ${housenumber}, ${zip} ${city}`,
+      anschrift: `${street} ${housenumber}`,
+      city,
       dob: dob ? dob.toISOString().split('T')[0] : '',
       email: user?.email,
       family_status: family,
@@ -70,6 +71,7 @@ export default function OnboardingClient() {
       job: job,
       job_status: jobCategory,
       kinder: kids || 0,
+      plz: zip,
       setup_complete: false,
       status: 'in_review',
       telefon: phone,

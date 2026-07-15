@@ -206,13 +206,13 @@ export type TicketEntry = {
 
 export type User = {
   anschrift: string;
-  avatar: string;
-  bearbeiter: string;
+  avatar: string | null;
+  bearbeiter: string | null;
   certificate: string;
   city: string;
   client_profile: string;
   created_at: Date;
-  dob: string;
+  dob: string | null;
   email: string;
   family_status: string;
   firma: string;
