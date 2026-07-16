@@ -43,11 +43,12 @@ export default function StatPageClient() {
   }, [view]);
 
   const labels = chartData.map((d) => {
-  const date = new Date(d.day ?? d.month);
-  if (view === 'month') return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
-  if (view === 'year') return date.toLocaleDateString('de-DE', { month: 'short' });
-  return date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' });
-});
+    const date = new Date(d.day ?? d.month);
+    if (view === 'month')
+      return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
+    if (view === 'year') return date.toLocaleDateString('de-DE', { month: 'short' });
+    return date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' });
+  });
 
   const isAll = view === 'all';
 

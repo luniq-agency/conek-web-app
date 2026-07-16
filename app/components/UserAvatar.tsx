@@ -28,6 +28,7 @@ export function UserAvatar({ backgroundColor, color, collapsed, fontSize, height
         style={{
           backgroundColor: 'var(--secondary)',
           color: 'var(--text-primary)',
+          flexShrink: 0,
           fontSize,
           fontWeight: 700,
           height,

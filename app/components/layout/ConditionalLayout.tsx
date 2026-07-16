@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import AdminSidebar from '../admin/AdminSidebar';
+import AdminSidebar from '../admin/sidebar/AdminSidebar';
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

@@ -1,6 +1,6 @@
 'use client';
 
-import AdminSidebar from '@/app/components/admin/AdminSidebar';
+import AdminSidebar from '@/app/components/admin/sidebar/AdminSidebar';
 import { useAuth } from '../context/AuthContext';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

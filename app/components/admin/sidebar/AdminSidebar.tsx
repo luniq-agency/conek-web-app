@@ -1,12 +1,12 @@
 'use client';
 
-import styles from './Admin.module.css';
-import AdminSidebarButton, { AdminNavbarButton } from './AdminSidebarButton';
-import DividerBlock from '../DividerBlock';
+import styles from './Sidebar.module.css';
+import AdminSidebarButton, { AdminNavbarButton } from '../AdminSidebarButton';
+import DividerBlock from '../../DividerBlock';
 import Image from 'next/image';
 import { useAuth } from '@/app/context/AuthContext';
-import NotificationButton from '../notifications/NotificationButton';
-import { UserAvatar } from '../UserAvatar';
+import NotificationButton from '../../notifications/NotificationButton';
+import { UserAvatar } from '../../UserAvatar';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -33,7 +33,7 @@ export default function AdminSidebar() {
   return (
     <>
       <div className={expanded ? styles.sidebar : styles.sidebarCollapsed}>
-        <div className={styles.sidebarTop}>
+        <div className={expanded ? styles.sidebarTop : styles.sidebarTopCollapsed}>
           <div className="row space-between">
             {expanded && (
               <Image
@@ -54,13 +54,13 @@ export default function AdminSidebar() {
             />
           </div>
           <DividerBlock height={2} />
-          <div className="row gap-s align-center width-100">
+          <div className={expanded ? styles.sidebarProfileWrapper : styles.sidebarProfileWrapperCollapsed}>
             <div className="row gap-s width-100">
               <div
                 onClick={() => {
                   router.push('/admin/profil');
                 }}
-                style={{ cursor: 'pointer', width: 32 }}
+                style={{ cursor: 'pointer', flexShrink: 0, width: 32 }}
               >
                 <UserAvatar fontSize={16} height={32} width={32} />
               </div>

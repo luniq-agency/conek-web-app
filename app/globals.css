@@ -714,4 +714,8 @@ td {
   .mobile-visible {
     display: block;
   }
+
+  #search-desktop {
+    display: none;
+  }
 }

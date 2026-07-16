@@ -17,7 +17,10 @@ import { useRef, useState } from 'react';
 import Grid from '../layout/Grid';
 import { Toast } from 'primereact/toast';
 
-export default function AdminClientCreate() {
+interface Props {
+  onCreate?: () => void;
+}
+export default function AdminClientCreate({ onCreate }: Props) {
   const { userProfile } = useAuth();
   const [visible, setVisible] = useState(false);
 
@@ -78,6 +81,8 @@ export default function AdminClientCreate() {
       setKinder(0);
       setNachname('');
       setNotizen('');
+      setSelectedClient(null);
+      onCreate && onCreate();
     } catch (err) {
       console.error(err);
       setSubmitting(false);
@@ -87,13 +92,6 @@ export default function AdminClientCreate() {
         detail: 'Der Kunde konnte nicht erstellt werden. Bitte prüfen Sie ihre Angaben.',
       });
     }
-    setSelectedClient(null);
-    router.refresh();
-    toast.current?.show({
-        severity: 'success',
-        summary: 'Erfolg',
-        detail: 'Der Kunde wurde erfolgreich angelegt.',
-      });
   };
 
   return (
