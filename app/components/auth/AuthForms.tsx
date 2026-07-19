@@ -309,6 +309,7 @@ export function SignInMigrateForm() {
                 padding: 0,
                 width: 'fit-content',
               }}
+              type="button"
             />
           </div>
           <Button

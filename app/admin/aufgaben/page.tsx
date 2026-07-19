@@ -24,7 +24,7 @@ export default async function AdminTasksPage() {
         </div>
       </AdminPageHeader>
       <div className="content-alt" style={{ flexGrow: 1, padding: '1.5rem' }}>
-        <TaskKanban admins={admins}/>
+        <TaskKanban admins={admins} />
       </div>
     </div>
   );
