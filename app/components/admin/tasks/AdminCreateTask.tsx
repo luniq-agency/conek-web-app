@@ -1,9 +1,7 @@
 'use client';
 
-import { invoiceCreate } from '@/app/actions/invoice';
 import { useAuth } from '@/app/context/AuthContext';
-import { Client, User } from '@/app/types/Database';
-import { useRouter } from 'next/navigation';
+import { User } from '@/app/types/Database';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
@@ -13,14 +11,17 @@ import { adminLookUp } from '@/app/actions/admin';
 import { taskCreate, taskUpdateCreate } from '@/app/actions/tasks';
 import { notificationCreate } from '@/app/actions/notification';
 import { usersLoadAll } from '@/app/actions/users';
+import { priority_options } from '@/app/constants/Constants';
 
-export default function AdminCreateTask() {
+interface Props {
+  onCreate: () => void;
+}
+export default function AdminCreateTask({ onCreate }: Props) {
   const { user, userProfile } = useAuth();
 
   const [submitting, setSubmitting] = useState(false);
   const [visible, setVisible] = useState(false);
 
-  const router = useRouter();
 
   // USERS
   const [users, setUsers] = useState<User[]>([]);
@@ -44,6 +45,7 @@ export default function AdminCreateTask() {
   const [taskDescription, setTaskDescription] = useState('');
   const [taskDueDate, setTaskDueDate] = useState<Date | null>(null);
   const [taskName, setTaskName] = useState('');
+  const [taskPriority, setTaskPriority] = useState('');
   const [taskUser, setTaskUser] = useState<User | null>(null);
 
   //ACTIONS
@@ -65,12 +67,11 @@ export default function AdminCreateTask() {
       created_by: userProfile?.id,
       description: taskDescription,
       due_date: taskDueDate || null,
+      priority: taskPriority || 'low',
       status: 'open',
       title: taskName,
     };
-    console.log('Task:', taskPayload);
-    console.log('Notification:', notificationPayload);
-    
+
     try {
       const taskRes = await taskCreate(taskPayload);
 
@@ -83,8 +84,8 @@ export default function AdminCreateTask() {
       };
 
       await taskUpdateCreate(taskUpdatePayload);
-      if (recipient.id !== user?.id)
-        await notificationCreate(notificationPayload, recipient);
+      if (recipient.id !== user?.id) await notificationCreate(notificationPayload, recipient);
+      onCreate();
     } catch (err) {
       console.error(err);
     }
@@ -93,8 +94,6 @@ export default function AdminCreateTask() {
     setTaskAssignee(null);
     setTaskDescription('');
     setTaskName('');
-    router.refresh();
-  
   };
 
   const adminOptions = users
@@ -143,6 +142,16 @@ export default function AdminCreateTask() {
               optionValue="id"
               options={clientOptions}
               value={taskUser}
+            />
+          </div>
+          <div className="column gap-xs">
+            <label>Priorität</label>
+            <Dropdown
+              onChange={(e) => setTaskPriority(e.value)}
+              optionLabel="label"
+              optionValue="value"
+              options={priority_options}
+              value={taskPriority}
             />
           </div>
           <DatePicker

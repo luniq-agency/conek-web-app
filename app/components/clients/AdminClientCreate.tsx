@@ -43,6 +43,7 @@ export default function AdminClientCreate({ onCreate }: Props) {
   const [kinder, setKinder] = useState(0);
   const [nachname, setNachname] = useState('');
   const [notizen, setNotizen] = useState('');
+  const [telefon, setTelefon] = useState('');
   const [vorname, setVorname] = useState('');
 
   const isValid = vorname && nachname && email;
@@ -64,6 +65,7 @@ export default function AdminClientCreate({ onCreate }: Props) {
       notizen,
       user_name_last: nachname,
       status: 'pending',
+      telefon,
       user_role: 'client',
       user_name_first: vorname,
     };
@@ -111,6 +113,7 @@ export default function AdminClientCreate({ onCreate }: Props) {
               <TextInputLabel label="Vorname" onChange={setVorname} value={vorname} />
               <TextInputLabel label="Nachname" onChange={setNachname} value={nachname} />
               <TextInputLabel label="E-Mail" onChange={setEmail} value={email} />
+              <TextInputLabel label="Telefonnummer" onChange={setTelefon} value={telefon} />
               <DatePicker
                 dateValue={geburtsdatum || maxDate}
                 label="Geburtsdatum"

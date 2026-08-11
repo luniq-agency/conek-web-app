@@ -15,6 +15,7 @@ import { Sidebar } from 'primereact/sidebar';
 import DocumentEditor from './DocumentEditor';
 import { Dialog } from 'primereact/dialog';
 import { document_options } from '@/app/constants/Constants';
+import { formatDate } from '@/app/utils/formats';
 
 export default function DocumentList() {
   const router = useRouter();
@@ -74,6 +75,10 @@ export default function DocumentList() {
   };
 
   //TEMPLATES
+  const dateTemplate = (rowData: Document) => {
+    return <span>{formatDate(rowData.created_at)}</span>
+  }
+
   const fileTypeTemplate = (rowData: Document) => {
     const type = document_options.find((t) => t.value === rowData.file_type);
 
@@ -128,6 +133,7 @@ export default function DocumentList() {
       >
         <Column field="document_name" header="Name" sortable />
         <Column body={fileTypeTemplate} header="Dateityp" sortable />
+        <Column body={dateTemplate} header="Datum (upload)" sortable />
         <Column body={nameTemplate} header="Kunde" />
       </DataTable>
     </>

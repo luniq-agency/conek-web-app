@@ -17,5 +17,5 @@ export async function generateInvoicePDF(
   const buffer = await renderToBuffer(
     React.createElement(InvoicePDF, { invoice, items, recipient }) as any
   );
-  return Buffer.from(buffer); // ← explizit als Buffer
+  return Buffer.from(buffer);
 }

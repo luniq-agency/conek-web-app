@@ -1,6 +1,7 @@
 // app/components/pdf/InvoicePDF.tsx
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { Invoice, InvoiceItem, User } from '@/app/types/Database';
+import { formatDate } from '@/app/utils/formats';
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 11, fontFamily: 'Helvetica' },
@@ -20,6 +21,8 @@ const styles = StyleSheet.create({
   col3: { width: '15%' },
   col4: { width: '17%' },
   col5: { width: '18%', textAlign: 'right' },
+  paragraph: { marginBottom: 16 },
+  textSection: { marginTop: 32 },
   totals: { marginTop: 16, alignItems: 'flex-end' },
   totalRow: {
     flexDirection: 'row',
@@ -40,6 +43,10 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
   const grossTotal = items.reduce((sum, item) => sum + item.price_total, 0);
   const netTotal = grossTotal / (1 + invoice.tax_rate);
   const taxAmount = grossTotal - netTotal;
+
+  const dueDate = invoice.invoice_date_due
+    ? new Date(invoice.invoice_date_due)
+    : new Date(new Date(invoice.invoice_date ?? new Date()).getTime() + 7 * 24 * 60 * 60 * 1000);
 
   return (
     <Document>
@@ -66,12 +73,16 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
 
         {/* Recipient */}
         <View style={styles.section}>
-          <Text style={{ fontSize: 9, color: '#aaa', marginBottom: 4 }}>RECHNUNGSEMPFÄNGER</Text>
+          <Text style={{ fontSize: 9, color: '#888', marginBottom: 4 }}>RECHNUNGSEMPFÄNGER</Text>
           <Text style={styles.bold}>
             {recipient.user_name_first} {recipient.user_name_last}
           </Text>
           {recipient.anschrift && <Text style={{ fontSize: 10 }}>{recipient.anschrift}</Text>}
-          {recipient.plz && <Text style={{ fontSize: 10 }}>{recipient.plz} {recipient.city}</Text>}
+          {recipient.plz && (
+            <Text style={{ fontSize: 10 }}>
+              {recipient.plz} {recipient.city}
+            </Text>
+          )}
         </View>
 
         {/* Table */}
@@ -112,6 +123,41 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
           >
             <Text style={styles.bold}>Gesamt</Text>
             <Text style={styles.bold}>{grossTotal.toFixed(2)} €</Text>
+          </View>
+        </View>
+
+        {/* Text */}
+        <View style={styles.textSection}>
+          <Text style={styles.paragraph}>
+            Die Rechnung enthält die Mehrwertsteuer in Höhe von 19 %. Bitte überweisen Sie den
+            Rechnungsbetrag bis zum {formatDate(dueDate)} an das untenstehende Konto.
+          </Text>
+          <Text style={styles.paragraph}>Mit freundlichen Grüßen</Text>
+          <Text style={styles.paragraph}>Ernest Ekhator</Text>
+        </View>
+
+        {/* FOOTER */}
+        <View style={{ position: 'absolute', bottom: 40, left: 40, right: 40 }}>
+          <View style={{ borderTopWidth: 0.5, borderColor: '#eee', paddingTop: 12 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View>
+                <Text style={{ fontSize: 8, color: '#aaa' }}>CONEK UG (haftungsbeschränkt)</Text>
+                <Text style={{ fontSize: 8, color: '#aaa' }}>Haselnussweg 8</Text>
+                <Text style={{ fontSize: 8, color: '#aaa' }}>31275 Hämelerwald</Text>
+              </View>
+              <View style={{ alignItems: 'flex-start' }}>
+                <Text style={{ fontSize: 8, color: '#aaa' }}>Tel.: 0176 / 845 076 32</Text>
+                <Text style={{ fontSize: 8, color: '#aaa' }}>info@conek.de</Text>
+                <Text style={{ fontSize: 8, color: '#aaa' }}>www.conek.de</Text>
+              </View>
+              <View style={{ alignItems: 'flex-start' }}>
+                <Text style={{ fontSize: 8, color: '#aaa' }}>
+                  IBAN: DE66 2504 0066 0202 7621 000
+                </Text>
+                <Text style={{ fontSize: 8, color: '#aaa' }}>USt-IdNr.: DE450331164</Text>
+                <Text style={{ fontSize: 8, color: '#aaa' }}>Handelsreg.: HRB 209721</Text>
+              </View>
+            </View>
           </View>
         </View>
       </Page>

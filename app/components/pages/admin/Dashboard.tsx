@@ -7,7 +7,7 @@ import Loader from '../../Loader';
 import { useAuth } from '@/app/context/AuthContext';
 import { useEffect, useRef, useState } from 'react';
 import { TaskTableSmall } from '../../aufgaben/TaskTable';
-import StatCard from '../../admin/StatCard';
+import StatCard from '../../cards/StatCard';
 import { Task, User } from '@/app/types/Database';
 import { adminsLoadAll } from '@/app/actions/admin';
 import { clientsLoadAll } from '@/app/actions/clients';
@@ -15,6 +15,9 @@ import { Registration, registrationsLoadMonthly } from '@/app/actions/stats';
 import { tasksLoadOpen } from '@/app/actions/tasks';
 import { useProfilePolling } from '@/app/hooks/useProfilePolling';
 import { ClientTableSmall } from '../../clients/ClientTableSmall';
+import Grid from '../../layout/Grid';
+import DashboardContainer from '../../layout/DashboardContainer';
+import { ListCheck, Users } from 'lucide-react';
 
 export default function AdminDashboard() {
   const mounted = useRef(false);
@@ -41,23 +44,15 @@ export default function AdminDashboard() {
           registrationsLoadMonthly(),
           tasksLoadOpen(userProfile.user_role, userProfile.id),
         ]);
-        console.log('Kunden:', clientRes);
         setAdmins(adminRes);
         setClients(clientRes);
         setRegistrations(registerRes);
         setTasks(taskRes);
+        console.log(registerRes);
       } catch (err) {}
     };
     fetchData();
   }, [userProfile]);
-
-  const currentMonthRegistrations = registrations.filter((r) => {
-    const month = new Date(r.month);
-    const now = new Date();
-    return month.getMonth() === now.getMonth() && month.getFullYear() === now.getFullYear();
-  });
-
-  const openTasks = tasks.filter((t) => t.status === 'open');
 
   if (loading) return <Loader text="Wird geladen..." />;
   if (!user) return null;
@@ -67,43 +62,28 @@ export default function AdminDashboard() {
     <div className="page-content">
       <h1 className={styles.h1}>Dashboard</h1>
       <DividerBlock height={1} />
-      <div className="row gap-m mobile-column">
+      <Grid columns={2} gap={16}>
+        <StatCard header="Offene Aufgaben" icon={ListCheck} value={tasks.length} />
         <StatCard
-          chart={false}
-          disclaimer="vs. letzter Monat"
-          header="Offene Aufgaben"
-          value={openTasks.length}
-        />
-        <StatCard
-          disclaimer="vs. letzter Monat"
           header="Anmeldungen"
-          registrationData={registrations}
-          value={currentMonthRegistrations[0]?.count ?? 0}
+          icon={Users}
+          value={registrations.length ?? 0}
         />
-      </div>
-      <DividerBlock height={1} />
-      <div className="row gap-m mobile-column grow">
-        <div className="container">
-          <div className="row space-between align-center">
-            <h2 className="container-header">Offene Aufgaben</h2>
-            <Link className="container-link" href="/admin/aufgaben">
-              Alle ansehen
-            </Link>
-          </div>
-          <DividerBlock height={1} />
+        <DashboardContainer
+          header="Offene Aufgaben"
+          target="/admin/aufgaben"
+          targetLabel="Alle ansehen"
+        >
           <TaskTableSmall admins={admins} tasks={tasks} />
-        </div>
-        <div className="container">
-          <div className="row space-between align-center">
-            <h2 className="container-header">Letzte Anmeldungen</h2>
-            <Link className="container-link" href="/admin/kunden">
-              Alle ansehen
-            </Link>
-          </div>
-          <DividerBlock height={1} />
+        </DashboardContainer>
+        <DashboardContainer
+          header="Letzte Anmeldungen"
+          target="/admin/kunden"
+          targetLabel="Alle ansehen"
+        >
           <ClientTableSmall clients={clients} />
-        </div>
-      </div>
+        </DashboardContainer>
+      </Grid>
     </div>
   );
 }

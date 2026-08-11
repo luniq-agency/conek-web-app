@@ -116,7 +116,16 @@ export async function invoiceMonthlyStatsLoad(view: 'month' | 'year' | 'all' = '
 export async function registrationsLoadMonthly(): Promise<Registration[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from('monthly_client_registrations').select('*');
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+  const { data, error } = await supabase
+    .from('user')
+    .select('*')
+    .eq('user_role', 'client')
+    .gte('created_at', monthStart)
+    .lte('created_at', monthEnd);
 
   if (error || !data) return [];
   return data;

@@ -6,6 +6,7 @@ import styles from './Tasks.module.css';
 import { Task, User } from '@/app/types/Database';
 import { HeaderButton } from '../buttons/Buttons';
 import { Plus } from 'lucide-react';
+import Row from '../layout/Row';
 
 interface Props {
   admins: User[];
@@ -18,10 +19,10 @@ export function TaskColumn({ admins, color, header, tasks }: Props) {
   return (
     <div className={styles.taskColumn}>
       <div className={styles.taskHeader} style={{ borderColor: color }}>
-        <div className="row align-center gap-xs grow">
+        <Row alignItems="center" justifyContent="space-between">
           <h3 className={styles.taskLabel}>{header}</h3>
           <span className={styles.taskCounter}>{tasks?.length || 0}</span>
-        </div>
+        </Row>
       </div>
       <DividerBlock height={2} />
       {tasks && tasks.map((t, i) => <TaskBox admins={admins} key={i} task={t} />)}

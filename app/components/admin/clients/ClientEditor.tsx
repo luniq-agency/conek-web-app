@@ -20,6 +20,7 @@ import {
 import DividerBlock from '../../DividerBlock';
 import { userUpdateCreate } from '@/app/actions/update';
 import { userUpdate } from '@/app/actions/users';
+import Row from '../../layout/Row';
 
 interface Props {
   user?: User;
@@ -134,7 +135,7 @@ export default function ClientEditor({ user: userProp }: Props) {
         <NumberInputLabel label="Kinder" numberValue={clientKids} onNumberChange={setClientKids} />
         <TextInputLabel label="IBAN" onChange={setClientIban} value={clientIban} />
         <TextInputLabel label="Steuer-ID" onChange={setClientTaxId} value={clientTaxId} />
-        <TextAreaLabel label="Notizen" onChange={setClientNotes} value={clientNotes}/>
+        <TextAreaLabel label="Notizen" onChange={setClientNotes} value={clientNotes} />
         {userProfile?.user_role === 'admin' && (
           <SelectLabel
             label="Status"
@@ -164,18 +165,24 @@ export function ClientContactEditor({ user }: Props) {
   const { clientProfile } = useAuth();
 
   //VARIABLEN
+  const [clientCity, setClientCity] = useState(user?.city || '');
   const [clientEmail, setClientEmail] = useState(user?.email || '');
   const [clientId, setClientId] = useState(user?.id);
   const [clientInstagram, setClientInstagram] = useState(user?.instagram || '');
   const [clientLinkedin, setClientLinkedin] = useState(user?.linkedin || '');
   const [clientPhone, setClientPhone] = useState(user?.telefon || '');
+  const [clientStreet, setClientStreet] = useState(user?.anschrift || '');
   const [clientWebsite, setClientWebsite] = useState('');
+  const [clientZip, setClientZip] = useState('');
 
   const updateUser = async () => {
     setUpdating(true);
     const payload = {
+      anschrift: clientStreet,
+      city: clientCity,
       instagram: clientInstagram,
       linkedin: clientLinkedin,
+      plz: clientZip,
       telefon: clientPhone,
       website: clientWebsite,
     };
@@ -195,6 +202,15 @@ export function ClientContactEditor({ user }: Props) {
     <div className="column gap-m">
       <h3>Kontaktdaten</h3>
       <div className="grid columns-two gap-m mobile-column">
+        <TextInputLabel
+          label="Straße & Hausnummer"
+          onChange={setClientStreet}
+          value={clientStreet}
+        />
+        <Row>
+          <TextInputLabel label="PLZ" onChange={setClientZip} value={clientZip} />
+          <TextInputLabel label="Ort" onChange={setClientCity} value={clientCity} />
+        </Row>
         <TextInputLabel
           label="E-Mail"
           onChange={setClientEmail}

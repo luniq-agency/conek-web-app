@@ -49,13 +49,15 @@ export function UserAvatar({ backgroundColor, color, collapsed, fontSize, height
 export function UserAvatarOther({ backgroundColor, color, fontSize, height, user, width }: Props) {
   const label = `${user?.user_name_first[0]}${user?.user_name_last[0]}`;
 
+  if (!user) return <Avatar label="?" shape="circle" />;
+
   if (!user?.avatar)
     return (
       <Avatar
         label={label}
         shape="circle"
         style={{
-           backgroundColor,
+          backgroundColor,
           color,
           fontSize,
           fontWeight: 700,

@@ -9,26 +9,10 @@ import { useAuth } from '@/app/context/AuthContext';
 
 interface Props {
   admins: User[];
+  tasks: Task[];
 }
 
-export default function TaskKanban({ admins }: Props) {
-  const { userProfile } = useAuth();
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  useEffect(() => {
-    if (!userProfile) return;
-    const fetchData = async () => {
-      try {
-        const res = await tasksLoadAll(userProfile?.user_role, userProfile?.id);
-        setTasks(res);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchData();
-  }, [userProfile]);
-
-  const completed = tasks.filter((t) => t.status === 'closed');
+export default function TaskKanban({ admins, tasks }: Props) {
   const onHold = tasks.filter((t) => t.status === 'on_hold');
   const open = tasks.filter((t) => t.status === 'open');
   const overdue = tasks.filter((t) => t.status === 'overdue');

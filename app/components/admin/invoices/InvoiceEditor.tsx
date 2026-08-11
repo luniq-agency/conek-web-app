@@ -23,10 +23,11 @@ import { formatCurrency } from '@/app/utils/formats';
 import { Calendar } from 'primereact/calendar';
 import { DatePicker, SelectLabel, SkeletonLoaderLabel } from '../../forms/FormElements';
 import { Dialog } from 'primereact/dialog';
-import InvoicePreview from './InvoicePreview';
 import { Skeleton } from 'primereact/skeleton';
 import { InvoicePDF } from '../../pdf/InvoicePDF';
 import { useAuth } from '@/app/context/AuthContext';
+import LayoutColumn from '../../layout/Column';
+import Row from '../../layout/Row';
 
 interface Props {
   clients: User[];
@@ -48,6 +49,7 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
 
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState<Date | null>(null);
+  const [invoiceDueDate, setInvoiceDueDate] = useState<Date | null>(null);
   const [invoiceRecipient, setInvoiceRecipient] = useState('');
   const [invoiceTaxAmount, setInvoiceTaxAmount] = useState(0);
   const [invoiceTotal, setInvoiceTotal] = useState(0);
@@ -185,6 +187,7 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
     setUpdating(true);
     const invoicePayload = {
       invoice_date: invoiceDate ? (invoiceDate.toISOString().split('T')[0] as any) : null,
+      invoice_date_due: invoiceDueDate ? (invoiceDueDate.toISOString().split('T')[0] as any) : null,
       invoice_number: invoiceNumber,
       invoice_total_gross: total,
       invoice_total_net: netTotal,
@@ -318,10 +321,20 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
             value={taxCategory}
           />
         </div>
-        <div className="column gap-xs">
-          <label>Rechnungsdatum</label>
-          <Calendar onChange={(e) => setInvoiceDate(e.value || null)} value={invoiceDate} />
-        </div>
+        <Row>
+          <LayoutColumn gap={4}>
+            <label>Rechnungsdatum</label>
+            <Calendar onChange={(e) => setInvoiceDate(e.value || null)} value={invoiceDate} />
+          </LayoutColumn>
+          <LayoutColumn gap={4}>
+            <label>Fälligkeitsdatum</label>
+            <Calendar
+              minDate={invoiceDate || new Date()}
+              onChange={(e) => setInvoiceDueDate(e.value || null)}
+              value={invoiceDueDate}
+            />
+          </LayoutColumn>
+        </Row>
       </div>
       <DividerBlock height={0.5} />
       <div className="column">

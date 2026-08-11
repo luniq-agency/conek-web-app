@@ -128,10 +128,10 @@ export async function clientLookupFromUser(id: string): Promise<Client> {
   return data;
 }
 
-export async function clientUpdate(data: Partial<Client>, id: string) {
+export async function clientUpdate(data: Partial<User>, id: string) {
   const supabase = await createClient();
 
-  const { data: created, error } = await supabase.from('client').update(data).eq('id', id).select();
+  const { data: created, error } = await supabase.from('user').update(data).eq('id', id).select();
 
   if (error) throw new Error(error.message);
 

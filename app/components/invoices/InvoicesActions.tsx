@@ -24,14 +24,19 @@ export default function InvoiceActions({ invoice }: Props) {
   const toast = useRef<Toast | null>(null);
 
   const sendInvoice = async () => {
-    op.current?.toggle;
+    op.current?.hide;
     try {
+      const payload = {
+        invoice_date_sent: new Date(),
+        invoice_status: 'sent',
+      };
+
       const recipient = await userLookup(invoice.user);
       const items = await invoiceItemsLoad(invoice.id);
 
       await sendInvoiceEmail(invoice, items, recipient);
 
-      await invoiceUpdate({ invoice_status: 'sent' }, invoice.id);
+      await invoiceUpdate(payload, invoice.id);
       router.refresh();
     } catch (err) {
       console.error(err);

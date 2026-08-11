@@ -2,7 +2,6 @@
 
 import { createClient } from '@/app/utils/supabase/server';
 import { Task, TaskUpdate, User } from '../types/Database';
-import { notificationCreate } from './notification';
 
 export async function taskClose(id: string) {
   const supabase = await createClient();
@@ -60,7 +59,7 @@ export async function tasksLoadAll(role: string, id: string): Promise<Task[]> {
 export async function tasksLoadOpen(role: string, id: string): Promise<Task[]> {
   const supabase = await createClient();
 
-  let query = supabase.from('task').select('*').eq('status', 'open');
+  let query = supabase.from('task').select('*').in('status', ['open', 'overdue']);
 
   if (role === 'agency') {
     if (!id) {
@@ -133,6 +132,22 @@ export async function taskUpdatesLoad(id: string): Promise<TaskUpdate[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase.from('task_update').select('*').eq('task', id);
+
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function tasksOpenAdmin() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('task').select('*').in('status', ['overdue', 'open']);
+
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function tasksOpenAgency(id: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('task').select('*').in('status', ['overdue', 'open']).eq('assignee', id);
 
   if (error) throw new Error(error.message);
   return data || [];

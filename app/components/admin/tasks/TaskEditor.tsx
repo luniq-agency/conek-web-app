@@ -5,12 +5,7 @@ import { Task, TaskUpdate, User } from '@/app/types/Database';
 import { Timeline } from 'primereact/timeline';
 import { useEffect, useState } from 'react';
 import { UserAvatar, UserAvatarOther } from '../../UserAvatar';
-import {
-  userLookup,
-  userLookupWithId,
-  usersLoadAgentsAdmins,
-  usersLoadAll,
-} from '@/app/actions/users';
+import { userLookup, usersLoadAll } from '@/app/actions/users';
 import { useAuth } from '@/app/context/AuthContext';
 import { Button } from 'primereact/button';
 import DividerBlock from '../../DividerBlock';
@@ -77,7 +72,6 @@ export default function TaskEditor({ task }: Props) {
     try {
       const res = await taskUpdatesLoad(task.id);
       const adminRes = await usersLoadAll();
-      console.log(adminRes);
       setUpdates(res);
       setUsers(adminRes);
     } catch (err) {
@@ -122,11 +116,11 @@ export default function TaskEditor({ task }: Props) {
       created_at: new Date(),
       created_by: userProfile?.id,
       creator: `${userProfile?.user_name_first} ${userProfile?.user_name_last}`,
-      due_date: date || null,
       task: task.id,
     };
 
     const taskPayload = {
+      due_date: date || null,
       status: 'on_hold',
     };
 
@@ -161,6 +155,8 @@ export default function TaskEditor({ task }: Props) {
       fullName: `${u.user_name_last}, ${u.user_name_first}`,
     }))
     .sort((a, b) => a.user_name_last.localeCompare(b.user_name_last));
+
+  if (!users) return;
 
   return (
     <div className="row gap-m width-100">
@@ -231,7 +227,12 @@ export default function TaskEditor({ task }: Props) {
             )}
             <PrimaryButton
               disabled={
-                !updateType || submitting || task.status === 'closed' || textEmpty || targetEmpty || dateEmpty
+                !updateType ||
+                submitting ||
+                task.status === 'closed' ||
+                textEmpty ||
+                targetEmpty ||
+                dateEmpty
               }
               label="Speichern"
               onClick={createUpdate}
