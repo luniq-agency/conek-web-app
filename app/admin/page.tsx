@@ -1,4 +1,4 @@
-import AdminDashboard from '../components/pages/admin/Dashboard';
+import AdminDashboard from './AdminDashboard';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

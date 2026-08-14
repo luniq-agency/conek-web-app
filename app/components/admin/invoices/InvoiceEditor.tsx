@@ -75,6 +75,7 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
     if (invoice) {
       setInvoiceNumber(invoice.invoice_number);
       setInvoiceDate(invoice.invoice_date ? new Date(invoice.invoice_date) : null);
+      setInvoiceDueDate(invoice.invoice_date_due ? new Date(invoice.invoice_date_due) : null);
       setInvoiceRecipient(invoice.user ?? '');
       setInvoiceTotal(invoice.invoice_total_gross);
       setInvoiceTotalNet(invoice.invoice_total_net);

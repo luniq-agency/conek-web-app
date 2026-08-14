@@ -7,11 +7,12 @@ interface Props {
   header?: string;
   target?: string;
   targetLabel?: string;
+  width?: string | number;
 }
 
-export default function DashboardContainer({ children, header, target, targetLabel }: Props) {
+export default function DashboardContainer({ children, header, target, targetLabel, width = "100%"}: Props) {
   return (
-    <div className={styles.dashboardContainer}>
+    <div className={styles.dashboardContainer} style={{width}}>
       {header && (
         <div className={styles.dashboardContainerHeader}>
           <h2 className={styles.dashboardHeader}>{header}</h2>

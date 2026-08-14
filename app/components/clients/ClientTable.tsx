@@ -18,6 +18,7 @@ import { clientsLoadAgency, clientsLoadAll, clientUpdate } from '@/app/actions/c
 import { Dialog } from 'primereact/dialog';
 import { agencyLoadAll } from '@/app/actions/agency';
 import { userUpdate } from '@/app/actions/users';
+import { useAuth } from '@/app/context/AuthContext';
 
 interface Props {
   bearbeiter?: User;
@@ -28,6 +29,7 @@ interface Props {
 export default function ClientTable({ bearbeiter, clients, search }: Props) {
   const router = useRouter();
   const toast = useRef<Toast | null>(null);
+  const { userProfile } = useAuth();
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -74,7 +76,6 @@ export default function ClientTable({ bearbeiter, clients, search }: Props) {
 
   const [rowClick, setRowClick] = useState(true);
 
-
   //FILTER
   const [filters, setFilters] = useState<{
     global: { value: string | null; matchMode: FilterMatchMode };
@@ -92,6 +93,8 @@ export default function ClientTable({ bearbeiter, clients, search }: Props) {
     setFilters((prev) => ({ ...prev, global: { ...prev.global, value } }));
     setGlobalFilterValue(value);
   };
+
+  const isAdmin = userProfile?.user_role === 'admin';
 
   //SELECTION
   const selectClient = (rowData: User) => {
@@ -159,7 +162,10 @@ export default function ClientTable({ bearbeiter, clients, search }: Props) {
     const statusObj = client_status.find((t) => t.value === rowData.status);
     return (
       <Tag
-        style={{ backgroundColor: statusObj?.bg, color: statusObj?.color }}
+        style={{
+          backgroundColor: statusObj?.bg,
+          color: statusObj?.color,
+        }}
         value={statusObj?.label ?? ''}
       />
     );
@@ -223,12 +229,14 @@ export default function ClientTable({ bearbeiter, clients, search }: Props) {
           <Button label="Kunden zuweisen" onClick={() => setTransferring(true)} />
         )}
         <DataTable
+          currentPageReportTemplate="{first} bis {last} von {totalRecords} Kunden"
           emptyMessage="Keine Kunden gefunden."
           filterDisplay="menu"
           filters={filters}
           globalFilterFields={['user_name_first', 'user_name_last']}
           paginator
           onSelectionChange={(e: any) => setSelectedClients(e.value)}
+          paginatorTemplate="FirstPageLink PrevPageLink NextPageLink LastPageLink CurrentPageReport"
           rows={rows}
           selection={selectedClients}
           selectionMode={rowClick ? null : 'checkbox'}
@@ -237,13 +245,6 @@ export default function ClientTable({ bearbeiter, clients, search }: Props) {
           stripedRows
           value={clients}
         >
-          {/*
-          <Column
-            selectionMode="multiple"
-            header=""
-            headerStyle={{ width: '3rem' }}
-            hidden={isMobile}
-          ></Column>*/}
           <Column body={nameTemplate} field="nachname" header="Name" sortable />
           <Column
             body={categoryTemplates}
@@ -289,7 +290,7 @@ export default function ClientTable({ bearbeiter, clients, search }: Props) {
               />
             )}
             header="Status"
-            hidden={isMobile}
+            hidden={isMobile || !isAdmin}
             sortable
           />
           <Column body={actionTemplate} header="Aktionen" hidden={isMobile} />

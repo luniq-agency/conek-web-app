@@ -12,23 +12,27 @@ import { taskCreate, taskUpdateCreate } from '@/app/actions/tasks';
 import { notificationCreate } from '@/app/actions/notification';
 import { usersLoadAll } from '@/app/actions/users';
 import { priority_options } from '@/app/constants/Constants';
+import { clientsLoad } from '@/app/actions/clients/clients';
+import { filterAdmins, filterClients, filterClientsAll } from '@/app/actions/users/filter';
+import UserSelector from '../../forms/UserSelector';
 
 interface Props {
   onCreate: () => void;
 }
 export default function AdminCreateTask({ onCreate }: Props) {
-  const { user, userProfile } = useAuth();
+  const { userProfile } = useAuth();
 
   const [submitting, setSubmitting] = useState(false);
   const [visible, setVisible] = useState(false);
 
+  const isAdmin = userProfile?.user_role === 'admin';
 
   // USERS
+  const [selectedAdmin, setSelectedAdmin] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
 
-  const [selectedAdmin, setSelectedAdmin] = useState('');
-
   useEffect(() => {
+    if (!userProfile) return;
     const fetchData = async () => {
       try {
         const res = await usersLoadAll();
@@ -38,7 +42,7 @@ export default function AdminCreateTask({ onCreate }: Props) {
       }
     };
     fetchData();
-  }, []);
+  }, [userProfile]);
 
   //INPUTS
   const [taskAssignee, setTaskAssignee] = useState<User | null>(null);
@@ -50,19 +54,19 @@ export default function AdminCreateTask({ onCreate }: Props) {
 
   //ACTIONS
   const createTask = async () => {
-    /* setSubmitting(true); */
+    setSubmitting(true);
 
-    const recipient = await adminLookUp(selectedAdmin);
+    if (!selectedAdmin) return;
 
     const notificationPayload = {
       message: `${userProfile?.user_name_first} ${userProfile?.user_name_last} hat die Aufgabe '${taskName}' erstellt und dir zugewiesen.`,
       read: false,
-      recipient: recipient.id,
+      recipient: selectedAdmin.id,
       title: 'Neue Aufgabe',
     };
 
     const taskPayload = {
-      assignee: recipient.id,
+      assignee: isAdmin ? selectedAdmin.id : userProfile?.id,
       created_at: new Date(),
       created_by: userProfile?.id,
       description: taskDescription,
@@ -84,7 +88,7 @@ export default function AdminCreateTask({ onCreate }: Props) {
       };
 
       await taskUpdateCreate(taskUpdatePayload);
-      if (recipient.id !== user?.id) await notificationCreate(notificationPayload, recipient);
+      if (selectedAdmin.id !== userProfile?.id) await notificationCreate(notificationPayload, selectedAdmin);
       onCreate();
     } catch (err) {
       console.error(err);
@@ -96,21 +100,12 @@ export default function AdminCreateTask({ onCreate }: Props) {
     setTaskName('');
   };
 
-  const adminOptions = users
-    .filter((a) => a.user_role === 'admin')
-    .map((a) => ({
-      ...a,
-      fullName: `${a.user_name_last}, ${a.user_name_first}`,
-    }))
-    .sort((a: User, b: User) => a.user_name_last.localeCompare(b.user_name_last));
-
-  const clientOptions = users
-    .filter((a) => a.user_role === 'client')
-    .map((a) => ({
-      ...a,
-      fullName: `${a.user_name_last}, ${a.user_name_first}`,
-    }))
-    .sort((a: User, b: User) => a.user_name_last.localeCompare(b.user_name_last));
+  // OPTIONS
+  const adminOptions = filterAdmins(users);
+  const clientOptions =
+    userProfile?.user_role === 'admin'
+      ? filterClientsAll(users)
+      : filterClients(users, userProfile?.id || '1');
 
   return (
     <>
@@ -124,14 +119,15 @@ export default function AdminCreateTask({ onCreate }: Props) {
       >
         <div className="column gap-m">
           <TextInputLabel label="Name der Aufgabe" onChange={setTaskName} value={taskName} />
-          <SelectLabel
-            label="Bearbeiter"
-            onChange={(value) => setSelectedAdmin(value)}
-            optionLabel="fullName"
-            optionValue="id"
-            options={adminOptions}
-            value={selectedAdmin}
-          />
+          {isAdmin && (
+            <UserSelector
+              label="Bearbeiter"
+              onChange={(value) => setSelectedAdmin(value)}
+              optionLabel="fullName"
+              options={adminOptions}
+              value={selectedAdmin}
+            />
+          )}
           <div className="column gap-xs">
             <label>Verknüpfter Kunde (optional)</label>
             <Dropdown
@@ -166,7 +162,7 @@ export default function AdminCreateTask({ onCreate }: Props) {
           />
           <Button
             className="button-primary"
-            disabled={!selectedAdmin || !taskDescription || !taskName || submitting}
+            disabled={!selectedAdmin || !taskName || !taskPriority || submitting}
             icon={submitting ? 'pi pi-spinner' : undefined}
             label="Aufgabe erstellen"
             onClick={createTask}

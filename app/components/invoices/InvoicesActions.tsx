@@ -1,11 +1,10 @@
 'use client';
 
 import { Invoice } from '@/app/types/Database';
-import { invoicesLoadAll, invoiceUpdate } from '@/app/actions/invoice';
-import { sendEmail, sendEmailWithAttachment, sendInvoiceEmail } from '@/app/actions/email';
+import { invoiceUpdate } from '@/app/actions/invoice';
+import { sendInvoiceEmail } from '@/app/actions/email';
 import { userLookup } from '@/app/actions/users';
 import { invoiceItemsLoad } from '@/app/actions/invoiceitem';
-import { generateInvoicePDF } from '@/app/actions/pdf';
 import { Button } from 'primereact/button';
 import { useRouter } from 'next/navigation';
 import { OverlayPanel } from 'primereact/overlaypanel';
@@ -24,7 +23,8 @@ export default function InvoiceActions({ invoice }: Props) {
   const toast = useRef<Toast | null>(null);
 
   const sendInvoice = async () => {
-    op.current?.hide;
+    setSending(true);
+    op.current?.hide();
     try {
       const payload = {
         invoice_date_sent: new Date(),
@@ -35,9 +35,13 @@ export default function InvoiceActions({ invoice }: Props) {
       const items = await invoiceItemsLoad(invoice.id);
 
       await sendInvoiceEmail(invoice, items, recipient);
-
       await invoiceUpdate(payload, invoice.id);
-      router.refresh();
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Rechnung versendet',
+        detail: 'Die Rechnung wurde an den Kunden versendet.',
+      });
+      setSending(false);
     } catch (err) {
       console.error(err);
     }

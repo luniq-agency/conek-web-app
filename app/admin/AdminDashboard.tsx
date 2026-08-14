@@ -1,23 +1,24 @@
 'use client';
 
 import styles from '@/app/components/admin/Admin.module.css';
-import DividerBlock from '../../DividerBlock';
+import DividerBlock from '../components/DividerBlock';
 import Link from 'next/link';
-import Loader from '../../Loader';
+import Loader from '../components/Loader';
 import { useAuth } from '@/app/context/AuthContext';
 import { useEffect, useRef, useState } from 'react';
-import { TaskTableSmall } from '../../aufgaben/TaskTable';
-import StatCard from '../../cards/StatCard';
+import { TaskTableSmall } from '../components/aufgaben/TaskTable';
+import StatCard from '../components/cards/StatCard';
 import { Task, User } from '@/app/types/Database';
 import { adminsLoadAll } from '@/app/actions/admin';
 import { clientsLoadAll } from '@/app/actions/clients';
 import { Registration, registrationsLoadMonthly } from '@/app/actions/stats';
 import { tasksLoadOpen } from '@/app/actions/tasks';
 import { useProfilePolling } from '@/app/hooks/useProfilePolling';
-import { ClientTableSmall } from '../../clients/ClientTableSmall';
-import Grid from '../../layout/Grid';
-import DashboardContainer from '../../layout/DashboardContainer';
+import { ClientTableSmall } from '../components/clients/ClientTableSmall';
+import Grid from '../components/layout/Grid';
+import DashboardContainer from '../components/layout/DashboardContainer';
 import { ListCheck, Users } from 'lucide-react';
+import { agencyGetSignups } from '../actions/stats/agency';
 
 export default function AdminDashboard() {
   const mounted = useRef(false);
@@ -33,7 +34,6 @@ export default function AdminDashboard() {
   // INIT
   useEffect(() => {
     if (!userProfile || mounted.current) return;
-
     mounted.current = true;
 
     const fetchData = async () => {
@@ -41,7 +41,9 @@ export default function AdminDashboard() {
         const [adminRes, clientRes, registerRes, taskRes] = await Promise.all([
           adminsLoadAll(),
           clientsLoadAll(userProfile.user_role, userProfile.id),
-          registrationsLoadMonthly(),
+          userProfile.user_role === 'admin'
+            ? registrationsLoadMonthly()
+            : agencyGetSignups(userProfile.id),
           tasksLoadOpen(userProfile.user_role, userProfile.id),
         ]);
         setAdmins(adminRes);
@@ -64,11 +66,7 @@ export default function AdminDashboard() {
       <DividerBlock height={1} />
       <Grid columns={2} gap={16}>
         <StatCard header="Offene Aufgaben" icon={ListCheck} value={tasks.length} />
-        <StatCard
-          header="Anmeldungen"
-          icon={Users}
-          value={registrations.length ?? 0}
-        />
+        <StatCard header="Anmeldungen" icon={Users} value={registrations.length ?? 0} />
         <DashboardContainer
           header="Offene Aufgaben"
           target="/admin/aufgaben"

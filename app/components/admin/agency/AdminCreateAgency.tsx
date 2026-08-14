@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import { useState } from 'react';
+import { Toast } from 'primereact/toast';
+import { useRef, useState } from 'react';
 
 export default function AdminCreateAgency() {
+  const toast = useRef<Toast | null>(null);
   const { userProfile } = useAuth();
   const [visible, setVisible] = useState(false);
 
@@ -23,37 +25,34 @@ export default function AdminCreateAgency() {
   const [agentCompany, setAgentCompany] = useState('');
 
   const sendInvite = async () => {
-    console.log('Base URL:', process.env.NEXT_PUBLIC_BASE_URL);
-
     setSubmitting(true);
     if (!userProfile) return;
-    const userPayload = {
-      email: agentEmail,
-      user_name_first: agentVorname,
-      user_name_last: agentNachname,
-      user_role: 'agency',
-    };
 
     try {
-      const userRes = await userCreate(userPayload);
-
       const agencyPayload = {
         email: agentEmail,
         firma: agentCompany,
-        nachname: agentNachname,
-        status: 'invited',
-        user: userRes.id,
-        vorname: agentVorname,
+        referrer: userProfile.id,
+        status: 'pending',
+        user_name_first: agentVorname,
+        user_name_last: agentNachname,
+        user_role: 'agency',
       };
 
-      await agencyCreate(
-        agencyPayload,
-        `${userProfile?.user_name_first} ${userProfile?.user_name_last}`
-      );
-
+      await agencyCreate(agencyPayload);
       setVisible(false);
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Agentur erstellt',
+        detail: 'Der Agenturist wurde erstellt und eine Einladungs-E-Mail versendet.',
+      });
     } catch (err) {
       console.error(err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Fehler aufgetreten',
+        detail: 'Der Agenturist konnte nicht erstellt werden. Bitte probiere es erneut.',
+      });
     }
     setSubmitting(false);
     setAgentVorname('');
@@ -65,6 +64,7 @@ export default function AdminCreateAgency() {
 
   return (
     <>
+      <Toast ref={toast} />
       <Dialog
         closable={true}
         draggable={false}

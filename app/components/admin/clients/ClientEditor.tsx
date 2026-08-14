@@ -5,7 +5,7 @@ import { Client } from '@/app/types/Database';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { client_status, family_options, job_categories } from '@/app/constants/Constants';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { documentsLoadUser } from '@/app/actions/documents';
 import type { Document, User } from '@/app/types/Database';
 import { useAuth } from '@/app/context/AuthContext';
@@ -21,12 +21,14 @@ import DividerBlock from '../../DividerBlock';
 import { userUpdateCreate } from '@/app/actions/update';
 import { userUpdate } from '@/app/actions/users';
 import Row from '../../layout/Row';
+import { Toast } from 'primereact/toast';
 
 interface Props {
   user?: User;
 }
 
 export default function ClientEditor({ user: userProp }: Props) {
+  const toast = useRef<Toast | null>(null);
   const { userProfile } = useAuth();
 
   const user = userProp ?? userProfile; // ← Fallback auf eingeloggten User
@@ -79,7 +81,9 @@ export default function ClientEditor({ user: userProp }: Props) {
     }
 
     const payload = {
-      dob: clientDob ? clientDob.toISOString().split('T')[0] : undefined,
+      dob: clientDob
+        ? `${clientDob.getFullYear()}-${String(clientDob.getMonth() + 1).padStart(2, '0')}-${String(clientDob.getDate()).padStart(2, '0')}`
+        : undefined,
       job: clientJob,
       job_status: clientJobType,
       family_status: clientFamily,
@@ -94,6 +98,11 @@ export default function ClientEditor({ user: userProp }: Props) {
 
     try {
       await userUpdate(payload, user.id);
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Änderungen gespeichert',
+        detail: 'Die Änderungen wurden gespeichert.',
+      });
     } catch (err) {
       console.error(err);
     } finally {
@@ -103,6 +112,7 @@ export default function ClientEditor({ user: userProp }: Props) {
 
   return (
     <div className="column gap-m">
+      <Toast ref={toast} />
       <h3>Stammdaten</h3>
       <div className="grid columns-two gap-m mobile-column">
         <TextInputLabel label="Vorname" onChange={setClientVorname} value={clientVorname} />
@@ -160,6 +170,7 @@ export default function ClientEditor({ user: userProp }: Props) {
 }
 
 export function ClientContactEditor({ user }: Props) {
+  const toast = useRef<Toast | null>(null);
   const [updating, setUpdating] = useState(false);
 
   const { clientProfile } = useAuth();
@@ -172,8 +183,8 @@ export function ClientContactEditor({ user }: Props) {
   const [clientLinkedin, setClientLinkedin] = useState(user?.linkedin || '');
   const [clientPhone, setClientPhone] = useState(user?.telefon || '');
   const [clientStreet, setClientStreet] = useState(user?.anschrift || '');
-  const [clientWebsite, setClientWebsite] = useState('');
-  const [clientZip, setClientZip] = useState('');
+  const [clientWebsite, setClientWebsite] = useState(user?.website || '');
+  const [clientZip, setClientZip] = useState(user?.plz || '');
 
   const updateUser = async () => {
     setUpdating(true);
@@ -191,6 +202,11 @@ export function ClientContactEditor({ user }: Props) {
 
     try {
       await clientUpdate(payload, clientId);
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Änderungen gespeichert',
+        detail: 'Die Änderungen wurden gespeichert.',
+      });
     } catch (err) {
       console.error(err);
     } finally {
@@ -200,6 +216,7 @@ export function ClientContactEditor({ user }: Props) {
 
   return (
     <div className="column gap-m">
+      <Toast ref={toast} />
       <h3>Kontaktdaten</h3>
       <div className="grid columns-two gap-m mobile-column">
         <TextInputLabel

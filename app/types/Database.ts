@@ -24,7 +24,7 @@ export type Certificate = {
   file: string;
   id: string;
   user: string;
-  year: number;
+  year: string;
 };
 
 export type CertificateMonthlyStats = {
@@ -163,6 +163,22 @@ export type Notification = {
   type: string;
 };
 
+export type Subscription = {
+  name: string;
+}
+
+export type SubscriptionItem = {
+  amount_net: number;
+  amount_tax: number;
+  amount_total: number;
+  created_at: Date;
+  date_end: Date;
+  date_start: Date;
+  name: string;
+  status: string;
+  user: number | string;
+}
+
 export type Task = {
   assignee: string;
   category: string;
@@ -174,6 +190,7 @@ export type Task = {
   priority: string;
   status: string;
   title: string;
+  user: string | number;
 };
 
 export type TaskUpdate = {
@@ -230,11 +247,13 @@ export type User = {
   setup_complete: boolean;
   status: string;
   steuer_id?: string;
+  stripe_customer_id: string;
   telefon: string;
   user_name_first: string;
   user_name_last: string;
   user_role: string;
   user_uuid: string;
+  website: string;
 };
 
 export type UserUpdate = {

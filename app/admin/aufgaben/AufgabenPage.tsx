@@ -33,7 +33,7 @@ export default function AufgabenPage() {
       setTasks(res);
     };
     fetchData();
-  });
+  }, [userProfile]);
 
   const update = async () => {
     if (!userProfile) return;

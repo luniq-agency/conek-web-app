@@ -11,6 +11,7 @@ import { Accordion, AccordionTab } from 'primereact/accordion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
+import Row from '../../layout/Row';
 
 export default function AdminSidebar() {
   const { user, userProfile, logout } = useAuth();
@@ -34,7 +35,7 @@ export default function AdminSidebar() {
     <>
       <div className={expanded ? styles.sidebar : styles.sidebarCollapsed}>
         <div className={expanded ? styles.sidebarTop : styles.sidebarTopCollapsed}>
-          <div className="row space-between">
+          <Row alignItems='center' justifyContent='space-between'>
             {expanded && (
               <Image
                 alt="CONEK Logo"
@@ -52,7 +53,7 @@ export default function AdminSidebar() {
               style={{ border: '1px solid white', color: 'white', padding: 8 }}
               text
             />
-          </div>
+          </Row>
           <DividerBlock height={2} />
           <div className={expanded ? styles.sidebarProfileWrapper : styles.sidebarProfileWrapperCollapsed}>
             <div className="row gap-s width-100">

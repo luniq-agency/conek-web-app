@@ -11,7 +11,7 @@ export default function Loader({ text }: Props) {
     <div className="loader-wrapper">
       <Image alt="CONEK Logo" height={30} src="/conek-logo-weiss.svg" width={150} />
       <DividerBlock height={1} />
-      {text && <span style={{ color: 'white' }}>{text}</span>}
+      {text && <span style={{ color: 'black' }}>{text}</span>}
       <ProgressSpinner strokeWidth="4" />
     </div>
   );

@@ -31,10 +31,27 @@ export function formatDateWithTime(str: string | Date) {
   return `${dayPart} | ${hourPart}`;
 }
 
+export function formatDateMonthYear(str: string | Date) {
+  const date = new Date(str);
+  return date.toLocaleDateString('de-DE', {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 export function formatMonth(str: string | Date) {
   const date = new Date(str);
   const dayPart = date.toLocaleDateString('de-DE', {
     month: 'long',
+    year: 'numeric'
+  });
+
+  return `${dayPart}`;
+}
+
+export function formatYear(str: string | Date) {
+  const date = new Date(str);
+  const dayPart = date.toLocaleDateString('de-DE', {
     year: 'numeric'
   });
 

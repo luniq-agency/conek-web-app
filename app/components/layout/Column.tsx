@@ -9,10 +9,11 @@ interface Props {
   className?: any;
   gap?: number | string;
   grow?: boolean;
+  maxWidth?: number;
   width?: string | number;
 }
 
-export default function Column({ alignItems, children, className, gap = '1rem', grow, width = '100%' }: Props) {
+export default function Column({ alignItems, children, className, gap = '1rem', grow, maxWidth, width = '100%' }: Props) {
   return (
     <div
       className={`${styles.column} ${className}`}
@@ -20,6 +21,7 @@ export default function Column({ alignItems, children, className, gap = '1rem', 
         alignItems,
         flexGrow: grow ? 1 : undefined,
         gap,
+        maxWidth,
         width,
       }}
     >

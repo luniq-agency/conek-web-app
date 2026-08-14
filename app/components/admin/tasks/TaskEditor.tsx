@@ -15,6 +15,10 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { DatePicker } from '../../forms/FormElements';
 import { PrimaryButton } from '../../buttons/Buttons';
 import { LoaderCircle } from 'lucide-react';
+import DashboardContainer from '../../layout/DashboardContainer';
+import Column from '../../layout/Column';
+import UserDisplay from '../../users/UserDisplay';
+import Row from '../../layout/Row';
 
 const updateOptions = [
   {
@@ -37,7 +41,7 @@ interface Props {
 }
 
 export default function TaskEditor({ task }: Props) {
-  const { user, userProfile } = useAuth();
+  const { userProfile } = useAuth();
   const [updates, setUpdates] = useState<TaskUpdate[]>([]);
   const [userMap, setUserMap] = useState<Record<string, User>>({});
 
@@ -57,13 +61,22 @@ export default function TaskEditor({ task }: Props) {
   };
 
   const customContent = (item: TaskUpdate) => {
+    const creator = users.find((u) => u.id === item.created_by);
+
     return (
       <div className="column">
-        <div className="row space-between">
-          <span style={{ fontSize: 14, fontWeight: 700 }}>{item.creator}</span>
-          <span className="text-meta">{formatDateWithTime(item.created_at)}</span>
-        </div>
-        <span className="text-s">{item.body}</span>
+        <Row alignItems="center" gap={8}>
+          <UserAvatar fontSize={14} height={30} user={creator} width={30} />
+          <Column gap={0}>
+            <Row justifyContent="space-between">
+              <span style={{ fontSize: 14, fontWeight: 700 }}>{item.creator}</span>
+              <span className="text-s" style={{ whiteSpace: 'nowrap' }}>
+                {formatDateWithTime(item.created_at)}
+              </span>
+            </Row>
+            <span className="text-s">{item.body}</span>
+          </Column>
+        </Row>
       </div>
     );
   };
@@ -145,8 +158,9 @@ export default function TaskEditor({ task }: Props) {
   const targetEmpty = updateType == 'transfer' && !updateTarget;
 
   // USER
-  const creator = users.find((t) => t.id === task.created_by);
   const assignee = users.find((t) => t.id === task.assignee);
+  const client = users.find((t) => t.id === task.user);
+  const creator = users.find((t) => t.id === task.created_by);
 
   const userOptions = users
     .filter((u) => u.user_role === 'admin')
@@ -156,38 +170,22 @@ export default function TaskEditor({ task }: Props) {
     }))
     .sort((a, b) => a.user_name_last.localeCompare(b.user_name_last));
 
-  if (!users) return;
+  if (!users || !userOptions) return;
 
   return (
     <div className="row gap-m width-100">
-      <div className="container column gap-l">
-        <h3>{task.title}</h3>
-        <div className="column">
+      <DashboardContainer header={task.title}>
+        <Column gap={4}>
           <label>Beschreibung</label>
-          <span>{task.description}</span>
-        </div>
-        <div className="column">
-          <label>Erstellt von</label>
-          <div className="row align-center gap-s">
-            {creator && <UserAvatar fontSize={14} height={30} user={creator} width={30} />}
-            <span>
-              {creator?.user_name_first} {creator?.user_name_last}
-            </span>
-          </div>
-        </div>
-        <div className="column">
-          <label>Aktueller Bearbeiter</label>
-          <div className="row align-center gap-s">
-            {assignee && <UserAvatarOther fontSize={14} height={30} user={assignee} width={30} />}
-            <span>
-              {assignee?.user_name_first} {assignee?.user_name_last}
-            </span>
-          </div>
-        </div>
-        <div className="column">
-          <label>Erstellt am</label>
-          <span>{formatDateWithTime(task.created_at)}</span>
-        </div>
+          <span>{task.description || '–'}</span>
+        </Column>
+        <DividerBlock height={1} />
+        <UserDisplay label="Erstellt von" user={creator} />
+        <DividerBlock height={1} />
+        <UserDisplay label="Bearbeiter" user={assignee} />
+        <DividerBlock height={1} />
+      <UserDisplay label="Verknüpfter Kunde" user={client} />
+        <DividerBlock height={1} />
         {task.status != 'closed' ? (
           <div className="column gap-s">
             <label>Update</label>
@@ -244,12 +242,10 @@ export default function TaskEditor({ task }: Props) {
             <span>Das Ticket ist geschlossen.</span>
           </div>
         )}
-      </div>
-      <div className="container">
-        <h3>Verlauf</h3>
-        <DividerBlock height={1} />
+      </DashboardContainer>
+      <DashboardContainer header="Verlauf">
         <Timeline align="left" content={customContent} marker={customMarker} value={updates} />
-      </div>
+      </DashboardContainer>
     </div>
   );
 }

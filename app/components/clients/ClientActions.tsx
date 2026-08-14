@@ -10,7 +10,8 @@ import { OverlayPanel } from 'primereact/overlaypanel';
 import { Toast } from 'primereact/toast';
 import { useEffect, useRef, useState } from 'react';
 import { ContextButton, PrimaryButton } from '../buttons/Buttons';
-import { ArrowLeftRight, ArrowRightLeft } from 'lucide-react';
+import { ArrowLeftRight, ArrowRightLeft, Repeat2 } from 'lucide-react';
+import SubscriptionEditor from '../subscriptions/SubscriptionEditor';
 
 interface Props {
   client: User;
@@ -21,6 +22,7 @@ export default function ClientActions({ client }: Props) {
   const toast = useRef<Toast | null>(null);
 
   // STATES
+  const [editing, setEditing] = useState(false);
   const [visible, setVisible] = useState(false);
 
   // INPUTS
@@ -75,7 +77,11 @@ export default function ClientActions({ client }: Props) {
             placeholder="Agenten wählen"
             value={selectedAgent}
           />
-          <PrimaryButton disabled={!selectedAgent} label="Kunden übertragen" onClick={transferClient} />
+          <PrimaryButton
+            disabled={!selectedAgent}
+            label="Kunden übertragen"
+            onClick={transferClient}
+          />
         </div>
       </Dialog>
       <OverlayPanel ref={op}>
@@ -83,7 +89,7 @@ export default function ClientActions({ client }: Props) {
           <ContextButton
             icon={ArrowLeftRight}
             label="Kunden übertragen"
-            onClick={() => setVisible(true)}
+            onClick={(e) => {setVisible(true);op.current?.toggle(e)}}
           />
         </div>
       </OverlayPanel>

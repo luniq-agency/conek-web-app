@@ -11,6 +11,7 @@
   --primary: #4b39ef;
   --primary-dark: #091e7c;
   --secondary: #48f5b6;
+  --border-color: #ebebeb;
 
   --button-secondary: #e4e1ec;
   --border-color: #e6e6e6;
@@ -416,6 +417,7 @@ p-datepicker-next {
 .p-dialog {
   background-color: white;
   border-radius: 20px;
+  width: 100%;
 }
 
 .p-dialog-content {

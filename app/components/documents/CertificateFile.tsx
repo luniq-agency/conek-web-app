@@ -18,7 +18,7 @@ export default function CertificateFile({ certificate }: Props) {
   const certificateActions = useRef<ContextMenu | null>(null);
   const certificateInputRef = useRef<HTMLInputElement | null>(null);
   const [editing, setEditing] = useState(false);
-  const [editingName, setEditingName] = useState(0);
+  const [editingName, setEditingName] = useState('');
 
   const items = [
     {
@@ -69,9 +69,9 @@ export default function CertificateFile({ certificate }: Props) {
       >
         <Image alt="" height={48} src="/icons/pfx.svg" width={48} />
         {editing ? (
-          <InputNumber
+          <InputText
             onBlur={confirmEdit}
-            onChange={(e) => setEditingName(e.value || 2026)}
+            onChange={(e) => setEditingName(e.target.value || '')}
             onKeyDown={(e) => {
               if (e.key === 'Enter') certificateInputRef.current?.blur();
               if (e.key === 'Escape') setEditing(false);

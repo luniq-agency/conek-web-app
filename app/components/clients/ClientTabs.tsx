@@ -13,18 +13,24 @@ import { certificatesLoadUser } from '@/app/actions/certificates';
 import { Button } from 'primereact/button';
 import DividerBlock from '../DividerBlock';
 import { adminsLoadAll } from '@/app/actions/admin';
+import SubscriptionEditor from '../subscriptions/SubscriptionEditor';
+import { useAuth } from '@/app/context/AuthContext';
+import CertificateUploader from '../certificates/CertificateUploader';
 
 interface Props {
   user: User;
 }
 
 export default function ClientTabs({ user }: Props) {
+  const { userProfile } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   // DATA
   const [admins, setAdmins] = useState<User[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [userUpdates, setUserUpdates] = useState<UserUpdate[]>([]);
+
+  const isAdmin = userProfile?.user_role === 'admin';
 
   useEffect(() => {
     if (!user) return;
@@ -68,7 +74,7 @@ export default function ClientTabs({ user }: Props) {
         <div className="column width-100">
           <div className="row space-between width-100">
             <h3>Zertifikatsdateien</h3>
-            <Button icon="pi pi-upload" label="Zertifikatsdatei hochladen" />
+            <CertificateUploader user={user}/>
           </div>
           <DividerBlock height={2} />
           <div className="grid columns-four gap-m">
@@ -84,6 +90,11 @@ export default function ClientTabs({ user }: Props) {
       <TabPanel header="Rechnungen">
         <InvoicesTableUser user={user} />
       </TabPanel>
+      {isAdmin && (
+        <TabPanel header="Abos">
+          <SubscriptionEditor user={user} />
+        </TabPanel>
+      )}
     </TabView>
   );
 }

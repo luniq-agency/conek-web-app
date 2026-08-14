@@ -37,7 +37,7 @@ export async function userLookup(id: string): Promise<User> {
   const supabase = await createClient();
 
   const { data, error } = await supabase.from('user').select('*').eq('id', id).single();
-  if (error) throw new Error(error.message);
+  //if (error) throw new Error(error.message);
 
   return data;
 }

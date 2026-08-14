@@ -13,7 +13,8 @@ export const agent_status = [
 
 export const client_status = [
   {
-    bg: '',
+    bg: '#F0F1F2',
+    color: '#505258',
     label: 'Ausstehend',
     severity: 'warning',
     value: 'pending',
@@ -26,14 +27,15 @@ export const client_status = [
     value: 'in_review',
   },
   {
-    bg: 'var(--success-bg)',
-    color: 'var(--success-text)',
+    bg: '#1F845A',
+    color: 'white',
     label: 'Aktiv',
     severity: 'info',
     value: 'approved',
   },
   {
-    bg: '',
+    bg: '#964AC0',
+    color: '#white',
     label: 'Wiedervorlage',
     severity: 'contrast',
     value: 'on_hold',
@@ -114,16 +116,22 @@ export const invoice_status = [
     value: 'draft',
   },
   {
+    bg: '#fc9619',
+    color: 'white',
     label: 'Gesendet',
     severity: 'warning',
     value: 'sent',
   },
   {
+    bg: 'green',
+    color: 'white',
     label: 'Bezahlt',
     severity: 'success',
     value: 'paid',
   },
   {
+    bg: 'red',
+    color: 'white',
     label: 'Überfällig',
     severity: 'danger',
     value: 'overdue',

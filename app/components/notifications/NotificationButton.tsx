@@ -8,6 +8,8 @@ import { notificationsLoadUser, notificationsMarkAllRead } from '../../actions/n
 import { Button } from 'primereact/button';
 import { DataScroller } from 'primereact/datascroller';
 import NotificationItem from './NotificationItem';
+import styles from './Notifications.module.css';
+import { Bell } from 'lucide-react';
 
 interface Props {
   user: User;
@@ -58,7 +60,9 @@ export default function NotificationButton({ user }: Props) {
         </div>
         {notifications.length >= 1 ? (
           <DataScroller
-            itemTemplate={(item) => <NotificationItem notification={item} onClick={reloadNotifications}/>}
+            itemTemplate={(item) => (
+              <NotificationItem notification={item} onClick={reloadNotifications} />
+            )}
             rows={5}
             value={notifications}
           />
@@ -70,13 +74,14 @@ export default function NotificationButton({ user }: Props) {
           </div>
         )}
       </OverlayPanel>
-      <i
-        className="pi pi-bell p-overlay-badge"
-        style={{ cursor: 'pointer', fontSize: '1.25rem' }}
-        onClick={(e) => op.current?.toggle(e)}
-      >
-        {notifications.length >= 1 && <Badge value={notifications.length}></Badge>}
-      </i>
+      <div className={styles.notificationWrapper} onClick={op.current?.toggle}>
+        <Bell size={24} />
+        {notifications.length >= 1 && (
+          <div className={styles.notificationsBadge}>
+            <span>{notifications.length}</span>
+          </div>
+        )}
+      </div>
     </>
   );
 }
