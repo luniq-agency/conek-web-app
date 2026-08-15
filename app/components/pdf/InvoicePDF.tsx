@@ -1,7 +1,7 @@
 // app/components/pdf/InvoicePDF.tsx
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { Invoice, InvoiceItem, User } from '@/app/types/Database';
-import { formatDate } from '@/app/utils/formats';
+import { formatCurrency, formatDate } from '@/app/utils/formats';
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 11, fontFamily: 'Helvetica' },
@@ -99,8 +99,8 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
               <Text style={styles.col1}>{i + 1}</Text>
               <Text style={styles.col2}>{item.description || '–'}</Text>
               <Text style={styles.col3}>{item.quantity}</Text>
-              <Text style={styles.col4}>{item.price_single?.toFixed(2)} €</Text>
-              <Text style={styles.col5}>{item.price_total?.toFixed(2)} €</Text>
+              <Text style={styles.col4}>{formatCurrency(item.price_single || 0)}</Text>
+              <Text style={styles.col5}>{formatCurrency(item.price_total || 0)}</Text>
             </View>
           ))}
         </View>
@@ -109,11 +109,11 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
         <View style={styles.totals}>
           <View style={styles.totalRow}>
             <Text>Netto</Text>
-            <Text>{netTotal.toFixed(2)} €</Text>
+            <Text>{formatCurrency(netTotal)}</Text>
           </View>
           <View style={styles.totalRow}>
             <Text>MwSt. ({(invoice.tax_rate * 100).toFixed(0)}%)</Text>
-            <Text>{taxAmount.toFixed(2)} €</Text>
+            <Text>{formatCurrency(taxAmount)}</Text>
           </View>
           <View
             style={[
@@ -122,7 +122,7 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
             ]}
           >
             <Text style={styles.bold}>Gesamt</Text>
-            <Text style={styles.bold}>{grossTotal.toFixed(2)} €</Text>
+            <Text style={styles.bold}>{formatCurrency(grossTotal)}</Text>
           </View>
         </View>
 
