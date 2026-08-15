@@ -22,6 +22,27 @@ export default function InvoiceActions({ invoice }: Props) {
   const router = useRouter();
   const toast = useRef<Toast | null>(null);
 
+  // ACTIONS
+  const markAsPaid = async (e: any) => {
+    op.current?.toggle(e);
+    try {
+      await invoiceUpdate({ invoice_status: 'paid' }, invoice.id);
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Rechnungen aktualisiert',
+        detail: 'Die Rechnung wurden als bezahlt markiert.',
+      });
+    } catch (err) {
+      console.error(err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Fehler aufgetreten',
+        detail:
+          'Die Rechnung konnte nicht als bezahlt markiert werden. Probiere es bitte noch einmal.',
+      });
+    }
+  };
+
   const sendInvoice = async () => {
     setSending(true);
     op.current?.hide();
@@ -64,6 +85,7 @@ export default function InvoiceActions({ invoice }: Props) {
             disabled={invoice.invoice_status === 'paid'}
             icon="pi pi-euro"
             label="Als bezahlt markieren"
+            onClick={markAsPaid}
           />
           <Button
             className="button-context"

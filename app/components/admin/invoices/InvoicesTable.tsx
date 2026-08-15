@@ -29,7 +29,11 @@ import { userLookup } from '@/app/actions/users';
 import { invoiceItemsLoad } from '@/app/actions/invoiceitem';
 import { generateInvoicePDF } from '@/app/actions/pdf';
 import Floater from '../../ui/Floater';
-import { PrimaryButton } from '../../buttons/Buttons';
+import { ContextButton, DeleteButton, PrimaryButton, SecondaryButton } from '../../buttons/Buttons';
+import { Delete, Trash } from 'lucide-react';
+import { Dialog } from 'primereact/dialog';
+import Row from '../../layout/Row';
+import DividerBlock from '../../DividerBlock';
 
 interface Props {
   clients?: User[];
@@ -39,6 +43,11 @@ interface Props {
 export default function InvoicesTable({ clients }: Props) {
   const { userProfile } = useAuth();
   const router = useRouter();
+
+  // STATETS
+  const [deleting, setDeleting] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selectedInvoices, setSelectedInvoices] = useState<Invoice[]>([]);
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
 
@@ -59,10 +68,37 @@ export default function InvoicesTable({ clients }: Props) {
   }, [clients]);
 
   const [rowClick, setRowClick] = useState(true);
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [selectedInvoices, setSelectedInvoices] = useState<Invoice[]>([]);
 
   // ACTIONS
+  const cancelDelete = () => {
+    setDeleting(false);
+    setSelectedInvoice(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedInvoice) return;
+    setDeleting(false);
+
+    try {
+      await invoiceDelete(selectedInvoice.id);
+      const res = await invoicesLoadAll();
+      setInvoicesList(res);
+      setSelectedInvoices([]);
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Rechnungen gelöscht',
+        detail: 'Die Rechnungen wurde erfolgreich gelöscht.',
+      });
+    } catch (err) {
+      console.error(err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Fehler aufgetreten',
+        detail: 'Die Rechnung konnte nicht gelöscht werden. Probiere es bitte noch einmal.',
+      });
+    }
+  };
+
   const markAsPaid = async () => {
     if (selectedInvoices.length === 0) return;
 
@@ -80,7 +116,19 @@ export default function InvoicesTable({ clients }: Props) {
       });
     } catch (err) {
       console.error(err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Fehler aufgetreten',
+        detail:
+          'Die Rechnung konnte nicht als bezahlt markiert werden. Probiere es bitte noch einmal.',
+      });
     }
+  };
+
+  const markForDelete = (i: Invoice) => {
+    console.log('Rechnung:', i);
+    setSelectedInvoice(i);
+    setDeleting(true);
   };
 
   //TEMPLATES
@@ -90,6 +138,7 @@ export default function InvoicesTable({ clients }: Props) {
         <Link href={`/admin/rechnungen/${rowData.id}`}>
           <Button className="button-square" icon="pi pi-pencil" />
         </Link>
+        <ContextButton color="red" icon={Trash} onClick={() => markForDelete(rowData)} />
       </div>
     );
   };
@@ -143,7 +192,7 @@ export default function InvoicesTable({ clients }: Props) {
         <Floater>
           <div className="column gap-s">
             <span className="text-s">{selectedInvoices.length} Rechnung(en) ausgewählt</span>
-          <PrimaryButton label="Als bezahlt markieren" onClick={markAsPaid} size="small" />
+            <PrimaryButton label="Als bezahlt markieren" onClick={markAsPaid} size="small" />
           </div>
         </Floater>
       )}
@@ -168,6 +217,23 @@ export default function InvoicesTable({ clients }: Props) {
           </div>
         )}
       </Sidebar>
+      <Dialog
+        draggable={false}
+        header="Rechnung löschen"
+        onHide={cancelDelete}
+        style={{ maxWidth: 480 }}
+        visible={deleting}
+      >
+        <span>
+          Bist du sicher, dass du die Rechnung löschen möchtest? Das kann nicht rückgängig gemacht
+          werden!
+        </span>
+        <DividerBlock height={1} />
+        <Row alignItems="center" gap={8} justifyContent="end">
+          <SecondaryButton label="Abbrechen" onClick={cancelDelete} />
+          <DeleteButton label="Löschen" onClick={confirmDelete} />
+        </Row>
+      </Dialog>
       <DataTable
         emptyMessage="Keine Rechnungen gefunden."
         onSelectionChange={(e: any) => setSelectedInvoices(e.value)}

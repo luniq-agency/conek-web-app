@@ -1,6 +1,6 @@
 'use client';
 
-import { Client, Invoice, InvoiceItem, User } from '@/app/types/Database';
+import { Invoice, InvoiceItem, User } from '@/app/types/Database';
 import { Button } from 'primereact/button';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
@@ -21,13 +21,14 @@ import { tax_rates } from '@/app/constants/Constants';
 import DividerBlock from '../../DividerBlock';
 import { formatCurrency } from '@/app/utils/formats';
 import { Calendar } from 'primereact/calendar';
-import { DatePicker, SelectLabel, SkeletonLoaderLabel } from '../../forms/FormElements';
+import { SkeletonLoaderLabel } from '../../forms/FormElements';
 import { Dialog } from 'primereact/dialog';
 import { Skeleton } from 'primereact/skeleton';
 import { InvoicePDF } from '../../pdf/InvoicePDF';
 import { useAuth } from '@/app/context/AuthContext';
 import LayoutColumn from '../../layout/Column';
 import Row from '../../layout/Row';
+import { toLocalTime } from '@/app/actions/dates/dates';
 
 interface Props {
   clients: User[];
@@ -187,8 +188,8 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
   const updateInvoice = async () => {
     setUpdating(true);
     const invoicePayload = {
-      invoice_date: invoiceDate ? (invoiceDate.toISOString().split('T')[0] as any) : null,
-      invoice_date_due: invoiceDueDate ? (invoiceDueDate.toISOString().split('T')[0] as any) : null,
+      invoice_date: invoiceDate ? (toLocalTime(invoiceDate) as any) : null,
+      invoice_date_due: invoiceDueDate ? (toLocalTime(invoiceDueDate) as any) : null,
       invoice_number: invoiceNumber,
       invoice_total_gross: total,
       invoice_total_net: netTotal,
@@ -197,6 +198,8 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
       tax_rate: taxRate,
       user: invoiceRecipient,
     };
+
+    console.log('Daten:', invoicePayload);
 
     try {
       await invoiceUpdate(invoicePayload, invoice.id);

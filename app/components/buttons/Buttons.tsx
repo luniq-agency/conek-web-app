@@ -2,6 +2,7 @@ import { LucideIcon } from 'lucide-react';
 import styles from './Buttons.module.css';
 
 interface Props {
+  color?: string;
   disabled?: boolean;
   icon?: LucideIcon;
   label?: string;
@@ -9,14 +10,26 @@ interface Props {
   size?: 'small' | 'regular' | 'large';
 }
 
-export function ContextButton({ disabled, icon: Icon, label, onClick }: Props) {
+export function ContextButton({ color = 'var(--primary)', disabled, icon: Icon, label, onClick }: Props) {
   return (
     <button
       className={disabled ? `${styles.buttonContext} ${styles.disabled}` : styles.buttonContext}
       disabled={disabled}
       onClick={onClick}
     >
-      {Icon && <Icon size={14} />} <span>{label}</span>
+      {Icon && <Icon size={14} style={{color}} />} <span>{label}</span>
+    </button>
+  );
+}
+
+export function DeleteButton({ disabled, icon: Icon, label, onClick }: Props) {
+  return (
+    <button
+      className={disabled ? `${styles.buttonDelete} ${styles.disabled}` : styles.buttonDelete}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {Icon && <Icon size={18} />} <span>{label}</span>
     </button>
   );
 }
