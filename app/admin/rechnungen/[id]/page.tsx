@@ -36,7 +36,7 @@ export default async function AdminInvoicePage({ params }: { params: Promise<{ i
       <DividerBlock height={2} />
       <div className="row space-between">
         <div className="row gap-xs align-center">
-        <h1>Rechnung</h1>
+          <h1>Rechnung</h1>
         </div>
         <InvoiceActions invoice={invoice} />
       </div>

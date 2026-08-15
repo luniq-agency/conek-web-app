@@ -133,7 +133,7 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
             Rechnungsbetrag bis zum {formatDate(dueDate)} an das untenstehende Konto.
           </Text>
           <Text style={styles.paragraph}>Mit freundlichen Grüßen</Text>
-          <Text style={styles.paragraph}>Ernest Ekhator</Text>
+          <Text style={styles.paragraph}>Ihr Team von CONEK</Text>
         </View>
 
         {/* FOOTER */}
