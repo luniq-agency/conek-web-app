@@ -403,11 +403,9 @@ export function InvoicesTableUser({ user }: Props) {
         </OverlayPanel>
         {userProfile?.user_role === 'admin' && (
           <>
-            <Button
-              className="button-square"
-              icon="pi pi-pencil"
-              onClick={(e) => selectInvoice(rowData as Invoice)}
-            />
+            <Link href={`/admin/rechnungen/${rowData.id}`}>
+              <Button className="button-square" icon="pi pi-pencil" />
+            </Link>
             <Button
               className="button-square"
               icon="pi pi-ellipsis-v"
