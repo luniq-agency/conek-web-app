@@ -40,9 +40,10 @@ interface Props {
 }
 
 export function InvoicePDF({ invoice, items, recipient }: Props) {
-  const grossTotal = items.reduce((sum, item) => sum + item.price_total, 0);
-  const netTotal = grossTotal / (1 + invoice.tax_rate);
-  const taxAmount = grossTotal - netTotal;
+
+  const gross = invoice.invoice_total_gross;
+  const net = invoice.invoice_total_net;
+  const tax = invoice.tax_amount;
 
   const dueDate = invoice.invoice_date_due
     ? new Date(invoice.invoice_date_due)
@@ -109,11 +110,11 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
         <View style={styles.totals}>
           <View style={styles.totalRow}>
             <Text>Netto</Text>
-            <Text>{formatCurrency(netTotal)}</Text>
+            <Text>{formatCurrency(net)}</Text>
           </View>
           <View style={styles.totalRow}>
             <Text>MwSt. ({(invoice.tax_rate * 100).toFixed(0)}%)</Text>
-            <Text>{formatCurrency(taxAmount)}</Text>
+            <Text>{formatCurrency(tax)}</Text>
           </View>
           <View
             style={[
@@ -122,7 +123,7 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
             ]}
           >
             <Text style={styles.bold}>Gesamt</Text>
-            <Text style={styles.bold}>{formatCurrency(grossTotal)}</Text>
+            <Text style={styles.bold}>{formatCurrency(gross)}</Text>
           </View>
         </View>
 
