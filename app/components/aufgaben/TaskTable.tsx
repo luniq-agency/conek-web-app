@@ -128,7 +128,7 @@ export default function TaskTable({ admins, tasks }: Props) {
       </div>
       <div className="mobile-visible">
         {tasks.map((t, i) => (
-          <TaskBox admins={admins} key={i} task={t} />
+          <TaskBox key={i} task={t} users={admins} />
         ))}
       </div>
     </>

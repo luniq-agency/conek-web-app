@@ -19,7 +19,6 @@ export function UserAvatar({ backgroundColor, color, collapsed, fontSize, height
   const { userProfile } = useAuth();
 
   const label = userProfile?.user_name_first[0];
-
   if (!userProfile?.avatar)
     return (
       <Avatar

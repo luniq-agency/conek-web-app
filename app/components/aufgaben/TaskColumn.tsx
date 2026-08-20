@@ -9,13 +9,13 @@ import { Plus } from 'lucide-react';
 import Row from '../layout/Row';
 
 interface Props {
-  admins: User[];
   color: string;
   header: string;
   tasks?: Task[];
+  users: User[];
 }
 
-export function TaskColumn({ admins, color, header, tasks }: Props) {
+export function TaskColumn({ color, header, tasks, users}: Props) {
   return (
     <div className={styles.taskColumn}>
       <div className={styles.taskHeader} style={{ borderColor: color }}>
@@ -25,7 +25,7 @@ export function TaskColumn({ admins, color, header, tasks }: Props) {
         </Row>
       </div>
       <DividerBlock height={2} />
-      {tasks && tasks.map((t, i) => <TaskBox admins={admins} key={i} task={t} />)}
+      {tasks && tasks.map((t, i) => <TaskBox key={i} task={t} users={users} />)}
     </div>
   );
 }

@@ -79,11 +79,11 @@ export default function ClientTable({ bearbeiter, clients, search }: Props) {
   //FILTER
   const [filters, setFilters] = useState<{
     global: { value: string | null; matchMode: FilterMatchMode };
-    berufsstatus: { value: string | null; matchMode: FilterMatchMode };
+    job_status: { value: string | null; matchMode: FilterMatchMode };
     status: { value: string | null; matchMode: FilterMatchMode };
   }>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    berufsstatus: { value: null, matchMode: FilterMatchMode.EQUALS },
+    job_status: { value: null, matchMode: FilterMatchMode.EQUALS },
     status: { value: null, matchMode: FilterMatchMode.EQUALS },
   });
 
@@ -248,7 +248,7 @@ export default function ClientTable({ bearbeiter, clients, search }: Props) {
           <Column body={nameTemplate} field="nachname" header="Name" sortable />
           <Column
             body={categoryTemplates}
-            field="berufsstatus"
+            field="job_status"
             filter
             filterElement={(options) => (
               <Dropdown

@@ -190,7 +190,7 @@ export type Task = {
   priority: string;
   status: string;
   title: string;
-  user: string | number;
+  user: string | number | null;
 };
 
 export type TaskUpdate = {

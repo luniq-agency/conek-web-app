@@ -65,6 +65,8 @@ export default function ClientEditor({ user: userProp }: Props) {
     clientFamily !== originalFamily ||
     currentDob !== originalDob;
 
+  const hasProfile = user?.user_uuid;
+
   const updateUser = async () => {
     setUpdating(true);
 
@@ -186,6 +188,8 @@ export function ClientContactEditor({ user }: Props) {
   const [clientWebsite, setClientWebsite] = useState(user?.website || '');
   const [clientZip, setClientZip] = useState(user?.plz || '');
 
+  const hasProfile = user?.user_uuid;
+
   const updateUser = async () => {
     setUpdating(true);
     const payload = {
@@ -231,7 +235,7 @@ export function ClientContactEditor({ user }: Props) {
         <TextInputLabel
           label="E-Mail"
           onChange={setClientEmail}
-          readonly={true}
+          readonly={hasProfile ? false : true}
           value={clientEmail}
         />
         <TextInputLabel label="Telefon" onChange={setClientPhone} value={clientPhone} />

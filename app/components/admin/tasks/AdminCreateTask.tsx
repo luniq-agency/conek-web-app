@@ -74,6 +74,7 @@ export default function AdminCreateTask({ onCreate }: Props) {
       priority: taskPriority || 'low',
       status: 'open',
       title: taskName,
+      user: taskUser?.id || null,
     };
 
     try {
@@ -88,7 +89,8 @@ export default function AdminCreateTask({ onCreate }: Props) {
       };
 
       await taskUpdateCreate(taskUpdatePayload);
-      if (selectedAdmin.id !== userProfile?.id) await notificationCreate(notificationPayload, selectedAdmin);
+      if (selectedAdmin.id !== userProfile?.id)
+        await notificationCreate(notificationPayload, selectedAdmin);
       onCreate();
     } catch (err) {
       console.error(err);
@@ -97,7 +99,10 @@ export default function AdminCreateTask({ onCreate }: Props) {
     setVisible(false);
     setTaskAssignee(null);
     setTaskDescription('');
+    setTaskDueDate(null);
     setTaskName('');
+    setTaskPriority('');
+    setTaskUser(null);
   };
 
   // OPTIONS

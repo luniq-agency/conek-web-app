@@ -19,6 +19,10 @@ import DashboardContainer from '../../layout/DashboardContainer';
 import Column from '../../layout/Column';
 import UserDisplay from '../../users/UserDisplay';
 import Row from '../../layout/Row';
+import UserSelector from '../../forms/UserSelector';
+import { filterAdmins } from '@/app/actions/users/filter';
+import { useRouter } from 'next/navigation';
+import DetailField from '../../forms/DetailField';
 
 const updateOptions = [
   {
@@ -41,6 +45,7 @@ interface Props {
 }
 
 export default function TaskEditor({ task }: Props) {
+  const router = useRouter();
   const { userProfile } = useAuth();
   const [updates, setUpdates] = useState<TaskUpdate[]>([]);
   const [userMap, setUserMap] = useState<Record<string, User>>({});
@@ -81,6 +86,17 @@ export default function TaskEditor({ task }: Props) {
     );
   };
 
+  // ACTIONS
+  const reload = async () => {
+    try {
+      router.refresh();
+      const res = await taskUpdatesLoad(task.id);
+      setUpdates(res);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const fetchUpdates = async () => {
     try {
       const res = await taskUpdatesLoad(task.id);
@@ -116,11 +132,12 @@ export default function TaskEditor({ task }: Props) {
   const createUpdate = async () => {
     if (!updateType) return;
 
+    console.log('Ziel:', updateTarget);
     let body = updateText;
     if (updateType === 'close') body = 'Aufgabe wurde geschlossen.';
     if (updateType === 'hold' && date)
       body = `Aufgabe auf Wiedervorlage mit Datum ${formatDate(date)} gesetzt.`;
-    if (updateType === 'transfer')
+    if (updateType === 'transfer' && updateTarget)
       body = `Die Aufgabe wurde an ${updateTarget?.user_name_first} ${updateTarget?.user_name_last} übertragen.`;
     setSubmitting(true);
 
@@ -133,15 +150,17 @@ export default function TaskEditor({ task }: Props) {
     };
 
     const taskPayload = {
+      assignee: updateTarget?.id || '',
       due_date: date || null,
-      status: 'on_hold',
+      status: updateType === 'transfer' ? task.status : 'on_hold',
     };
 
     try {
       await taskUpdateCreate(payload);
       if (updateType === 'close') await taskClose(task.id);
-      if (updateType === 'hold') await taskUpdate(taskPayload, task.id);
-      fetchUpdates();
+      if (updateType === 'hold' || updateType === 'transfer')
+        await taskUpdate(taskPayload, task.id);
+      reload();
     } catch (err) {
       console.error(err);
     } finally {
@@ -158,6 +177,7 @@ export default function TaskEditor({ task }: Props) {
   const targetEmpty = updateType == 'transfer' && !updateTarget;
 
   // USER
+
   const assignee = users.find((t) => t.id === task.assignee);
   const client = users.find((t) => t.id === task.user);
   const creator = users.find((t) => t.id === task.created_by);
@@ -172,19 +192,22 @@ export default function TaskEditor({ task }: Props) {
 
   if (!users || !userOptions) return;
 
+  const admins = filterAdmins(users);
+
   return (
     <div className="row gap-m width-100">
       <DashboardContainer header={task.title}>
-        <Column gap={4}>
-          <label>Beschreibung</label>
-          <span>{task.description || '–'}</span>
-        </Column>
+        <DetailField label="Beschreibung" value={task.description || '–'} />
         <DividerBlock height={1} />
-        <UserDisplay label="Erstellt von" user={creator} />
+        <DetailField label="Erstellt am" value={formatDate(task.created_at)} />
         <DividerBlock height={1} />
-        <UserDisplay label="Bearbeiter" user={assignee} />
+        <DetailField label="Fällig bis" value={task.due_date ? formatDate(task.due_date) : '–'} />
         <DividerBlock height={1} />
-      <UserDisplay label="Verknüpfter Kunde" user={client} />
+        <UserDisplay label="Erstellt von" user={creator || null} />
+        <DividerBlock height={1} />
+        <UserDisplay label="Bearbeiter" user={assignee || null} />
+        <DividerBlock height={1} />
+        <UserDisplay label="Verknüpfter Kunde" user={client || null} />
         <DividerBlock height={1} />
         {task.status != 'closed' ? (
           <div className="column gap-s">
@@ -205,13 +228,11 @@ export default function TaskEditor({ task }: Props) {
               />
             )}
             {updateType === 'transfer' && (
-              <Dropdown
-                filter
-                filterPlaceholder="Suchen"
-                onChange={(e) => setUpdateTarget(e.value)}
+              <UserSelector
+                label="Neuer Bearbeiter"
+                onChange={setUpdateTarget}
                 optionLabel="fullName"
-                optionValue="id"
-                options={userOptions}
+                options={admins}
                 value={updateTarget}
               />
             )}
@@ -239,7 +260,7 @@ export default function TaskEditor({ task }: Props) {
         ) : (
           <div className="column gap-s">
             <label>Update</label>
-            <span>Das Ticket ist geschlossen.</span>
+            <span>Die Aufgabe wurde abgeschlossen.</span>
           </div>
         )}
       </DashboardContainer>

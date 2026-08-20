@@ -10,6 +10,7 @@ interface Props {
   gap?: number | string;
   grow?: boolean;
   justifyContent?: 'start' | 'center' | 'end' | 'space-between';
+  padding?: number | string;
   width?: string | number;
 }
 
@@ -20,6 +21,7 @@ export default function Row({
   gap = '1rem',
   grow,
   justifyContent,
+  padding,
   width = '100%',
 }: Props) {
   return (
@@ -30,6 +32,7 @@ export default function Row({
         flexGrow: grow ? 1 : 0,
         gap,
         justifyContent,
+        padding,
         width,
       }}
     >

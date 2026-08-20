@@ -10,9 +10,10 @@ import { useAuth } from '@/app/context/AuthContext';
 interface Props {
   admins: User[];
   tasks: Task[];
+  users: User[];
 }
 
-export default function TaskKanban({ admins, tasks }: Props) {
+export default function TaskKanban({ admins, tasks, users }: Props) {
   const onHold = tasks.filter((t) => t.status === 'on_hold');
   const open = tasks.filter((t) => t.status === 'open');
   const overdue = tasks.filter((t) => t.status === 'overdue');
@@ -20,22 +21,22 @@ export default function TaskKanban({ admins, tasks }: Props) {
   return (
     <div className={styles.taskGrid}>
       <TaskColumn
-        admins={admins}
         color="var(--primary)"
         header="In Bearbeitung"
         tasks={open}
+        users={users}
       />
       <TaskColumn
-        admins={admins}
         color="var(--error-text)"
         header="Überfällig"
         tasks={overdue}
+        users={users}
       />
       <TaskColumn
-        admins={admins}
         color="var(--warning-text)"
         header="Wiedervorlage"
         tasks={onHold}
+        users={users}
       />
     </div>
   );

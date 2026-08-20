@@ -98,9 +98,11 @@ export default function TasksGrid({ admins, user }: Props) {
             onClick={() => setCreating(true)}
           />
         </div>
+        {/*
         {tasks.map((t, i) => (
-          <TaskBox admins={admins} task={t} />
+          <TaskBox task={t} users={users} />
         ))}
+          */}
         <div className="grid columns-three gap-m"></div>
       </div>
     </div>
