@@ -80,8 +80,31 @@
 }
 
 .disabled {
-  cursor: default;
+  cursor: default !important;
   opacity: 0.5;
+}
+
+.disabled:hover {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+.interfaceButton {
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  font-size: 12px;
+  font-weight: 500;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  transition: all 0.25s ease-out;
+}
+
+.interfaceButton:hover {
+  background-color: var(--primary);
+  color: white;
 }
 
 .small {

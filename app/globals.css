@@ -517,6 +517,18 @@ p-datepicker-next {
   width: 100%;
 }
 
+.p-sidebar {
+  width: 100%;
+}
+
+.p-sidebar-content {
+  padding: 1.25rem;
+}
+
+.p-sidebar-header {
+  border-bottom: 1px solid var(--border-color);
+}
+
 .p-sortable-column-icon {
   color: var(--text-tertiary);
   font-size: 0.7rem;

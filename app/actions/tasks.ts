@@ -17,12 +17,23 @@ export async function taskClose(id: string) {
 
   return created;
 }
-export async function taskCreate(data: Partial<Task>) {
+export async function taskCreate(data: Partial<Task>, user: User) {
   const supabase = await createClient();
 
   const { data: created, error } = await supabase.from('task').insert(data).select().single();
 
   if (error) throw new Error(error.message);
+
+  const { data: updateData, error: updateError } = await supabase
+    .from('task_update')
+    .insert({
+      body: 'Aufgabe erstellt',
+      created_by: user.id,
+      creator: `${user.user_name_first} ${user.user_name_last}`,
+      task: created.id,
+    })
+    .select()
+    .single();
 
   return created;
 }
@@ -147,7 +158,11 @@ export async function tasksOpenAdmin() {
 
 export async function tasksOpenAgency(id: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase.from('task').select('*').in('status', ['overdue', 'open']).eq('assignee', id);
+  const { data, error } = await supabase
+    .from('task')
+    .select('*')
+    .in('status', ['overdue', 'open'])
+    .eq('assignee', id);
 
   if (error) throw new Error(error.message);
   return data || [];

@@ -56,7 +56,7 @@ export default function AdminCreateTask({ onCreate }: Props) {
   const createTask = async () => {
     setSubmitting(true);
 
-    if (!selectedAdmin) return;
+    if (!selectedAdmin || !userProfile) return;
 
     const notificationPayload = {
       message: `${userProfile?.user_name_first} ${userProfile?.user_name_last} hat die Aufgabe '${taskName}' erstellt und dir zugewiesen.`,
@@ -78,7 +78,7 @@ export default function AdminCreateTask({ onCreate }: Props) {
     };
 
     try {
-      const taskRes = await taskCreate(taskPayload);
+      const taskRes = await taskCreate(taskPayload, userProfile);
 
       const taskUpdatePayload = {
         body: `${userProfile?.user_name_first} ${userProfile?.user_name_last} hat den Task erstellt.`,

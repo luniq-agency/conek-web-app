@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { SelectLabel, TextAreaLabel, TextInputLabel } from '../forms/FormElements';
 import { taskCreate, tasksLoadUser } from '@/app/actions/tasks';
+import { useAuth } from '@/app/context/AuthContext';
 
 interface Props {
   admins: User[];
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export default function TasksGrid({ admins, user }: Props) {
+  const { userProfile } = useAuth();
+
   // STATES
   const [creating, setCreating] = useState(false);
 
@@ -47,6 +50,8 @@ export default function TasksGrid({ admins, user }: Props) {
 
   // ACTIONS
   const createTask = async () => {
+    if (!userProfile) return;
+
     const taskPayload = {
       description: taskDescription,
       due_date: taskDueDate,
@@ -56,7 +61,7 @@ export default function TasksGrid({ admins, user }: Props) {
     };
 
     try {
-      await taskCreate(taskPayload);
+      await taskCreate(taskPayload, userProfile);
       refreshData();
     } catch (err) {
       console.error(err);

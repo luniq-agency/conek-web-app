@@ -1,4 +1,4 @@
-import { taskCreate, tasksLoadUser } from '@/app/actions/tasks';
+import { taskClose, taskCreate, tasksLoadUser } from '@/app/actions/tasks';
 import { Task, User } from '@/app/types/Database';
 import { formatDate } from '@/app/utils/formats';
 import { Button } from 'primereact/button';
@@ -16,6 +16,13 @@ import { Toast } from 'primereact/toast';
 import { task_status } from '@/app/constants/Constants';
 import Tag from '../ui/Tag';
 import { UserAvatarOther } from '../UserAvatar';
+import { Sidebar } from 'primereact/sidebar';
+import TaskDetailSidebar from './TaskDetailSidebar';
+import { usersLoadAll } from '@/app/actions/users';
+import { useAuth } from '@/app/context/AuthContext';
+import { ContextButton } from '../buttons/Buttons';
+import { InterfaceButton } from '../buttons/InterfaceButton';
+import { Check } from 'lucide-react';
 
 interface Props {
   staff: User[];
@@ -24,18 +31,24 @@ interface Props {
 
 export default function AufgabenTable({ staff, user }: Props) {
   const toast = useRef<Toast | null>(null);
+  const { userProfile } = useAuth();
 
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   // STATES
   const [creating, setCreating] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (!user) return;
 
     const fetchData = async () => {
       const res = await tasksLoadUser(user.id);
+      const userRes = await usersLoadAll();
       setTasks(res);
+      setUsers(userRes);
     };
     fetchData();
   }, [user]);
@@ -80,17 +93,21 @@ export default function AufgabenTable({ staff, user }: Props) {
 
   // ACTIONS
   const createTask = async () => {
+    if (!userProfile) return;
+
     const taskPayload = {
       assignee: taskAssignee ? taskAssignee.id : null,
+      created_by: userProfile?.id,
       description: taskDescription,
       due_date: taskDueDate,
+      priority: 'medium',
       status: 'open',
       title: taskName,
       user: user.id,
     };
 
     try {
-      await taskCreate(taskPayload);
+      await taskCreate(taskPayload, userProfile);
       refresh();
       toast.current?.show({
         severity: 'success',
@@ -108,19 +125,51 @@ export default function AufgabenTable({ staff, user }: Props) {
     }
   };
 
+  const markDone = async () => {
+    if (!selectedTask) return;
+    await taskClose(selectedTask.id);
+    setVisible(false);
+    refresh();
+  };
+
   const refresh = async () => {
+    setVisible(false);
     const res = await tasksLoadUser(user.id);
     setTasks(res);
+    setSelectedTask(null);
   };
+
+  // DESIGN
+  const customHeader = (
+    <Row>
+      <InterfaceButton
+        disabled={selectedTask?.status === 'closed'}
+        icon={Check}
+        label="Als erledigt markieren"
+        onClick={markDone}
+      />
+    </Row>
+  );
 
   return (
     <LayoutColumn>
       <Toast ref={toast} />
+      <Sidebar
+        header={customHeader}
+        onHide={() => setVisible(false)}
+        position="right"
+        style={{ maxWidth: 640, width: '100%' }}
+        visible={visible}
+      >
+        {selectedTask && (
+          <TaskDetailSidebar onFinished={refresh} task={selectedTask} users={users} />
+        )}
+      </Sidebar>
       <Dialog
         draggable={false}
         header="Task erstellen"
         onHide={() => setCreating(false)}
-        style={{ maxWidth: 400, width: '100%' }}
+        style={{ maxWidth: 800, width: '100%' }}
         visible={creating}
       >
         <div className="column gap-m">
@@ -149,7 +198,14 @@ export default function AufgabenTable({ staff, user }: Props) {
           onClick={() => setCreating(true)}
         />
       </Row>
-      <DataTable emptyMessage="Keine Aufgaben gefunden" value={tasks}>
+      <DataTable
+        emptyMessage="Keine Aufgaben gefunden"
+        onRowClick={(e) => {
+          setSelectedTask(e.data as Task);
+          setVisible(true);
+        }}
+        value={tasks}
+      >
         <Column field="title" header="Name" />
         <Column body={assigneeTemplate} header="Bearbeiter" />
         <Column body={statusTemplate} header="Status" />
