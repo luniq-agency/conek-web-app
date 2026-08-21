@@ -209,8 +209,8 @@ export const service_options = [
 
 export const task_status = [
   {
-    bg: 'var(--success)',
-    color: '',
+    bg: '#FEF7C8',
+    color: '#7F5F01',
     label: 'Offen',
     severity: 'primary',
     value: 'open',

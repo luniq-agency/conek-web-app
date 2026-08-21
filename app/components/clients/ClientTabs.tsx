@@ -16,6 +16,7 @@ import { adminsLoadAll } from '@/app/actions/admin';
 import SubscriptionEditor from '../subscriptions/SubscriptionEditor';
 import { useAuth } from '@/app/context/AuthContext';
 import CertificateUploader from '../certificates/CertificateUploader';
+import AufgabenTable from '../aufgaben/AufgabenTable';
 
 interface Props {
   user: User;
@@ -68,7 +69,7 @@ export default function ClientTabs({ user }: Props) {
         <ClientContactEditor user={user} />
       </TabPanel>
       <TabPanel header="Aufgaben">
-        <TasksGrid admins={admins} user={user} />
+        <AufgabenTable staff={admins} user={user}/>
       </TabPanel>
       <TabPanel header="Zertifikatsdatei">
         <div className="column width-100">

@@ -11,6 +11,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Password } from 'primereact/password';
 import { SelectItemOptionsType } from 'primereact/selectitem';
 import { Skeleton } from 'primereact/skeleton';
+import { useState } from 'react';
 
 interface Props {
   additional?: string;
@@ -39,28 +40,27 @@ interface Props {
   value?: string;
 }
 
-export function DatePicker({
-  label,
-  maxDate,
-  minDate,
-  onDateChange,
-  showCalendar,
-  dateValue,
-}: Props) {
+export function DatePicker({ label, maxDate, minDate, onDateChange, dateValue }: Props) {
+  const [inputValue, setInputValue] = useState(
+    dateValue ? dateValue.toLocaleDateString('de-DE') : ''
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
+    const parts = val.split('.');
+    if (parts.length === 3 && parts[2].length === 4) {
+      const date = new Date(
+        `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`
+      );
+      if (!isNaN(date.getTime())) onDateChange?.(date);
+    }
+  };
+
   return (
     <div className="column width-100 gap-xs">
-      <div className="row align-center gap-xs">
-        <label>{label}</label>
-      </div>
-      <Calendar
-        dateFormat="dd.mm.yy"
-        minDate={minDate}
-        maxDate={maxDate}
-        onChange={(e) => onDateChange?.((e.value as Date) || new Date())}
-        placeholder="dd.mm.yyyy"
-        showOnFocus={showCalendar || true}
-        value={dateValue}
-      />
+      <label>{label}</label>
+      <InputText onChange={handleChange} placeholder="TT.MM.JJJJ" value={inputValue} />
     </div>
   );
 }
@@ -93,7 +93,7 @@ export function NumberInputLabel({ additional, label, onNumberChange, numberValu
 export function PasswordInputIconAuth({ autoComplete, icon, onChange, placeholder, value }: Props) {
   return (
     <IconField className="row gap-xs align-center" iconPosition="left">
-      <KeyRound color="var(--primary" size={18}/>
+      <KeyRound color="var(--primary" size={18} />
       <Password
         autoComplete={autoComplete}
         feedback={false}
@@ -199,4 +199,3 @@ export function TextInputLabel({
     </div>
   );
 }
-

@@ -5,9 +5,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import DividerBlock from '../components/DividerBlock';
-import { SecondaryButton, TertiaryButton } from '../components/buttons/Buttons';
+import { TertiaryButton } from '../components/buttons/Buttons';
 import Link from 'next/link';
-import { PasswordInputIconAuth, TextInputIconAuth } from '../components/forms/FormElements';
 import { AuthPasswordInput } from '../components/forms/AuthInputs';
 
 export default function PasswordReset() {

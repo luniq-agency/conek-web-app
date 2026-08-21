@@ -180,7 +180,7 @@ export type SubscriptionItem = {
 }
 
 export type Task = {
-  assignee: string;
+  assignee: string | null;
   category: string;
   created_at: Date;
   created_by: string;
