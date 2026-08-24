@@ -29,6 +29,8 @@ export default async function AdminClientPage({ params }: { params: Promise<{ id
 
   const home = { icon: 'pi pi-home', url: '/admin' };
 
+  // DATA
+  const bearbeiter = user.bearbeiter && userLookup(user.bearbeiter);
   const job = job_categories.find((t) => t.value === user.job_status);
 
   if (!user) return;
@@ -53,7 +55,17 @@ export default async function AdminClientPage({ params }: { params: Promise<{ id
             <h1>
               {user.user_name_last}, {user.user_name_first}
             </h1>
-            <span>Angemeldet seit: {formatDate(user.created_at)}</span>
+            <span>
+              Angemeldet seit: {formatDate(user.created_at)} •{' '}
+              {bearbeiter ? (
+                <span>
+                  Bearbeiter: {(await bearbeiter).user_name_first}{' '}
+                  {(await bearbeiter).user_name_last}
+                </span>
+              ) : (
+                <span>Selbst registriert</span>
+              )}
+            </span>
           </div>
         </div>
         <ClientActions client={user} />

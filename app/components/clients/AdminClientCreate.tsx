@@ -5,17 +5,13 @@ import { Client } from '@/app/types/Database';
 import { clientInvite } from '@/app/actions/clients';
 import { Dialog } from 'primereact/dialog';
 import { family_options, job_categories } from '@/app/constants/Constants';
-import {
-  DatePicker,
-  NumberInputLabel,
-  SelectLabel,
-  TextInputLabel,
-} from '@/app/components/forms/FormElements';
+import { NumberInputLabel, SelectLabel, TextInputLabel } from '@/app/components/forms/FormElements';
 import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import Grid from '../layout/Grid';
 import { Toast } from 'primereact/toast';
+import { DatePicker } from '../forms/datepicker/DatePicker';
 
 interface Props {
   onCreate?: () => void;
@@ -115,10 +111,9 @@ export default function AdminClientCreate({ onCreate }: Props) {
               <TextInputLabel label="E-Mail" onChange={setEmail} value={email} />
               <TextInputLabel label="Telefonnummer" onChange={setTelefon} value={telefon} />
               <DatePicker
-                dateValue={geburtsdatum || maxDate}
                 label="Geburtsdatum"
-                maxDate={maxDate}
-                onDateChange={setGeburtsdatum}
+                onChange={setGeburtsdatum}
+                value={geburtsdatum}
               />
               <TextInputLabel
                 additional="(Optional)"

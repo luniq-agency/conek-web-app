@@ -153,7 +153,7 @@ export function InvoicePDF({ invoice, items, recipient }: Props) {
               </View>
               <View style={{ alignItems: 'flex-start' }}>
                 <Text style={{ fontSize: 8, color: '#aaa' }}>
-                  IBAN: DE66 2504 0066 0202 7621 000
+                  IBAN: DE66 2504 0066 0202 7621 00
                 </Text>
                 <Text style={{ fontSize: 8, color: '#aaa' }}>USt-IdNr.: DE450331164</Text>
                 <Text style={{ fontSize: 8, color: '#aaa' }}>Handelsreg.: HRB 209721</Text>
