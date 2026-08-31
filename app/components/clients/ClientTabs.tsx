@@ -56,13 +56,14 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
   const [clientDob, setClientDob] = useState<Date | null>(user.dob ? new Date(user.dob) : null);
   const [email, setEmail] = useState(user.email || '');
   const [clientFamily, setClientFamily] = useState(user.family_status || '');
-  const [clientIban, setClientIban] = useState(user.iban || '');
+  const [iban, setIban] = useState(user.iban || '');
   const [clientJob, setClientJob] = useState(user.job || '');
   const [clientJobType, setClientJobType] = useState(user.job_status || '');
   const [clientKids, setClientKids] = useState(user.kinder || 0);
   const [clientNachname, setClientNachname] = useState(user.user_name_last || '');
   const [clientNotes, setClientNotes] = useState(user.notizen || '');
   const [plz, setPlz] = useState(user.plz || '');
+  const [steuerid, setSteuerid] = useState(user.steuer_id || '');
   const [street, setStreet] = useState(user.anschrift || '');
   const [telefon, setTelefon] = useState(user.telefon || '');
   const [clientVorname, setClientVorname] = useState(user.user_name_first || '');
@@ -79,13 +80,13 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
       dob: clientDob ? clientDob.toISOString().split('T')[0] : undefined,
       email,
       family_status: clientFamily,
-      iban: clientIban,
+      iban,
       job: clientJob,
       job_status: clientJobType,
       kinder: clientKids,
       notizen: clientNotes,
       plz,
-      steuer_id: clientTaxId,
+      steuer_id: steuerid,
       telefon,
       user_name_first: clientVorname,
       user_name_last: clientNachname,
@@ -97,10 +98,11 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
       user_name_first: clientVorname,
       user_name_last: clientNachname,
       job: clientJob,
-      iban: clientIban,
+      iban: iban,
       kinder: clientKids,
       family_status: clientFamily,
       dob: clientDob?.toISOString().split('T')[0] ?? null,
+      steuerid,
       telefon,
     };
 
@@ -113,10 +115,11 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
     clientVorname,
     clientNachname,
     clientJob,
-    clientIban,
+    iban,
     clientKids,
     clientFamily,
     clientDob,
+    steuerid,
     street,
     telefon,
     city,
@@ -149,15 +152,17 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
     kinder: user.kinder,
     family_status: user.family_status,
     dob: user.dob,
+    steuerid: user.steuer_id,
     telefon: user.telefon,
   });
 
   const isChanged =
+    iban != originalValues.current.iban ||
+    steuerid != originalValues.current.steuerid ||
     telefon !== originalValues.current.telefon ||
     clientVorname !== originalValues.current.user_name_first ||
     clientNachname !== originalValues.current.user_name_last ||
     clientJob !== originalValues.current.job ||
-    clientIban !== originalValues.current.iban ||
     clientKids !== originalValues.current.kinder ||
     clientFamily !== originalValues.current.family_status ||
     (clientDob?.toISOString().split('T')[0] ?? null) !== originalValues.current.dob;
@@ -206,8 +211,8 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
             numberValue={clientKids}
             onNumberChange={setClientKids}
           />
-          <TextInputLabel label="IBAN" onChange={setClientIban} value={clientIban} />
-          <TextInputLabel label="Steuer-ID" onChange={setClientTaxId} value={clientTaxId} />
+          <TextInputLabel label="IBAN" onChange={setIban} value={iban} />
+          <TextInputLabel label="Steuer-ID" onChange={setSteuerid} value={steuerid} />
           <div />
           <TextAreaLabel label="Notizen" onChange={setClientNotes} value={clientNotes} />
         </Grid>
