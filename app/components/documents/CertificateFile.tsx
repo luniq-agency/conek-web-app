@@ -7,14 +7,15 @@ import { useRef, useState } from 'react';
 import { ContextMenu } from 'primereact/contextmenu';
 import { TextInput } from '@react-pdf/renderer';
 import { InputText } from 'primereact/inputtext';
-import { certificateUpdate } from '@/app/actions/certificates';
+import { certificateDelete, certificateUpdate } from '@/app/actions/certificates';
 import { InputNumber } from 'primereact/inputnumber';
 
 interface Props {
   certificate: Certificate;
+  onDelete: () => void;
 }
 
-export default function CertificateFile({ certificate }: Props) {
+export default function CertificateFile({ certificate, onDelete}: Props) {
   const certificateActions = useRef<ContextMenu | null>(null);
   const certificateInputRef = useRef<HTMLInputElement | null>(null);
   const [editing, setEditing] = useState(false);
@@ -31,6 +32,7 @@ export default function CertificateFile({ certificate }: Props) {
     },
     {
       label: 'Löschen',
+      command: () => deleteCertificate(),
     },
   ];
 
@@ -57,6 +59,11 @@ export default function CertificateFile({ certificate }: Props) {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const deleteCertificate = async () => {
+    await certificateDelete(certificate.id);
+    onDelete();
   };
 
   return (

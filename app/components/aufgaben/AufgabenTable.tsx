@@ -10,10 +10,10 @@ import { SelectLabel, TextAreaLabel, TextInputLabel } from '../forms/FormElement
 import LayoutColumn from '../layout/Column';
 import Row from '../layout/Row';
 import UserSelector from '../forms/UserSelector';
-import { filterAdmins } from '@/app/actions/users/filter';
+import { filterAdmins, filterClients } from '@/app/actions/users/filter';
 import { DatePicker } from '../forms/datepicker/DatePicker';
 import { Toast } from 'primereact/toast';
-import { task_status } from '@/app/constants/Constants';
+import { priority_options, task_status } from '@/app/constants/Constants';
 import Tag from '../ui/Tag';
 import { UserAvatarOther } from '../UserAvatar';
 import { Sidebar } from 'primereact/sidebar';
@@ -58,10 +58,13 @@ export default function AufgabenTable({ staff, user }: Props) {
   const [taskDescription, setTaskDescription] = useState('');
   const [taskDueDate, setTaskDueDate] = useState<Date | null>(null);
   const [taskName, setTaskName] = useState('');
+  const [priority, setPriority] = useState('');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // FILTERS
   const admins = filterAdmins(staff);
   const agents = staff.filter((s) => s.user_role === 'agency');
+  const clients = filterClients(users, user.id);
 
   // TEMPLATES
   const assigneeTemplate = (rowData: Task) => {
@@ -100,7 +103,7 @@ export default function AufgabenTable({ staff, user }: Props) {
       created_by: userProfile?.id,
       description: taskDescription,
       due_date: taskDueDate,
-      priority: 'medium',
+      priority,
       status: 'open',
       title: taskName,
       user: user.id,
@@ -122,6 +125,7 @@ export default function AufgabenTable({ staff, user }: Props) {
       setTaskDescription('');
       setTaskDueDate(null);
       setTaskName('');
+      setPriority('');
     }
   };
 
@@ -169,7 +173,7 @@ export default function AufgabenTable({ staff, user }: Props) {
         draggable={false}
         header="Task erstellen"
         onHide={() => setCreating(false)}
-        style={{ maxWidth: 800, width: '100%' }}
+        style={{ maxWidth: 560, width: '100%' }}
         visible={creating}
       >
         <div className="column gap-m">
@@ -180,6 +184,12 @@ export default function AufgabenTable({ staff, user }: Props) {
             value={taskDescription}
           />
           <DatePicker label="Fälligkeitsdatum" onChange={setTaskDueDate} value={taskDueDate} />
+          <SelectLabel
+            label="Priorität"
+            onChange={setPriority}
+            options={priority_options}
+            value={priority}
+          />
           <UserSelector
             label="Bearbeiter (optional)"
             onChange={setTaskAssignee}

@@ -40,8 +40,6 @@ export default function DocumentUploader({ folder, onUpload, owner }: Props) {
 
   const uploadDocument = async () => {
     setSubmitting(true);
-    console.log('Owner:', owner);
-    console.log('Datei:', documentFile);
     if (!documentFile || !owner) return;
 
     const name = sanitizeFileName(documentName);
@@ -50,6 +48,7 @@ export default function DocumentUploader({ folder, onUpload, owner }: Props) {
       await documentUpload(documentFile.file, name, documentFileType, documentName, owner, folder);
       setDocumentFile(null);
       setDocumentName('');
+      onUpload();
     } catch (err) {
       console.error('Upload Fehler:', err);
     } finally {

@@ -16,6 +16,7 @@ import { DatePicker } from '../forms/datepicker/DatePicker';
 interface Props {
   onCreate?: () => void;
 }
+
 export default function AdminClientCreate({ onCreate }: Props) {
   const { userProfile } = useAuth();
   const [visible, setVisible] = useState(false);
@@ -53,7 +54,7 @@ export default function AdminClientCreate({ onCreate }: Props) {
       bearbeiter: isAgent ? userProfile.id : null,
       dob: geburtsdatum?.toISOString().split('T')[0] || null,
       email,
-      family_status: family || 'unmarried',
+      family_status: family || 'single',
       iban,
       job: beruf,
       job_status: berufsstatus,

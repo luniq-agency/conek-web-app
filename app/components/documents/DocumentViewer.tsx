@@ -232,7 +232,12 @@ export default function DocumentViewer({ backgroundColor, header, client, hl, us
       );
       setDocumentFile(null);
       setDocumentName('');
-      router.refresh();
+      const [docs, folderRes] = await Promise.all([
+        documentsLoadUser(owner),
+        foldersLoadUser(owner),
+      ]);
+      setFolders(folderRes);
+      const visibleDocuments = docs.filter((d) => (d as any).folder === selectedFolder);
     } catch (err) {
       console.error('Upload Fehler:', err);
     } finally {
@@ -308,10 +313,10 @@ export default function DocumentViewer({ backgroundColor, header, client, hl, us
           />
         </div>
       </Dialog>
-        <div className="row space-between">
-          {hl ? <h1>Dokumente</h1> : <h3>Dokumente</h3>}
-          <DocumentUploader folder={selectedFolder} onUpload={updateDocuments} owner={owner}/>
-        </div>
+      <div className="row space-between">
+        {hl ? <h1>Dokumente</h1> : <h3>Dokumente</h3>}
+        <DocumentUploader folder={selectedFolder} onUpload={updateDocuments} owner={owner} />
+      </div>
       <DividerBlock height={2} />
       <ContextMenu model={items} ref={folderMenu} breakpoint="767px" />
       {selectedFolder && (
