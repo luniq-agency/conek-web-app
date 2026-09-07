@@ -29,6 +29,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import LayoutColumn from '../../layout/Column';
 import Row from '../../layout/Row';
 import { toLocalTime } from '@/app/actions/dates/dates';
+import { Toast } from 'primereact/toast';
 
 interface Props {
   clients: User[];
@@ -40,6 +41,7 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
   const { userProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [previewing, setPreviewing] = useState(false);
+  const toast = useRef<Toast | null>(null);
   const [updating, setUpdating] = useState(false);
 
   const [items, setItems] = useState<InvoiceItem[]>([]);
@@ -106,11 +108,12 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
     };
 
     try {
-      await invoiceItemCreate(payload);
+      const res = await invoiceItemCreate(payload);
+      setItems((prev) => [...prev, res]);
     } catch (err) {
       console.error(err);
     } finally {
-      updateItems();
+      /*updateItems();*/
     }
   };
 
@@ -191,16 +194,13 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
       invoice_date: invoiceDate ? (toLocalTime(invoiceDate) as any) : null,
       invoice_date_due: invoiceDueDate ? (toLocalTime(invoiceDueDate) as any) : null,
       invoice_number: invoiceNumber,
-      invoice_total_gross: total,
-      invoice_total_net: netTotal,
-      tax_amount: taxAmount,
+      invoice_total_gross: Number(total.toFixed(2)),
+      invoice_total_net: Number(netTotal.toFixed(2)),
+      tax_amount: Number(taxAmount.toFixed(2)),
       tax_category: taxCategory,
       tax_rate: taxRate,
       user: invoiceRecipient,
     };
-
-    console.log('Daten:', invoicePayload);
-
     try {
       await invoiceUpdate(invoicePayload, invoice.id);
       await Promise.all(
@@ -220,8 +220,18 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
       setInvoiceTaxAmount(taxAmount);
       setInvoiceTotal(grossTotal);
       setInvoiceTotalNet(netTotal);
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Änderungen gespeichert',
+        detail: 'Die Rechnung wurden erfolgreich gespeichert.',
+      });
     } catch (err) {
       console.error(err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'Die Rechnung konnte nicht gespeichert werden. Bitte probieren Sie es erneut.',
+      });
     } finally {
       setUpdating(false);
       if (onSubmit) onSubmit();
@@ -275,6 +285,7 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
 
   return (
     <div className="column gap-m">
+      <Toast ref={toast} />
       <Dialog
         contentClassName="previewer"
         draggable={false}
@@ -366,7 +377,7 @@ export default function InvoiceEditor({ clients, invoice, onSubmit }: Props) {
           text
         />
       </div>
-      <DataTable emptyMessage="Keine Posten gefunden" value={items}>
+      <DataTable emptyMessage="Keine Posten gefunden" sortField="index" sortOrder={1} value={items}>
         <Column field="index" header="#" />
         <Column body={descriptionEditTemplate} header="Beschreibung" />
         <Column body={quantityEditTemplate} header="Menge" />

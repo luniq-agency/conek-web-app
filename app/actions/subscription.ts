@@ -18,35 +18,29 @@ export async function createStripeCustomer(id: string, email: string, name: stri
 
 export async function createSubscription(
   customerId: string,
-  pricePerMonth: number, // in Cent, z.B. 2900 = 29€
-  description: string,
+  stripePriceId: string,
+  userId: string,
   startDate?: number
 ) {
-  const session = await stripe.checkout.sessions.create({
+  const isDev = process.env.NODE_ENV === 'development';
+  const item = isDev ? 'price_1UAp14EU3GZOBU2i2a18fHuZ' : stripePriceId;
+
+  const subscription = await stripe.subscriptions.create({
     customer: customerId,
-    mode: 'subscription',
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: 'eur',
-          recurring: { interval: 'month' },
-          unit_amount: pricePerMonth,
-          product_data: {
-            name: description,
-          },
-        },
-      },
-    ],
-    subscription_data: {
-      billing_cycle_anchor: startDate, // ← Startdatum
-      proration_behavior: 'none',
+    items: [{ price: item }],
+    billing_cycle_anchor: startDate,
+    proration_behavior: 'none',
+    collection_method: 'send_invoice',
+    days_until_due: 14,
+    metadata: { userId: userId },
+    payment_settings: {
+      payment_method_types: ['card', 'sepa_debit'],
     },
-    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?success=true`,
-    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard`,
   });
 
-  return session.url ?? '';
+  return {
+    subscriptionId: subscription.id,
+  };
 }
 
 export async function subscriptionsGetForUser(id: string): Promise<SubscriptionItem[]> {

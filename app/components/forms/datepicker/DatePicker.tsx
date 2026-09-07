@@ -4,11 +4,14 @@ import { useState } from 'react';
 interface Props {
   label: string;
   onChange: (date: Date) => void;
-  value: Date | null;
+  value: Date | string | null;
 }
 
 export function DatePicker({ label, onChange, value }: Props) {
-  const [inputValue, setInputValue] = useState(value ? value.toLocaleDateString('de-DE') : '');
+  const dateValue = value ? new Date(value) : null;
+  const [inputValue, setInputValue] = useState(
+    dateValue ? dateValue.toLocaleDateString('de-DE') : ''
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/\D/g, ''); // nur Zahlen

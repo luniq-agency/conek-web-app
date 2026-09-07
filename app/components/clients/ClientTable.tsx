@@ -237,7 +237,7 @@ export default function ClientTable({ bearbeiter, clients, search }: Props) {
           paginator
           onSelectionChange={(e: any) => setSelectedClients(e.value)}
           paginatorTemplate="FirstPageLink PrevPageLink NextPageLink LastPageLink CurrentPageReport"
-          rows={rows}
+          rows={10}
           selection={selectedClients}
           selectionMode={rowClick ? null : 'checkbox'}
           sortField="user_name_last"

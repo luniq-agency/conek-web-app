@@ -45,9 +45,10 @@ export default function AdminCreateInvoice({ onCreate, secondary, user, users }:
   const [selectedClient, setSelectedClient] = useState<User | null>(null);
 
   const createInvoice = async () => {
+    const number = invoiceNumber ? invoiceNumber : invoicePlaceholder;
     const payload = user
       ? {
-          invoice_number: invoiceNumber,
+          invoice_number: number,
           invoice_status: 'draft',
           invoice_total_gross: 0,
           invoice_total_net: 0,
@@ -56,7 +57,7 @@ export default function AdminCreateInvoice({ onCreate, secondary, user, users }:
           user: user.id,
         }
       : {
-          invoice_number: invoiceNumber,
+          invoice_number: number,
           invoice_status: 'draft',
           invoice_total_gross: 0,
           invoice_total_net: 0,

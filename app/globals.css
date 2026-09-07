@@ -571,6 +571,10 @@ p-datepicker-next {
   transition: all 0.3s ease-out;
 }
 
+.p-tag-value {
+font-size: 11px;
+}
+
 .p-timeline-event-opposite {
   display: none;
 }
@@ -656,7 +660,8 @@ p-datepicker-next {
 }
 
 td {
-  font-size: 14px;
+  font-size: 13px;
+  padding: 0.55rem 1rem;
 }
 
 .text-meta {

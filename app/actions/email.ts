@@ -74,7 +74,7 @@ export async function sendEmailWithAttachment({
   return data;
 }
 
-export async function sendInvoiceEmail(invoice: Invoice, items: InvoiceItem[], recipient: User) {
+export async function sendInvoiceEmail(invoice: Invoice, items: InvoiceItem[], recipient: User, link: string) {
   // PDF direkt hier generieren – kein Transfer zum Client
   const buffer = await generateInvoicePDF(invoice, items, recipient);
 
@@ -85,8 +85,9 @@ export async function sendInvoiceEmail(invoice: Invoice, items: InvoiceItem[], r
     template: {
       id: 'rechnung',
       variables: {
-        name: recipient.user_name_first,
-        invoice: invoice.invoice_number,
+        NAME: recipient.user_name_first,
+        INVOICE: invoice.invoice_number,
+        URL: link,
       },
     },
     attachments: [

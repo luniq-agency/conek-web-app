@@ -122,7 +122,9 @@ export type Invoice = {
   invoice_status: string;
   invoice_total_gross: number;
   invoice_total_net: number;
+  payment_url: string;
   recipient: string;
+  stripe_invoice_id: string;
   tax_amount: number;
   tax_category: string;
   tax_rate: number;
@@ -164,7 +166,13 @@ export type Notification = {
 };
 
 export type Subscription = {
+  amount_net: number;
+  amount_tax: number;
+  amount_total: number;
+  created_at: Date;
+  id: string;
   name: string;
+  stripe_id: string;
 }
 
 export type SubscriptionItem = {

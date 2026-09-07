@@ -2,6 +2,7 @@
 
 import AdminSidebar from '@/app/components/admin/sidebar/AdminSidebar';
 import { useAuth } from '../context/AuthContext';
+import HelpBox from '../components/support/HelpBox';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { initialLoading } = useAuth();
@@ -21,6 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <main className="page-dashboard">
       <AdminSidebar />
       <div className="page-admin">{children}</div>
+      <HelpBox />
     </main>
   );
 }

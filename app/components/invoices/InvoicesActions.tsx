@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import { useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
+import { createStripeInvoice } from '@/app/actions/invoices/stripeInvoices';
 
 interface Props {
   invoice: Invoice;
@@ -44,28 +45,68 @@ export default function InvoiceActions({ invoice }: Props) {
   };
 
   const sendInvoice = async () => {
+    const items = await invoiceItemsLoad(invoice.id);
+    const adding = invoice.tax_category === 'net';
+    const grossTotalRaw = items.reduce((sum, i) => sum + (i.price_total || 0), 0);
+    const netTotal = adding ? grossTotalRaw : grossTotalRaw / (1 + invoice.tax_rate);
+    const taxAmount = adding ? grossTotalRaw * invoice.tax_rate : grossTotalRaw - netTotal;
+    const total = adding ? grossTotalRaw + taxAmount : grossTotalRaw;
+    const payload = {
+      invoice_total_gross: total,
+      invoice_total_net: netTotal,
+      tax_amount: taxAmount,
+    };
+    console.log('Gross:', grossTotalRaw);
+    console.log('Net:', netTotal);
+    console.log('Tax:', taxAmount);
+    console.log('Total:', total);
+    /* const res = await invoiceUpdate()
     setSending(true);
     op.current?.hide();
     try {
-      const payload = {
-        invoice_date_sent: new Date(),
-        invoice_status: 'sent',
-      };
-
       const recipient = await userLookup(invoice.user);
       const items = await invoiceItemsLoad(invoice.id);
 
-      await sendInvoiceEmail(invoice, items, recipient);
-      await invoiceUpdate(payload, invoice.id);
+      // Stripe Invoice erstellen
+      const { stripeInvoiceId, paymentUrl } = await createStripeInvoice(
+        invoice,
+        items,
+        recipient,
+        invoice.invoice_number
+      );
+
+      if (!paymentUrl) return;
+
+      // Unsere eigene E-Mail mit PDF versenden
+      await sendInvoiceEmail(invoice, items, recipient, paymentUrl);
+
+      // Status + Stripe IDs speichern
+      await invoiceUpdate(
+        {
+          invoice_date_sent: new Date(),
+          invoice_status: 'sent',
+          stripe_invoice_id: stripeInvoiceId,
+          payment_url: paymentUrl,
+        },
+        invoice.id
+      );
+
       toast.current?.show({
         severity: 'success',
         summary: 'Rechnung versendet',
         detail: 'Die Rechnung wurde an den Kunden versendet.',
       });
-      setSending(false);
     } catch (err) {
       console.error(err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'Die Rechnung konnte nicht versendet werden.',
+      });
+    } finally {
+      setSending(false);
     }
+      */
   };
 
   return (
