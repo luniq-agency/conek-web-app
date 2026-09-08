@@ -132,7 +132,7 @@ export function InvoiceShowcase({
             ]}
           >
             <Text style={styles.bold}>Gesamt</Text>
-            <Text style={styles.bold}>{formatCurrency(gross)}</Text>
+            <Text style={styles.bold}>{formatCurrency(total)}</Text>
           </View>
         </View>
 
