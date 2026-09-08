@@ -20,6 +20,7 @@ export async function createStripeInvoice(
   }
 
   const stripeInvoice = await stripe.invoices.create({
+    automatic_tax: { enabled: true },
     customer: customerId,
     collection_method: 'send_invoice',
     days_until_due: 14,

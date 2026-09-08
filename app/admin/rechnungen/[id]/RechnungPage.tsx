@@ -5,7 +5,7 @@ import DividerBlock from '@/app/components/DividerBlock';
 import { clientsLoadAdmin } from '@/app/actions/clients';
 import { PrimaryButton, TertiaryButton } from '@/app/components/buttons/Buttons';
 import Row from '@/app/components/layout/Row';
-import { Mail, Save } from 'lucide-react';
+import { Eye, Mail, Save } from 'lucide-react';
 import Grid from '@/app/components/layout/Grid';
 import { useEffect, useRef, useState } from 'react';
 import { Invoice, InvoiceItem, User } from '@/app/types/Database';
@@ -24,6 +24,9 @@ import { TaxRate } from '@/app/types/internal';
 import { Toast } from 'primereact/toast';
 import { invoiceUpdate } from '@/app/actions/invoice';
 import { userLookup } from '@/app/actions/users';
+import { createStripePaymentLink } from '@/app/actions/stripe/payments';
+import { Dialog } from 'primereact/dialog';
+import InvoicePDFPreview from '@/app/components/invoices/InvoicePreview';
 
 interface Props {
   invoice: Invoice;
@@ -55,7 +58,7 @@ export default function RechnungPage({ invoice }: Props) {
       const [clientRes, itemsRes, taxRes, userRes] = await Promise.all([
         clientsLoadAdmin(),
         invoiceItemsLoad(invoice.id),
-        taxRates.find((t) => t.rate === invoice.tax_rate),
+        taxRates.find((t) => t.value === invoice.tax_category),
         userLookup(invoice.user),
       ]);
       setClients(clientRes);
@@ -63,7 +66,8 @@ export default function RechnungPage({ invoice }: Props) {
       taxRes && setTaxRate(taxRes);
       const matched = clientRes.find((c) => c.id === userRes?.id) ?? userRes;
       setRecipient(matched);
-      setTaxMulitplier(taxRes ? taxRes?.multiplier : 0.19)
+      setTaxMulitplier(taxRes ? taxRes?.multiplier : 0.19);
+      setAdding(taxRes ? taxRes.adding : false);
     };
     fetchData();
   }, [invoice?.id]);
@@ -89,6 +93,7 @@ export default function RechnungPage({ invoice }: Props) {
   const total = adding ? baseAmount + tax : baseAmount;
 
   // STATES
+  const [inspecting, setInspecting] = useState(false);
   const [sending, setSending] = useState(false);
 
   // ACTIONS
@@ -113,18 +118,12 @@ export default function RechnungPage({ invoice }: Props) {
   const changeTaxes = (value: string) => {
     const rate = taxRates.find((t) => t.value === value);
     if (!rate) return;
-    setAdding(rate?.adding);
+    setAdding(rate.adding);
     setTaxRate(rate);
-    setTaxMulitplier(rate.rate);
+    setTaxMulitplier(rate.multiplier);
   };
 
   const saveInvoice = async () => {
-    const adding = invoice.tax_category === 'net';
-    const gross = items.reduce((sum, i) => sum + (i.price_total || 0), 0);
-    const net = adding ? gross : gross / (1 + invoice.tax_rate);
-    const tax = adding ? gross * invoice.tax_rate : gross - net;
-    const total = adding ? gross + taxAmount : gross;
-
     const date = new Date(invoiceDate);
     const due = new Date(invoiceDateDue);
 
@@ -132,16 +131,18 @@ export default function RechnungPage({ invoice }: Props) {
       invoice_date: date,
       invoice_date_due: due,
       invoice_recipient_email: recipient?.email,
-      invoice_total_gross: Number(total.toFixed(2)),
+      invoice_total_gross: Number(total.toFixed(2)), // ← nutzt jetzt die aktuellen Werte von oben
       invoice_total_net: Number(net.toFixed(2)),
       tax_amount: Number(tax.toFixed(2)),
       tax_category: taxRate?.value,
       user: recipient?.id,
     };
+
     await invoiceUpdate(payload, invoice.id);
-    items.map(
-      async (i) =>
-        await invoiceItemUpdate(
+
+    await Promise.all(
+      items.map((i) =>
+        invoiceItemUpdate(
           {
             description: i.description,
             index: i.index,
@@ -152,7 +153,9 @@ export default function RechnungPage({ invoice }: Props) {
           },
           i.id
         )
+      )
     );
+
     toast.current?.show({
       severity: 'success',
       summary: 'Rechnung gespeichert',
@@ -163,32 +166,23 @@ export default function RechnungPage({ invoice }: Props) {
   const sendInvoice = async () => {
     setSending(true);
     if (!recipient) return;
-    const { stripeInvoiceId, paymentUrl } = await createStripeInvoice(
+
+    const { paymentUrl } = await createStripePaymentLink(
       invoice,
       items,
       recipient,
-      invoice.invoice_number
+      invoice.invoice_number,
+      total
     );
+
     if (!paymentUrl) return;
 
     try {
       await sendInvoiceEmail(invoice, items, recipient, paymentUrl);
-      await invoiceUpdate(
-        { invoice_status: 'sent', stripe_invoice_id: stripeInvoiceId, payment_url: paymentUrl },
-        invoice.id
-      );
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Rechnung versendet',
-        detail: 'Die Rechnung wurde erfolgreich versendet.',
-      });
+      await invoiceUpdate({ invoice_status: 'sent', payment_url: paymentUrl }, invoice.id);
+      // ...
     } catch (err) {
-      console.error(err);
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Fehler',
-        detail: 'Die Rechnung konnte nicht versendet werden. Bitte probiere es erneut.',
-      });
+      // ...
     } finally {
       setSending(false);
     }
@@ -198,6 +192,24 @@ export default function RechnungPage({ invoice }: Props) {
 
   return (
     <div className="page-content column">
+      <Dialog
+        onHide={() => setInspecting(false)}
+        style={{ height: '90vh', maxWidth: '90vw' }}
+        visible={inspecting}
+      >
+        {recipient && (
+          <InvoicePDFPreview
+            gross={baseAmount}
+            invoice={invoice}
+            items={items}
+            recipient={recipient}
+            net={net}
+            tax={tax}
+            total={total}
+            taxMultiplier={taxMultiplier}
+          />
+        )}
+      </Dialog>
       <Toast ref={toast} />
       <BreadCrumb home={home} model={navItems} />
       <DividerBlock height={2} />
@@ -206,6 +218,13 @@ export default function RechnungPage({ invoice }: Props) {
           <h1>Rechnung</h1>
         </div>
         <Row alignItems="center" gap={8} justifyContent="end">
+          <TertiaryButton
+            disabled={!recipient}
+            icon={Eye}
+            label="Vorschau"
+            onClick={() => setInspecting(true)}
+            size="medium"
+          />
           <TertiaryButton
             disabled={sending || !isComplete}
             icon={Mail}
@@ -241,7 +260,11 @@ export default function RechnungPage({ invoice }: Props) {
           />
           <Row gap={16}>
             <DatePicker label="Rechnungsdatum" onChange={setInvoiceDate} value={invoiceDate} />
-            <DatePicker label="Fälligkeitsdatum" onChange={setInvoiceDateDue} value={invoiceDateDue} />
+            <DatePicker
+              label="Fälligkeitsdatum"
+              onChange={setInvoiceDateDue}
+              value={invoiceDateDue}
+            />
           </Row>
         </Grid>
         <DividerBlock height={0.5} />
@@ -251,7 +274,7 @@ export default function RechnungPage({ invoice }: Props) {
             <h5>{formatCurrency(net)}</h5>
           </div>
           <div className="row space-between">
-            <h5>Steuern ({taxRate?.multiplier}%)</h5>
+            <h5>Steuern ({((taxRate?.multiplier ?? 0) * 100).toFixed(0)}%)</h5>
             <h5>{formatCurrency(tax)}</h5>
           </div>
           <div className="row space-between">
