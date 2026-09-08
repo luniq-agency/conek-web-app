@@ -63,6 +63,7 @@ export default function RechnungPage({ invoice }: Props) {
       taxRes && setTaxRate(taxRes);
       const matched = clientRes.find((c) => c.id === userRes?.id) ?? userRes;
       setRecipient(matched);
+      setTaxMulitplier(taxRes ? taxRes?.multiplier : 0.19)
     };
     fetchData();
   }, [invoice?.id]);
