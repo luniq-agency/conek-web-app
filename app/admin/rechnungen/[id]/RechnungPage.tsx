@@ -74,7 +74,7 @@ export default function RechnungPage({ invoice }: Props) {
   const [rechnungsnummer, setRechnungsnummer] = useState(invoice.invoice_number || '');
   const [taxAmount, setTaxAmount] = useState(invoice.tax_amount || 0);
   const [taxMultiplier, setTaxMulitplier] = useState(invoice.tax_rate || 0);
-  const [taxRate, setTaxRate] = useState<TaxRate | null>(null);
+  const [taxRate, setTaxRate] = useState<TaxRate | null>(taxRates[0] || null);
 
   // DATA
   const [adding, setAdding] = useState(false);
@@ -240,7 +240,7 @@ export default function RechnungPage({ invoice }: Props) {
           />
           <Row gap={16}>
             <DatePicker label="Rechnungsdatum" onChange={setInvoiceDate} value={invoiceDate} />
-            <DatePicker label="Fälligkeitsdatum" onChange={setInvoiceDate} value={invoiceDateDue} />
+            <DatePicker label="Fälligkeitsdatum" onChange={setInvoiceDateDue} value={invoiceDateDue} />
           </Row>
         </Grid>
         <DividerBlock height={0.5} />
