@@ -15,7 +15,7 @@ import { PrimaryButton } from '@/app/components/buttons/Buttons';
 import { Toast } from 'primereact/toast';
 
 interface Props {
-  bearbeiter?: User | null; // ← als Prop übergeben statt laden
+  bearbeiter?: User | null;
   user: User;
 }
 
@@ -28,7 +28,6 @@ export default function KundeDetailPage({ bearbeiter, user }: Props) {
   useEffect(() => {
     if (!hasChanges) return;
 
-    // Next.js Router Navigation abfangen
     const handleClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement).closest('a');
       if (!target) return;
@@ -36,7 +35,6 @@ export default function KundeDetailPage({ bearbeiter, user }: Props) {
       const href = target.getAttribute('href');
       if (!href || href.startsWith('#')) return;
 
-      // Nur wenn es eine interne Navigation ist
       if (!href.startsWith('http')) {
         e.preventDefault();
         const confirmed = window.confirm(

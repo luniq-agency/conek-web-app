@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Certificate, User } from '@/app/types/Database';
@@ -37,6 +36,42 @@ interface Props {
   user: User;
 }
 
+type ClientFormData = {
+  city: string;
+  dob: Date | null;
+  email: string;
+  familie: string;
+  iban: string;
+  job: string;
+  jobType: string;
+  kinder: number;
+  nachname: string;
+  notizen: string;
+  plz: string;
+  steuerid: string;
+  street: string;
+  telefon: string;
+  vorname: string;
+};
+
+const buildFormData = (user: User): ClientFormData => ({
+  city: user.city || '',
+  dob: user.dob ? new Date(user.dob) : null,
+  email: user.email || '',
+  familie: user.family_status || '',
+  iban: user.iban || '',
+  job: user.job || '',
+  jobType: user.job_status || '',
+  kinder: user.kinder || 0,
+  nachname: user.user_name_last || '',
+  notizen: user.notizen || '',
+  plz: user.plz || '',
+  steuerid: user.steuer_id || '',
+  street: user.anschrift || '',
+  telefon: user.telefon || '',
+  vorname: user.user_name_first || '',
+});
+
 export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
   const { userProfile } = useAuth();
   const [mounted, setMounted] = useState(false);
@@ -45,9 +80,17 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [changing, setChanging] = useState(false);
   const editorRef = useRef<{ save: () => void } | null>(null);
-  const [error, setError] = useState('');
   const contactEditorRef = useRef<{ save: () => void } | null>(null);
+  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // FORM DATA — ein Objekt für alle Stammdaten-Felder
+  const [formData, setFormData] = useState<ClientFormData>(() => buildFormData(user));
+  const originalValues = useRef<ClientFormData>(buildFormData(user));
+
+  const updateField = (patch: Partial<ClientFormData>) => {
+    setFormData((prev) => ({ ...prev, ...patch }));
+  };
 
   const handleTabChange = (e: { index: number }) => {
     // Auto-save beim Tab-Wechsel
@@ -60,87 +103,44 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
   const [admins, setAdmins] = useState<User[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
 
-  // CLIENT DATA
-  const [city, setCity] = useState(user.city || '');
-  const [clientDob, setClientDob] = useState<Date | null>(user.dob ? new Date(user.dob) : null);
-  const [email, setEmail] = useState(user.email || '');
-  const [clientFamily, setClientFamily] = useState(user.family_status || '');
-  const [iban, setIban] = useState(user.iban || '');
-  const [clientJob, setClientJob] = useState(user.job || '');
-  const [clientJobType, setClientJobType] = useState(user.job_status || '');
-  const [clientKids, setClientKids] = useState(user.kinder || 0);
-  const [clientNachname, setClientNachname] = useState(user.user_name_last || '');
-  const [clientNotes, setClientNotes] = useState(user.notizen || '');
-  const [plz, setPlz] = useState(user.plz || '');
-  const [steuerid, setSteuerid] = useState(user.steuer_id || '');
-  const [street, setStreet] = useState(user.anschrift || '');
-  const [telefon, setTelefon] = useState(user.telefon || '');
-  const [clientVorname, setClientVorname] = useState(user.user_name_first || '');
-  const [clientStatus, setClientStatus] = useState(user.status || '');
-  const [clientTaxId, setClientTaxId] = useState(user.steuer_id || '');
-
   const isAdmin = userProfile?.user_role === 'admin';
 
   // SAVING
   const save = async () => {
     const payload = {
-      anschrift: street,
-      city,
-      dob: clientDob ? clientDob.toISOString().split('T')[0] : undefined,
-      email,
-      family_status: clientFamily,
-      iban,
-      job: clientJob,
-      job_status: clientJobType,
-      kinder: clientKids,
-      notizen: clientNotes,
-      plz,
-      steuer_id: steuerid,
-      telefon,
-      user_name_first: clientVorname,
-      user_name_last: clientNachname,
+      anschrift: formData.street,
+      city: formData.city,
+      dob: formData.dob ? formData.dob.toISOString().split('T')[0] : undefined,
+      email: formData.email,
+      family_status: formData.familie,
+      iban: formData.iban,
+      job: formData.job,
+      job_status: formData.jobType,
+      kinder: formData.kinder,
+      notizen: formData.notizen,
+      plz: formData.plz,
+      steuer_id: formData.steuerid,
+      telefon: formData.telefon,
+      user_name_first: formData.vorname,
+      user_name_last: formData.nachname,
     };
+
     await userUpdate(payload, user.id);
 
     // Ursprungswerte nach dem Speichern aktualisieren
-    originalValues.current = {
-      email,
-      user_name_first: clientVorname,
-      user_name_last: clientNachname,
-      job: clientJob,
-      iban: iban,
-      kinder: clientKids,
-      family_status: clientFamily,
-      dob: clientDob?.toISOString().split('T')[0] ?? null,
-      steuerid,
-      telefon,
-    };
-
+    originalValues.current = { ...formData };
     onChange(false);
   };
 
+  // Save-Funktion registrieren — nur bei Änderung von formData neu, aber
+  // da formData bei jedem Feld eine neue Referenz bekommt, deckt das automatisch alles ab
   useEffect(() => {
     onSaveRef(save);
-  }, [
-    clientVorname,
-    clientNachname,
-    clientJob,
-    iban,
-    clientKids,
-    clientFamily,
-    clientDob,
-    email,
-    steuerid,
-    street,
-    telefon,
-    city,
-    plz,
-  ]);
+  }, [formData]);
 
   // INIT
   useEffect(() => {
     if (!user) return;
-
     const fetchData = async () => {
       try {
         const res = await certificatesLoadUser(user.id);
@@ -155,44 +155,23 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
     setMounted(true);
   }, [user]);
 
-  const originalValues = useRef({
-    email: user.email,
-    user_name_first: user.user_name_first,
-    user_name_last: user.user_name_last,
-    job: user.job,
-    iban: user.iban,
-    kinder: user.kinder,
-    family_status: user.family_status,
-    dob: user.dob,
-    steuerid: user.steuer_id,
-    telefon: user.telefon,
-  });
+  // Änderungs-Erkennung — ein einziger Vergleich statt vieler einzelner
+  const isChanged = JSON.stringify(formData) !== JSON.stringify(originalValues.current);
 
-  const isChanged =
-    iban != originalValues.current.iban ||
-    steuerid != originalValues.current.steuerid ||
-    telefon !== originalValues.current.telefon ||
-    clientVorname !== originalValues.current.user_name_first ||
-    clientNachname !== originalValues.current.user_name_last ||
-    clientJob !== originalValues.current.job ||
-    clientKids !== originalValues.current.kinder ||
-    clientFamily !== originalValues.current.family_status ||
-    (clientDob?.toISOString().split('T')[0] ?? null) !== originalValues.current.dob;
+  useEffect(() => {
+    onChange(isChanged);
+  }, [isChanged]);
 
   const refreshCertificates = async () => {
     const res = await certificatesLoadUser(user.id);
     setCertificates(res);
   };
 
-  useEffect(() => {
-    onChange(isChanged);
-  }, [isChanged]);
-
   const changeEmail = async () => {
     setError('');
     setSaving(true);
     try {
-      await changeUserEmail(user.id, email);
+      await changeUserEmail(user.id, formData.email);
       setChanging(false);
     } catch (err) {
       setError('Diese E-Mail-Adresse wird schon verwendet.');
@@ -213,7 +192,10 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
         visible={changing}
       >
         <Column>
-          <TextInputLabel onChange={setEmail} value={email} />
+          <TextInputLabel
+            onChange={(v) => updateField({ email: v })}
+            value={formData.email}
+          />
           <Button disabled={saving} label="E-Mail-Adresse ändern" onClick={changeEmail} />
           {error && <ErrorMessage message={error} />}
         </Column>
@@ -221,53 +203,93 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
       <TabView activeIndex={activeIndex} onTabChange={handleTabChange} style={{ height: '100%' }}>
         <TabPanel header="Stammdaten">
           <Grid columns={2} gap={16}>
-            <TextInputLabel label="Vorname" onChange={setClientVorname} value={clientVorname} />
-            <TextInputLabel label="Nachname" onChange={setClientNachname} value={clientNachname} />
-            <TextInputLabel label="Beruf" onChange={setClientJob} value={clientJob} />
+            <TextInputLabel
+              label="Vorname"
+              onChange={(v) => updateField({ vorname: v })}
+              value={formData.vorname}
+            />
+            <TextInputLabel
+              label="Nachname"
+              onChange={(v) => updateField({ nachname: v })}
+              value={formData.nachname}
+            />
+            <TextInputLabel
+              label="Beruf"
+              onChange={(v) => updateField({ job: v })}
+              value={formData.job}
+            />
             <SelectLabel
               label="Jobverhältnis"
-              onChange={setClientJobType}
+              onChange={(v) => updateField({ jobType: v })}
               optionLabel="label"
               optionValue="value"
               options={job_categories}
-              value={clientJobType}
+              value={formData.jobType}
             />
             <DatePicker
               label="Geburtsdatum"
-              onChange={(e) => setClientDob(e as Date | null)}
-              value={clientDob}
+              onChange={(e) => updateField({ dob: e as Date | null })}
+              value={formData.dob}
             />
             <SelectLabel
               label="Familienstand"
-              onChange={setClientFamily}
+              onChange={(v) => updateField({ familie: v })}
               optionLabel="label"
               optionValue="value"
               options={family_options}
-              value={clientFamily}
+              value={formData.familie}
             />
             <NumberInputLabel
               label="Kinder"
-              numberValue={clientKids}
-              onNumberChange={setClientKids}
+              numberValue={formData.kinder}
+              onNumberChange={(v) => updateField({ kinder: v })}
             />
-            <TextInputLabel label="IBAN" onChange={setIban} value={iban} />
-            <TextInputLabel label="Steuer-ID" onChange={setSteuerid} value={steuerid} />
+            <TextInputLabel
+              label="IBAN"
+              onChange={(v) => updateField({ iban: v })}
+              value={formData.iban}
+            />
+            <TextInputLabel
+              label="Steuer-ID"
+              onChange={(v) => updateField({ steuerid: v })}
+              value={formData.steuerid}
+            />
             <div />
-            <TextAreaLabel label="Notizen" onChange={setClientNotes} value={clientNotes} />
+            <TextAreaLabel
+              label="Notizen"
+              onChange={(v) => updateField({ notizen: v })}
+              value={formData.notizen}
+            />
           </Grid>
         </TabPanel>
         <TabPanel header="Kontaktdaten">
           <Grid columns={2} gap={16}>
-            <TextInputLabel label="Straße und Hausnummer" onChange={setStreet} value={street} />
+            <TextInputLabel
+              label="Straße und Hausnummer"
+              onChange={(v) => updateField({ street: v })}
+              value={formData.street}
+            />
             <Row gap={16}>
-              <TextInputLabel label="PLZ" onChange={setPlz} value={plz} />
-              <TextInputLabel label="Ort" onChange={setCity} value={city} />
+              <TextInputLabel
+                label="PLZ"
+                onChange={(v) => updateField({ plz: v })}
+                value={formData.plz}
+              />
+              <TextInputLabel
+                label="Ort"
+                onChange={(v) => updateField({ city: v })}
+                value={formData.city}
+              />
             </Row>
             <Row alignItems="end" gap={8}>
-              <TextInputLabel label="E-Mail" onChange={setEmail} readonly value={email} />
+              <TextInputLabel label="E-Mail" onChange={() => {}} readonly value={formData.email} />
               <SecondaryButton label="Ändern" onClick={() => setChanging(true)} size="small" />
             </Row>
-            <TextInputLabel label="Telefon" onChange={setTelefon} value={telefon} />
+            <TextInputLabel
+              label="Telefon"
+              onChange={(v) => updateField({ telefon: v })}
+              value={formData.telefon}
+            />
           </Grid>
         </TabPanel>
         <TabPanel header="Aufgaben">
