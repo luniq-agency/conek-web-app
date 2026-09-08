@@ -168,7 +168,7 @@ export default function RechnungPage({ invoice }: Props) {
     try {
       await sendInvoiceEmail(invoice, items, recipient, paymentUrl);
       await invoiceUpdate(
-        { stripe_invoice_id: stripeInvoiceId, payment_url: paymentUrl },
+        { invoice_status: 'sent', stripe_invoice_id: stripeInvoiceId, payment_url: paymentUrl },
         invoice.id
       );
       toast.current?.show({
