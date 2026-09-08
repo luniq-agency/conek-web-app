@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { userUpdate } from '../users';
 
 const getServiceClient = () =>
   createServiceClient(
@@ -21,6 +22,8 @@ export async function changeUserEmail(id: string, email: string) {
     console.error('User lookup error:', userError);
     throw new Error(userError.message);
   }
+
+  await userUpdate({ email: email }, id);
 
   if (!user?.user_uuid) {
     throw new Error('Kein user_uuid gefunden für diesen User');

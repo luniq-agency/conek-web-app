@@ -47,6 +47,7 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
   const editorRef = useRef<{ save: () => void } | null>(null);
   const [error, setError] = useState('');
   const contactEditorRef = useRef<{ save: () => void } | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const handleTabChange = (e: { index: number }) => {
     // Auto-save beim Tab-Wechsel
@@ -188,11 +189,15 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
   }, [isChanged]);
 
   const changeEmail = async () => {
-    console.log('Email:', email);
+    setError('');
+    setSaving(true);
     try {
       await changeUserEmail(user.id, email);
+      setChanging(false);
     } catch (err) {
       setError('Diese E-Mail-Adresse wird schon verwendet.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -209,7 +214,7 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
       >
         <Column>
           <TextInputLabel onChange={setEmail} value={email} />
-          <Button label="E-Mail-Adresse ändern" onClick={changeEmail} />
+          <Button disabled={saving} label="E-Mail-Adresse ändern" onClick={changeEmail} />
           {error && <ErrorMessage message={error} />}
         </Column>
       </Dialog>
@@ -259,7 +264,7 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
               <TextInputLabel label="Ort" onChange={setCity} value={city} />
             </Row>
             <Row alignItems="end" gap={8}>
-              <TextInputLabel label="E-Mail" onChange={setEmail} value={email} />
+              <TextInputLabel label="E-Mail" onChange={setEmail} readonly value={email} />
               <SecondaryButton label="Ändern" onClick={() => setChanging(true)} size="small" />
             </Row>
             <TextInputLabel label="Telefon" onChange={setTelefon} value={telefon} />

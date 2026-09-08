@@ -56,7 +56,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           event: 'INSERT',
           schema: 'public',
           table: 'notification',
-          filter: `user_id=eq.${user?.id}`,
+          filter: `user_uuid=eq.${user?.id}`,
         },
         (payload) => {
           setNotifications((prev) => [payload.new as Notification, ...prev]);
@@ -76,7 +76,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const markAllAsRead = async () => {
     if (!user) return;
-    await supabase.from('notification').update({ read: true }).eq('user_id', user.id);
+    await supabase.from('notification').update({ read: true }).eq('user_uuid', user.id);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 

@@ -53,7 +53,7 @@ export type Client = {
   status: string;
   telefon: string;
   user: string;
-  user_id: string;
+  user_uuid: string;
   vorname: string;
   website: string;
 };
