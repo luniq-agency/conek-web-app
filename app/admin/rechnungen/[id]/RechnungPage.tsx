@@ -124,7 +124,12 @@ export default function RechnungPage({ invoice }: Props) {
     const tax = adding ? gross * invoice.tax_rate : gross - net;
     const total = adding ? gross + taxAmount : gross;
 
+    const date = new Date(invoiceDate);
+    const due = new Date(invoiceDateDue);
+
     const payload = {
+      invoice_date: date,
+      invoice_date_due: due,
       invoice_recipient_email: recipient?.email,
       invoice_total_gross: Number(total.toFixed(2)),
       invoice_total_net: Number(net.toFixed(2)),
