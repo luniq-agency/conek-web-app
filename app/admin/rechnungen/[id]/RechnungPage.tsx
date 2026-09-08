@@ -188,6 +188,8 @@ export default function RechnungPage({ invoice }: Props) {
     }
   };
 
+  const isComplete = recipient?.email && items.length >= 1;
+
   return (
     <div className="page-content column">
       <Toast ref={toast} />
@@ -199,7 +201,7 @@ export default function RechnungPage({ invoice }: Props) {
         </div>
         <Row alignItems="center" gap={8} justifyContent="end">
           <TertiaryButton
-            disabled={sending}
+            disabled={sending || !isComplete}
             icon={Mail}
             label="Rechnung versenden"
             onClick={sendInvoice}

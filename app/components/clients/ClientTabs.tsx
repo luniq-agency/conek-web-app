@@ -24,6 +24,12 @@ import { family_options, job_categories } from '@/app/constants/Constants';
 import { DatePicker } from '../forms/datepicker/DatePicker';
 import Row from '../layout/Row';
 import { userUpdate } from '@/app/actions/users';
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import { changeUserEmail } from '@/app/actions/users/auth';
+import { SecondaryButton } from '../buttons/Buttons';
+import Column from '../layout/Column';
+import ErrorMessage from '../ui/ErrorMessage';
 
 interface Props {
   onChange: (changed: boolean) => void;
@@ -37,7 +43,9 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
 
   // STATES
   const [activeIndex, setActiveIndex] = useState(0);
+  const [changing, setChanging] = useState(false);
   const editorRef = useRef<{ save: () => void } | null>(null);
+  const [error, setError] = useState('');
   const contactEditorRef = useRef<{ save: () => void } | null>(null);
 
   const handleTabChange = (e: { index: number }) => {
@@ -95,6 +103,7 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
 
     // Ursprungswerte nach dem Speichern aktualisieren
     originalValues.current = {
+      email,
       user_name_first: clientVorname,
       user_name_last: clientNachname,
       job: clientJob,
@@ -119,6 +128,7 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
     clientKids,
     clientFamily,
     clientDob,
+    email,
     steuerid,
     street,
     telefon,
@@ -145,6 +155,7 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
   }, [user]);
 
   const originalValues = useRef({
+    email: user.email,
     user_name_first: user.user_name_first,
     user_name_last: user.user_name_last,
     job: user.job,
@@ -176,91 +187,113 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
     onChange(isChanged);
   }, [isChanged]);
 
+  const changeEmail = async () => {
+    console.log('Email:', email);
+    try {
+      await changeUserEmail(user.id, email);
+    } catch (err) {
+      setError('Diese E-Mail-Adresse wird schon verwendet.');
+    }
+  };
+
   if (!mounted || !user) return null;
 
   return (
-    <TabView activeIndex={activeIndex} onTabChange={handleTabChange} style={{ height: '100%' }}>
-      <TabPanel header="Stammdaten">
-        <Grid columns={2} gap={16}>
-          <TextInputLabel label="Vorname" onChange={setClientVorname} value={clientVorname} />
-          <TextInputLabel label="Nachname" onChange={setClientNachname} value={clientNachname} />
-          <TextInputLabel label="Beruf" onChange={setClientJob} value={clientJob} />
-          <SelectLabel
-            label="Jobverhältnis"
-            onChange={setClientJobType}
-            optionLabel="label"
-            optionValue="value"
-            options={job_categories}
-            value={clientJobType}
-          />
-          <DatePicker
-            label="Geburtsdatum"
-            onChange={(e) => setClientDob(e as Date | null)}
-            value={clientDob}
-          />
-          <SelectLabel
-            label="Familienstand"
-            onChange={setClientFamily}
-            optionLabel="label"
-            optionValue="value"
-            options={family_options}
-            value={clientFamily}
-          />
-          <NumberInputLabel
-            label="Kinder"
-            numberValue={clientKids}
-            onNumberChange={setClientKids}
-          />
-          <TextInputLabel label="IBAN" onChange={setIban} value={iban} />
-          <TextInputLabel label="Steuer-ID" onChange={setSteuerid} value={steuerid} />
-          <div />
-          <TextAreaLabel label="Notizen" onChange={setClientNotes} value={clientNotes} />
-        </Grid>
-      </TabPanel>
-      <TabPanel header="Kontaktdaten">
-        <Grid columns={2} gap={16}>
-          <TextInputLabel label="Straße und Hausnummer" onChange={setStreet} value={street} />
-          <Row gap={16}>
-            <TextInputLabel label="PLZ" onChange={setPlz} value={plz} />
-            <TextInputLabel label="Ort" onChange={setCity} value={city} />
-          </Row>
-          <TextInputLabel
-            label="E-Mail"
-            onChange={setEmail}
-            readonly={email ? true : false}
-            value={email}
-          />
-          <TextInputLabel label="Telefon" onChange={setTelefon} value={telefon} />
-        </Grid>
-      </TabPanel>
-      <TabPanel header="Aufgaben">
-        <AufgabenTable staff={admins} user={user} />
-      </TabPanel>
-      <TabPanel header="Zertifikatsdatei">
-        <div className="column width-100">
-          <div className="row space-between width-100">
-            <h3>Zertifikatsdateien</h3>
-            <CertificateUploader user={user} />
-          </div>
-          <DividerBlock height={2} />
-          <div className="grid columns-four gap-m">
-            {certificates.map((c, i) => (
-              <CertificateFile certificate={c} key={i} onDelete={refreshCertificates} />
-            ))}
-          </div>
-        </div>
-      </TabPanel>
-      <TabPanel header="Dokumente">
-        <DocumentViewer user={user} />
-      </TabPanel>
-      <TabPanel header="Rechnungen">
-        <InvoicesTableUser user={user} />
-      </TabPanel>
-      {isAdmin && (
-        <TabPanel header="Abos">
-          <SubscriptionEditor user={user} />
+    <>
+      <Dialog
+        draggable={false}
+        header="E-Mail-Adresse ändern"
+        onHide={() => setChanging(false)}
+        style={{ maxWidth: 400 }}
+        visible={changing}
+      >
+        <Column>
+          <TextInputLabel onChange={setEmail} value={email} />
+          <Button label="E-Mail-Adresse ändern" onClick={changeEmail} />
+          {error && <ErrorMessage message={error} />}
+        </Column>
+      </Dialog>
+      <TabView activeIndex={activeIndex} onTabChange={handleTabChange} style={{ height: '100%' }}>
+        <TabPanel header="Stammdaten">
+          <Grid columns={2} gap={16}>
+            <TextInputLabel label="Vorname" onChange={setClientVorname} value={clientVorname} />
+            <TextInputLabel label="Nachname" onChange={setClientNachname} value={clientNachname} />
+            <TextInputLabel label="Beruf" onChange={setClientJob} value={clientJob} />
+            <SelectLabel
+              label="Jobverhältnis"
+              onChange={setClientJobType}
+              optionLabel="label"
+              optionValue="value"
+              options={job_categories}
+              value={clientJobType}
+            />
+            <DatePicker
+              label="Geburtsdatum"
+              onChange={(e) => setClientDob(e as Date | null)}
+              value={clientDob}
+            />
+            <SelectLabel
+              label="Familienstand"
+              onChange={setClientFamily}
+              optionLabel="label"
+              optionValue="value"
+              options={family_options}
+              value={clientFamily}
+            />
+            <NumberInputLabel
+              label="Kinder"
+              numberValue={clientKids}
+              onNumberChange={setClientKids}
+            />
+            <TextInputLabel label="IBAN" onChange={setIban} value={iban} />
+            <TextInputLabel label="Steuer-ID" onChange={setSteuerid} value={steuerid} />
+            <div />
+            <TextAreaLabel label="Notizen" onChange={setClientNotes} value={clientNotes} />
+          </Grid>
         </TabPanel>
-      )}
-    </TabView>
+        <TabPanel header="Kontaktdaten">
+          <Grid columns={2} gap={16}>
+            <TextInputLabel label="Straße und Hausnummer" onChange={setStreet} value={street} />
+            <Row gap={16}>
+              <TextInputLabel label="PLZ" onChange={setPlz} value={plz} />
+              <TextInputLabel label="Ort" onChange={setCity} value={city} />
+            </Row>
+            <Row alignItems="end" gap={8}>
+              <TextInputLabel label="E-Mail" onChange={setEmail} value={email} />
+              <SecondaryButton label="Ändern" onClick={() => setChanging(true)} size="small" />
+            </Row>
+            <TextInputLabel label="Telefon" onChange={setTelefon} value={telefon} />
+          </Grid>
+        </TabPanel>
+        <TabPanel header="Aufgaben">
+          <AufgabenTable staff={admins} user={user} />
+        </TabPanel>
+        <TabPanel header="Zertifikatsdatei">
+          <div className="column width-100">
+            <div className="row space-between width-100">
+              <h3>Zertifikatsdateien</h3>
+              <CertificateUploader user={user} />
+            </div>
+            <DividerBlock height={2} />
+            <div className="grid columns-four gap-m">
+              {certificates.map((c, i) => (
+                <CertificateFile certificate={c} key={i} onDelete={refreshCertificates} />
+              ))}
+            </div>
+          </div>
+        </TabPanel>
+        <TabPanel header="Dokumente">
+          <DocumentViewer user={user} />
+        </TabPanel>
+        <TabPanel header="Rechnungen">
+          <InvoicesTableUser user={user} />
+        </TabPanel>
+        {isAdmin && (
+          <TabPanel header="Abos">
+            <SubscriptionEditor user={user} />
+          </TabPanel>
+        )}
+      </TabView>
+    </>
   );
 }

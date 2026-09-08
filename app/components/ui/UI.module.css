@@ -4,6 +4,12 @@
     width: 100%;
 }
 
+.errorMessage {
+    color: red;
+    font-size: 14px;
+    text-align: center;
+}
+
 .floater {
     background-color: white;
     border-radius: 20px;
