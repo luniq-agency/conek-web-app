@@ -5,35 +5,28 @@ import { Invoice } from '../types/Database';
 
 export async function invoiceCreate(data: Partial<Invoice>) {
   const supabase = await createClient();
-
   const { data: created, error } = await supabase.from('invoice').insert(data).select().single();
-
   if (error) throw new Error(error.message);
-
   return created;
 }
 
 export async function invoiceDelete(id: string) {
   const supabase = await createClient();
-
   const { data: deleted, error } = await supabase.from('invoice').delete().eq('id', id).single();
-
   if (error) throw new Error(error.message);
-
   return deleted;
 }
 
-export async function invoiceLoadLatest() {
+export async function invoiceLoadLatest(): Promise<Invoice[]> {
   const supabase = await createClient();
-
   const { data, error } = await supabase
     .from('invoice')
-    .select('stripe_customer_id, user_name_last')
+    .select('*')
     .order('created_at', { ascending: false })
+    .select()
 
   if (error) throw new Error(error.message);
-
-  return data;
+  return data || [];
 }
 
 export async function invoiceSend(id: string, email: string) {
@@ -51,27 +44,21 @@ export async function invoiceSend(id: string, email: string) {
 
 export async function invoiceLoadSingle(id: string): Promise<Invoice> {
   const supabase = await createClient();
-
   const { data, error } = await supabase.from('invoice').select('*').eq('id', id).single();
-
   if (error) throw new Error(error.message);
   return data;
 }
 
 export async function invoicesLoadAll(): Promise<Invoice[]> {
   const supabase = await createClient();
-
   const { data, error } = await supabase.from('invoice').select('*');
-
   if (error) throw new Error(error.message);
   return data;
 }
 
 export async function invoicesLoadUser(id: string): Promise<Invoice[]> {
   const supabase = await createClient();
-
   const { data, error } = await supabase.from('invoice').select('*').eq('user', id);
-
   if (error) throw new Error(error.message);
   return data;
 }
@@ -86,14 +73,15 @@ export async function invoicesDeleteMultiple(ids: string[]) {
   return deleted;
 }
 
-export async function invoiceUpdate(data: Partial<Invoice>, id: string) {
+export async function invoiceUpdate(data: Partial<Invoice>, id: string): Promise<Invoice> {
   const supabase = await createClient();
 
   const { data: created, error } = await supabase
     .from('invoice')
     .update(data)
     .eq('id', id)
-    .select();
+    .select()
+    .single();
 
   if (error) throw new Error(error.message);
 

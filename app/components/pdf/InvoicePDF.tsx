@@ -40,7 +40,6 @@ interface Props {
 }
 
 export function InvoicePDF({ invoice, items, recipient }: Props) {
-
   const gross = invoice.invoice_total_gross;
   const net = invoice.invoice_total_net;
   const tax = invoice.tax_amount;

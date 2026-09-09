@@ -2,7 +2,7 @@
 
 import { createClient } from '@/app/utils/supabase/server';
 import Stripe from 'stripe';
-import { SubscriptionItem } from '../types/Database';
+import { Invoice, SubscriptionItem } from '../types/Database';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -43,14 +43,15 @@ export async function createSubscription(
   };
 }
 
-export async function subscriptionsGetForUser(id: string): Promise<SubscriptionItem[]> {
+export async function subscriptionsGetForUser(id: string): Promise<Invoice[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('subscription_item')
+    .from('invoice')
     .select('*')
     .eq('user', id)
-    .order('date_start', { ascending: false });
+    .eq('subscription', true)
+    .order('invoice_date', { ascending: false });
 
   if (error) throw new Error(error.message);
   return data || [];

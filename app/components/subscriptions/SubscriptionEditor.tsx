@@ -1,27 +1,29 @@
-import {
-  createStripeCustomer,
-  createSubscription,
-  subscriptionsGetForUser,
-} from '@/app/actions/subscription';
-import { Subscription, SubscriptionItem, User } from '@/app/types/Database';
+import { createStripeCustomer, subscriptionsGetForUser } from '@/app/actions/subscription';
+import { Invoice, Subscription, SubscriptionItem, User } from '@/app/types/Database';
 import { useEffect, useRef, useState } from 'react';
-import { DatePicker, NumberInputLabel, SelectLabel, TextInputLabel } from '../forms/FormElements';
+import { NumberInputLabel, SelectLabel, TextInputLabel } from '../forms/FormElements';
 import Column from '../layout/Column';
 import { Column as TableColumn } from 'primereact/column';
 import { Button } from 'primereact/button';
 import Row from '../layout/Row';
 import DividerBlock from '../DividerBlock';
-import SubscriptionItems from './SubscriptionItem';
 import { DataTable } from 'primereact/datatable';
-import { formatCurrency, formatDate, formatDateMonthYear } from '@/app/utils/formats';
+import { formatCurrency, formatDate, formatDateMonthYear, formatMonth } from '@/app/utils/formats';
 import { invoice_status } from '@/app/constants/Constants';
 import Tag from '../ui/Tag';
 import { Dialog } from 'primereact/dialog';
-import { CurrencyInput } from '../forms/CurrencyInput';
 import { Toast } from 'primereact/toast';
 import { subscriptionsLoad } from '@/app/actions/subscriptions/subscriptions';
-import { invoiceLoadLatest } from '@/app/actions/invoice';
-
+import {
+  invoiceCreate,
+  invoiceLoadLatest,
+  invoicesLoadAll,
+  invoiceUpdate,
+} from '@/app/actions/invoice';
+import { DatePicker } from '../forms/datepicker/DatePicker';
+import { invoiceItemCreate } from '@/app/actions/invoiceitem';
+import { createStripePaymentLink } from '@/app/actions/stripe/payments';
+import { sendInvoiceEmail } from '@/app/actions/email';
 interface Props {
   user: User;
 }
@@ -29,52 +31,36 @@ interface Props {
 export default function SubscriptionEditor({ user }: Props) {
   const toast = useRef<Toast | null>(null);
   const [visible, setVisible] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  //DATA
+  // DATA
   const [plans, setPlans] = useState<Subscription[]>([]);
-  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>([]);
+  const [subscriptions, setSubscriptions] = useState<Invoice[]>([]);
 
   // INPUTS
+  const [invoiceNumber, setInvoiceNumber] = useState('');
   const [newDate, setNewDate] = useState<Date | undefined>(undefined);
   const [selectedSubscription, setSelectedSubscription] = useState('');
   const [subEnd, setSubEnd] = useState<Date | undefined>(undefined);
   const [subName, setSubName] = useState('');
   const [subPrice, setSubPrice] = useState(0);
-  const [subStart, setSubStart] = useState<Date | undefined>(undefined);
+  const [subStart, setSubStart] = useState<Date | null>(null);
 
   const fetchData = async () => {
-    const res = await subscriptionsGetForUser(user.id);
-    if (res.length === 0) return;
+    const [res, subRes, invoiceRes] = await Promise.all([
+      subscriptionsGetForUser(user.id),
+      subscriptionsLoad(),
+      invoiceLoadLatest(),
+    ]);
+    setPlans(subRes);
     setSubscriptions(res);
-    const firstSub = res[0];
-    const nextDay = new Date(firstSub.date_end);
-    nextDay.setDate(nextDay.getDate() + 1);
-    setNewDate(nextDay);
-    setSubEnd(firstSub.date_end);
-    setSubName(firstSub.name || '');
-    setSubPrice(firstSub.amount_total || 0);
+    const invoice = invoiceRes[0];
+    const next = Number(invoice.invoice_number) + 1;
+    setInvoiceNumber(String(next));
   };
 
   useEffect(() => {
-    console.log('User:', user);
     if (!user) return;
-    const fetchData = async () => {
-      const [res, subRes] = await Promise.all([
-        subscriptionsGetForUser(user.id),
-        subscriptionsLoad(),
-      ]);
-      setPlans(subRes);
-      if (res.length === 0) return;
-      setSubscriptions(res);
-      const firstSub = res[0];
-      const nextDay = new Date(firstSub.date_end);
-      nextDay.setDate(nextDay.getDate() + 1);
-      setNewDate(nextDay);
-
-      setSubEnd(firstSub.date_end);
-      setSubName(firstSub.name || '');
-      setSubPrice(firstSub.amount_total || 0);
-    };
     fetchData();
   }, [user]);
 
@@ -82,16 +68,18 @@ export default function SubscriptionEditor({ user }: Props) {
   const hasSub = subscriptions.length >= 1;
 
   // TEMPLATES
-  const monthTemplate = (rowData: SubscriptionItem) => {
-    return <span>{formatDateMonthYear(rowData.date_start)}</span>;
+  const monthTemplate = (rowData: Invoice) => {
+    const raw = rowData.invoice_date && formatDateMonthYear(rowData?.invoice_date);
+    const formatted = raw ? raw : '';
+    return <span>{formatted}</span>;
   };
 
-  const priceTemplate = (rowData: SubscriptionItem) => {
-    return <span>{formatCurrency(rowData.amount_total)}</span>;
-  };
+  const priceTemplate = (rowData: Invoice) => (
+    <span>{formatCurrency(rowData.invoice_total_gross)}</span>
+  );
 
-  const statusTemplate = (rowData: SubscriptionItem) => {
-    const status = invoice_status.find((i) => i.value === rowData.status);
+  const statusTemplate = (rowData: Invoice) => {
+    const status = invoice_status.find((i) => i.value === rowData.invoice_status);
     return (
       <Tag
         bgColor={status?.bg || 'grey'}
@@ -101,41 +89,71 @@ export default function SubscriptionEditor({ user }: Props) {
     );
   };
 
+  // NEU: Rechnung intern anlegen + Stripe nur für den Payment Link nutzen
   const startSubscription = async () => {
-    if (!selectedSubscription) return;
+    if (!selectedSubscription || !subStart) return;
     const plan = plans.find((p) => p.id === selectedSubscription);
-
     if (!plan) return;
-    const priceInCents = plan?.amount_total * 100;
-    let customerId = user.stripe_customer_id;
-
-    const startTimestamp = subStart ? Math.floor(subStart.getTime() / 1000) : undefined;
+    setSending(true);
     try {
-      if (!customerId) {
-        const newCustomerId = await createStripeCustomer(
-          user.id,
-          user.email,
-          `${user.user_name_first} ${user.user_name_last}`
-        );
-        if (!newCustomerId) throw new Error('Stripe Customer konnte nicht erstellt werden');
-        customerId = newCustomerId;
-      }
+      const payload = {
+        user: user.id,
+        invoice_number: invoiceNumber,
+        invoice_date: subStart,
+        invoice_date_due: subStart ? new Date(subStart.getTime() + 14 * 24 * 60 * 60 * 1000) : null,
+        invoice_recipient_email: user.email,
+        invoice_total_gross: plan.amount_total,
+        invoice_total_net: plan.amount_net,
+        subscription: true,
+        tax_amount: plan.amount_tax,
+        invoice_status: 'sent',
+      };
+      const res = await invoiceCreate(payload);
+      const desc = `${plan.name} ${formatMonth(subStart)}`;
 
-      await createSubscription(customerId, plan.stripe_id, user.id, startTimestamp);
+      const itemPayload = {
+        invoice: res.id,
+        index: 1,
+        description: desc,
+        quantity: 1,
+        price_single: plan.amount_total,
+        price_total: plan.amount_total,
+        taxes_amount: plan.amount_tax,
+      };
+      const item = await invoiceItemCreate(itemPayload);
+
+      // 3. Stripe Payment Link erzeugen (kein Stripe-eigenes Rechnungssystem)
+      const { paymentUrl } = await createStripePaymentLink(
+        res,
+        [item],
+        user,
+        invoiceNumber,
+        plan.amount_total
+      );
+      if (!paymentUrl) throw new Error('Zahlungslink konnte nicht erstellt werden');
+
+      // 4. E-Mail mit Rechnung + Zahlungslink verschicken
+      await sendInvoiceEmail(res, [item], user, paymentUrl);
+
+      // 5. Rechnungsstatus aktualisieren
+      await invoiceUpdate({ invoice_status: 'sent', payment_url: paymentUrl }, res.id);
+
       fetchData();
       toast.current?.show({
         severity: 'success',
         summary: 'Abo erstellt',
-        detail: 'Das Abo wurde erstellt.',
+        detail: 'Die Rechnung wurde erstellt und versendet.',
       });
       setVisible(false);
     } catch (err) {
       console.error(err);
       toast.current?.show({
-        severity: 'success',
+        severity: 'error',
         summary: 'Fehler',
         detail: 'Das Abo konnte nicht erstellt werden. Bitte probieren Sie es erneut.',
       });
+    } finally {
+      setSending(false);
     }
   };
 
@@ -158,14 +176,12 @@ export default function SubscriptionEditor({ user }: Props) {
             options={plans}
             value={selectedSubscription}
           />
-          {/* <CurrencyInput label="Preis" onChange={setSubPrice} value={subPrice} />*/}
-          {!hasSub && (
-            <DatePicker label="Startdatum" dateValue={subStart} onDateChange={setSubStart} />
-          )}
+          {!hasSub && <DatePicker label="Startdatum" onChange={setSubStart} value={subStart} />}
+          <TextInputLabel label="Rechnungsnummer" value={String(invoiceNumber)} readonly />
           <Column gap={4}>
             <Button
-              disabled={!selectedSubscription || !subStart}
-              label={hasSub ? 'Aktualisieren' : 'Abo starten'}
+              disabled={!selectedSubscription || !subStart || sending}
+              label={sending ? 'Wird erstellt…' : hasSub ? 'Aktualisieren' : 'Abo starten'}
               onClick={startSubscription}
             />
             {hasSub && (

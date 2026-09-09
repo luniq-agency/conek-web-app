@@ -483,7 +483,7 @@ p-datepicker-next {
 .p-icon-field {
   background-color: var(--background-container);
   border-radius: 8px;
-  padding-left: 32px;
+  padding-left: 12px;
 }
 
 .p-icon-field > .p-inputtext,

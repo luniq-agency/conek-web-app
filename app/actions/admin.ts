@@ -31,13 +31,12 @@ export async function adminCompleteAccount(email: string, password: string, role
   return updated;
 }
 
-export async function adminInvite(data: Partial<User>, email: string, firstName: string) {
+export async function adminInvite(
+  data: Partial<User>,
+): Promise<User> {
   const supabase = await createClient();
-
   const { data: created, error } = await supabase.from('user').insert(data).select().single();
-
   if (error) throw new Error(error.message);
-
   return created;
 }
 

@@ -119,12 +119,14 @@ export type Invoice = {
   invoice_date_due: Date | null;
   invoice_date_sent: Date;
   invoice_number: string;
+  invoice_recipient_email: string;
   invoice_status: string;
   invoice_total_gross: number;
   invoice_total_net: number;
   payment_url: string;
   recipient: string;
   stripe_invoice_id: string;
+  subscription: boolean;
   tax_amount: number;
   tax_category: string;
   tax_rate: number;

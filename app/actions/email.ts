@@ -8,17 +8,6 @@ import { generateInvoicePDF } from './pdf';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-interface SendEmailOptions {
-  html?: string;
-  id?: string;
-  name: string;
-  referrer?: string;
-  subject?: string;
-  templateId: string;
-  text?: string;
-  to: string;
-}
-
 export async function fetchEmails(): Promise<Email[]> {
   const supabase = await createClient();
 
@@ -99,5 +88,22 @@ export async function sendInvoiceEmail(invoice: Invoice, items: InvoiceItem[], r
   } as any);
 
   if (error) throw new Error(JSON.stringify(error));
+  return data;
+}
+
+export async function sendAdminInviteEmail(name: string, to: string, url: string) {
+    const { data, error } = await resend.emails.send({
+    from: 'CONEK <info@conek.de>',
+    to,
+    subject: 'Deine Einladung zu CONEK',
+    template: {
+      id: 'agentur-einladung',
+      variables: {
+        NAME: name,
+        URL: String(url),
+      },
+    },
+  } as any);
+
   return data;
 }

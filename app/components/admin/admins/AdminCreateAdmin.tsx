@@ -2,6 +2,7 @@
 
 import { adminInvite } from '@/app/actions/admin';
 import { agencyCreate } from '@/app/actions/agency';
+import { sendAdminInviteEmail } from '@/app/actions/email';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
@@ -22,12 +23,15 @@ export default function AdminCreateAdmin() {
   const sendInvite = async () => {
     const payload = {
       created_at: new Date(),
+      email: adminEmail,
       user_name_first: adminVorname,
       user_name_last: adminNachname,
       user_role: 'admin',
     };
+
     try {
-      await adminInvite(payload, adminEmail, adminVorname);
+      const res = await adminInvite(payload);
+      await sendAdminInviteEmail(adminVorname, adminEmail, res.id);
       setVisible(false);
     } catch (err) {
       console.error(err);

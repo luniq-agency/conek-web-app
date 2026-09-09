@@ -135,6 +135,7 @@ export default function RechnungPage({ invoice }: Props) {
       invoice_total_net: Number(net.toFixed(2)),
       tax_amount: Number(tax.toFixed(2)),
       tax_category: taxRate?.value,
+      tax_rate: taxRate?.multiplier,
       user: recipient?.id,
     };
 
@@ -167,25 +168,34 @@ export default function RechnungPage({ invoice }: Props) {
     setSending(true);
     if (!recipient) return;
 
+    const payload = {
+      invoice_date_sent: new Date(),
+      invoice_status: 'sent',
+      invoice_total_gross: total,
+      invoice_total_net: net,
+      tax_amount: tax,
+      tax_rate: taxMultiplier,
+    };
+    const res = await invoiceUpdate(payload, invoice.id);
+
     const { paymentUrl } = await createStripePaymentLink(
-      invoice,
+      res,
       items,
       recipient,
-      invoice.invoice_number,
+      res.invoice_number,
       total
     );
 
     if (!paymentUrl) return;
 
     try {
-      await sendInvoiceEmail(invoice, items, recipient, paymentUrl);
-      await invoiceUpdate({ invoice_status: 'sent', payment_url: paymentUrl }, invoice.id);
-      // ...
+      await sendInvoiceEmail(res, items, recipient, paymentUrl);
+      await invoiceUpdate({ payment_url: paymentUrl }, invoice.id);
     } catch (err) {
-      // ...
     } finally {
       setSending(false);
     }
+    setSending(false);
   };
 
   const isComplete = recipient?.email && items.length >= 1;
