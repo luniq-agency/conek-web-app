@@ -20,7 +20,7 @@ export async function createStripePaymentLink(
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: 'payment',
-    payment_method_types: ['card', 'sepa_debit'],
+    payment_method_types: ['card'],
     line_items: [
       {
         price_data: {

@@ -171,9 +171,12 @@ export default function SubscriptionEditor({ user }: Props) {
           <SelectLabel
             label="Abo auswählen"
             onChange={setSelectedSubscription}
-            optionLabel="name"
+            optionLabel="displayLabel"
             optionValue="id"
-            options={plans}
+            options={plans.map((p) => ({
+              ...p,
+              displayLabel: `${p.name} (${formatCurrency(p.amount_total)}/Monat)`,
+            }))}
             value={selectedSubscription}
           />
           {!hasSub && <DatePicker label="Startdatum" onChange={setSubStart} value={subStart} />}
