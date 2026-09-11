@@ -28,6 +28,17 @@ import { createStripePaymentLink } from '@/app/actions/stripe/payments';
 import { Dialog } from 'primereact/dialog';
 import InvoicePDFPreview from '@/app/components/invoices/InvoicePreview';
 
+const subOptions = [
+  {
+    label: 'Einmal-Rechnung',
+    value: 'false',
+  },
+  {
+    label: 'Abo',
+    value: 'true',
+  },
+];
+
 interface Props {
   invoice: Invoice;
 }
@@ -77,6 +88,7 @@ export default function RechnungPage({ invoice }: Props) {
   const [invoiceDateDue, setInvoiceDateDue] = useState(invoice.invoice_date_due || '');
   const [recipient, setRecipient] = useState<User | null>(null);
   const [rechnungsnummer, setRechnungsnummer] = useState(invoice.invoice_number || '');
+  const [subscription, setSubscription] = useState('false');
   const [taxAmount, setTaxAmount] = useState(invoice.tax_amount || 0);
   const [taxMultiplier, setTaxMulitplier] = useState(invoice.tax_rate || 0);
   const [taxRate, setTaxRate] = useState<TaxRate | null>(taxRates[0] || null);
@@ -133,6 +145,7 @@ export default function RechnungPage({ invoice }: Props) {
       invoice_recipient_email: recipient?.email,
       invoice_total_gross: Number(total.toFixed(2)), // ← nutzt jetzt die aktuellen Werte von oben
       invoice_total_net: Number(net.toFixed(2)),
+      subscription: subscription === 'true',
       tax_amount: Number(tax.toFixed(2)),
       tax_category: taxRate?.value,
       tax_rate: taxRate?.multiplier,
@@ -173,6 +186,7 @@ export default function RechnungPage({ invoice }: Props) {
       invoice_status: 'sent',
       invoice_total_gross: total,
       invoice_total_net: net,
+      subscription: subscription === 'true',
       tax_amount: tax,
       tax_rate: taxMultiplier,
     };
@@ -276,6 +290,14 @@ export default function RechnungPage({ invoice }: Props) {
               value={invoiceDateDue}
             />
           </Row>
+          <SelectLabel
+            label="Abonnement"
+            onChange={setSubscription}
+            optionLabel="label"
+            optionValue="value"
+            options={subOptions}
+            value={subscription}
+          />
         </Grid>
         <DividerBlock height={0.5} />
         <div className="column">
