@@ -107,6 +107,10 @@ export const family_options = [
     label: 'Geschieden',
     value: 'divorced',
   },
+  {
+    label: 'Unbekannt',
+    value: 'unkown',
+  },
 ];
 
 export const invoice_status = [
