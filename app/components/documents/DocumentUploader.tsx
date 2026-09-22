@@ -11,7 +11,7 @@ import { sanitizeFileName } from '@/app/utils/sanitize';
 import { PrimaryButton, SecondaryButton } from '../buttons/Buttons';
 import { Toast } from 'primereact/toast';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 interface Props {
   folder: string | null;
@@ -41,7 +41,7 @@ export default function DocumentUploader({ folder, onUpload, owner }: Props) {
       toast.current?.show({
         severity: 'error',
         summary: 'Datei zu groß',
-        detail: `Die Datei ist ${(file.size / 1024 / 1024).toFixed(1)} MB groß. Maximal erlaubt sind 10 MB.`,
+        detail: `Die Datei ist ${(file.size / 1024 / 1024).toFixed(1)} MB groß. Maximal erlaubt sind 20 MB.`,
       });
       return; // ← Upload wird gar nicht erst gesetzt/gestartet
     }
