@@ -33,24 +33,22 @@ export default function ClientEditor({ user: userProp }: Props) {
 
   const user = userProp ?? userProfile; // ← Fallback auf eingeloggten User
 
-  if (!user) return null;
-
   // STATES
   const [statusChanged, setStatusChanged] = useState(false);
   const [updating, setUpdating] = useState(false);
 
   // CLIENT DATA
-  const [clientDob, setClientDob] = useState<Date | null>(user.dob ? new Date(user.dob) : null);
-  const [clientFamily, setClientFamily] = useState(user.family_status || '');
-  const [clientIban, setClientIban] = useState(user.iban || '');
-  const [clientJob, setClientJob] = useState(user.job || '');
-  const [clientJobType, setClientJobType] = useState(user.job_status || '');
-  const [clientKids, setClientKids] = useState(user.kinder || 0);
-  const [clientNachname, setClientNachname] = useState(user.user_name_last || '');
-  const [clientNotes, setClientNotes] = useState(user.notizen || '');
-  const [clientVorname, setClientVorname] = useState(user.user_name_first || '');
-  const [clientStatus, setClientStatus] = useState(user.status || '');
-  const [clientTaxId, setClientTaxId] = useState(user.steuer_id || '');
+  const [clientDob, setClientDob] = useState<Date | null>(user?.dob ? new Date(user.dob) : null);
+  const [clientFamily, setClientFamily] = useState(user?.family_status || '');
+  const [clientIban, setClientIban] = useState(user?.iban || '');
+  const [clientJob, setClientJob] = useState(user?.job || '');
+  const [clientJobType, setClientJobType] = useState(user?.job_status || '');
+  const [clientKids, setClientKids] = useState(user?.kinder || 0);
+  const [clientNachname, setClientNachname] = useState(user?.user_name_last || '');
+  const [clientNotes, setClientNotes] = useState(user?.notizen || '');
+  const [clientVorname, setClientVorname] = useState(user?.user_name_first || '');
+  const [clientStatus, setClientStatus] = useState(user?.status || '');
+  const [clientTaxId, setClientTaxId] = useState(user?.steuer_id || '');
 
   const originalDob = user?.dob ? new Date(user.dob).toDateString() : null;
   const currentDob = clientDob ? clientDob.toDateString() : null;
@@ -76,7 +74,7 @@ export default function ClientEditor({ user: userProp }: Props) {
         body: `Status auf '${status?.label}' geändert.`,
         created_at: new Date(),
         created_by: `${userProfile?.user_name_first} ${userProfile?.user_name_last}`,
-        user: user.id,
+        user: user?.id,
       };
       setStatusChanged(true);
       await userUpdateCreate(updatePayload);
@@ -98,6 +96,8 @@ export default function ClientEditor({ user: userProp }: Props) {
       user_name_first: clientVorname,
     };
 
+    if (!user) return;
+
     try {
       await userUpdate(payload, user.id);
       toast.current?.show({
@@ -111,6 +111,8 @@ export default function ClientEditor({ user: userProp }: Props) {
       setUpdating(false);
     }
   };
+
+  if (!user) return null;
 
   return (
     <div className="column gap-m">

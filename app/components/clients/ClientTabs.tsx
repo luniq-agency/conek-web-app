@@ -192,10 +192,7 @@ export default function ClientTabs({ onChange, onSaveRef, user }: Props) {
         visible={changing}
       >
         <Column>
-          <TextInputLabel
-            onChange={(v) => updateField({ email: v })}
-            value={formData.email}
-          />
+          <TextInputLabel onChange={(v) => updateField({ email: v })} value={formData.email} />
           <Button disabled={saving} label="E-Mail-Adresse ändern" onClick={changeEmail} />
           {error && <ErrorMessage message={error} />}
         </Column>

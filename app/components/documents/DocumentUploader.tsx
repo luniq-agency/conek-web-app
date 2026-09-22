@@ -1,14 +1,17 @@
 'use client';
 
-import { documentUpload } from '@/app/actions/documents';
+import { documentCreate } from '@/app/actions/documents';
+import { uploadFileDirectly } from '@/app/actions/media/uploads';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { FileUpload, FileUploadHandlerEvent } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
-import { FormEvent, useState } from 'react';
+import { useRef, useState } from 'react';
 import { FileUploader } from '../forms/Uploaders';
 import { sanitizeFileName } from '@/app/utils/sanitize';
 import { PrimaryButton, SecondaryButton } from '../buttons/Buttons';
+import { Toast } from 'primereact/toast';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 interface Props {
   folder: string | null;
@@ -17,40 +20,64 @@ interface Props {
 }
 
 export default function DocumentUploader({ folder, onUpload, owner }: Props) {
-  // STATES
+  const toast = useRef<Toast | null>(null);
+
   const [visible, setVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // INPUTS
   const [documentFile, setDocumentFile] = useState<{ file: File } | null>(null);
   const [documentFileType, setDocumentFileType] = useState('');
   const [documentName, setDocumentName] = useState('');
 
-  // ACTIONS
   const cancel = () => {
     setVisible(false);
     setDocumentFile(null);
     setDocumentFileType('');
     setDocumentName('');
   };
+
   const handleUpload = (file: File, fileType: string) => {
+    if (file.size > MAX_FILE_SIZE) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Datei zu groß',
+        detail: `Die Datei ist ${(file.size / 1024 / 1024).toFixed(1)} MB groß. Maximal erlaubt sind 10 MB.`,
+      });
+      return; // ← Upload wird gar nicht erst gesetzt/gestartet
+    }
+
     setDocumentFile({ file });
     setDocumentFileType(fileType);
   };
 
   const uploadDocument = async () => {
-    setSubmitting(true);
     if (!documentFile || !owner) return;
-
-    const name = sanitizeFileName(documentName);
+    setSubmitting(true);
 
     try {
-      await documentUpload(documentFile.file, name, documentFileType, documentName, owner, folder);
+      const sanitized = sanitizeFileName(documentFile.file.name);
+      const path = `${owner}/${sanitized}`;
+
+      const url = await uploadFileDirectly(documentFile.file, path);
+
+      await documentCreate({
+        document_file: url,
+        document_name: documentName,
+        file_type: documentFileType,
+        folder: folder || undefined,
+        user: String(owner),
+      });
+
       setDocumentFile(null);
       setDocumentName('');
       onUpload();
     } catch (err) {
       console.error('Upload Fehler:', err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'Das Dokument konnte nicht hochgeladen werden.',
+      });
     } finally {
       setSubmitting(false);
       setVisible(false);
@@ -59,6 +86,7 @@ export default function DocumentUploader({ folder, onUpload, owner }: Props) {
 
   return (
     <>
+      <Toast ref={toast} />
       <Dialog
         header="Dokument hochladen"
         onHide={() => setVisible(false)}
@@ -78,8 +106,8 @@ export default function DocumentUploader({ folder, onUpload, owner }: Props) {
           <div className="row gap-s width-100 space-between">
             <SecondaryButton label="Abbrechen" onClick={cancel} />
             <PrimaryButton
-              disabled={!documentFile || !documentName}
-              label="Hochladen"
+              disabled={!documentFile || !documentName || submitting}
+              label={submitting ? 'Wird hochgeladen…' : 'Hochladen'}
               onClick={uploadDocument}
             />
           </div>
