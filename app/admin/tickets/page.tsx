@@ -7,6 +7,7 @@ import AdminCreateInvoice from '@/app/components/admin/invoices/AdminCreateInvoi
 import { clientsLoadAll } from '@/app/actions/clients';
 import TicketsAdmin from '@/app/components/tickets/TicketsAdmin';
 import { ticketsLoadAll } from '@/app/actions/tickets';
+import { usersLoadAll } from '@/app/actions/users';
 
 export const metadata: Metadata = {
   title: 'Tickets | CONEK',
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 
 export default async function AdminInvoicesPage() {
   const tickets = await ticketsLoadAll();
+  const users = await usersLoadAll();
 
-  return <TicketsAdmin tickets={tickets} />;
+  return <TicketsAdmin tickets={tickets} users={users} />;
 }

@@ -11,6 +11,17 @@
     padding: 1rem;
 }
 
+.docItem {
+    align-items: center;
+    background-color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    font-weight: 700;
+    gap: 0.5rem;
+    padding: 0.5rem 12px;
+}
+
 .selected {
     background-color: #f2f6ff;
 }

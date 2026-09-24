@@ -25,6 +25,12 @@ export async function documentDelete(id: string) {
   return deleted;
 }
 
+export async function documentLoad(id: string) {
+  const supabase = await createClient();
+  const { data } = await supabase.from('document').select('*').eq('id', id).single();
+  return data;
+}
+
 export async function documentUpdate(data: Partial<Document>, id: string) {
   const supabase = await createClient();
   const { data: updated, error } = await supabase

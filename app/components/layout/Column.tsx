@@ -9,7 +9,7 @@ interface Props {
   className?: any;
   gap?: number | string;
   grow?: boolean;
-  maxWidth?: number;
+  maxWidth?: string | number | undefined;
   padding?: string | number;
   width?: string | number;
 }

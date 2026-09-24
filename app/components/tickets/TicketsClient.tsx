@@ -6,7 +6,7 @@ import { Ticket } from '@/app/types/Database';
 import { formatDate } from '@/app/utils/formats';
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable } from 'primereact/datatable';
 import { useEffect, useState } from 'react';
 import DividerBlock from '@/app/components/DividerBlock';
 import { Dialog } from 'primereact/dialog';
@@ -15,6 +15,7 @@ import { ticket_options, ticket_status } from '@/app/constants/Constants';
 import { useRouter } from 'next/navigation';
 import { Tag } from 'primereact/tag';
 import { Sidebar } from 'primereact/sidebar';
+import Link from 'next/link';
 
 interface Props {
   onSubmit?: () => void;
@@ -60,7 +61,7 @@ export default function TicketsClient({ onSubmit }: Props) {
   };
 
   const selectTicket = async (rowData: Ticket) => {
-    router.push(`/dashboard/tickets/${rowData.id}`)
+    router.push(`/dashboard/tickets/${rowData.id}`);
   };
 
   const submitTicket = async () => {
@@ -127,6 +128,7 @@ export default function TicketsClient({ onSubmit }: Props) {
             onChange={setTicketDescription}
             value={ticketDescription}
           />
+
           <Button
             disabled={!ticketName || !ticketCategory || !ticketDescription || submitting}
             icon={submitting ? 'pi pi-spinner' : undefined}
@@ -137,26 +139,27 @@ export default function TicketsClient({ onSubmit }: Props) {
       </Dialog>
       <div className="row space-between">
         <h1>Meine Tickets</h1>
-        <Button
-          className="button-primary"
-          icon="pi pi-plus"
-          label="Ticket erstellen"
-          onClick={() => setVisible(true)}
-        />
+        <Link href="/dashboard/ticket-erstellen">
+          <Button
+            className="button-primary"
+            icon="pi pi-plus"
+            label="Ticket erstellen"
+          />
+        </Link>
       </div>
       <DividerBlock height={2} />
-        <DataTable
-          emptyMessage="Du hast noch keine Tickets erstellt."
-          paginator
-          onRowClick={(e) => selectTicket(e.data as Ticket)}
-          rows={10}
-          stripedRows
-          value={tickets}
-        >
-          <Column field="name" header="Name" />
-          <Column body={(rowData) => formatDate(rowData.created_at)} header="Erstellt am" />
-          <Column body={statusTemplate} header="Status" />
-        </DataTable>
+      <DataTable
+        emptyMessage="Du hast noch keine Tickets erstellt."
+        paginator
+        onRowClick={(e) => selectTicket(e.data as Ticket)}
+        rows={10}
+        stripedRows
+        value={tickets}
+      >
+        <Column field="name" header="Name" />
+        <Column body={(rowData) => formatDate(rowData.created_at)} header="Erstellt am" />
+        <Column body={statusTemplate} header="Status" />
+      </DataTable>
     </>
   );
 }

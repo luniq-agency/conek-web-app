@@ -162,7 +162,7 @@ export type Notification = {
   message: string;
   read: boolean;
   ref: string;
-  recipient: string;
+  recipient: string | number;
   title: string;
   type: string;
 };
@@ -175,7 +175,7 @@ export type Subscription = {
   id: string;
   name: string;
   stripe_id: string;
-}
+};
 
 export type SubscriptionItem = {
   amount_net: number;
@@ -187,7 +187,7 @@ export type SubscriptionItem = {
   name: string;
   status: string;
   user: number | string;
-}
+};
 
 export type Task = {
   assignee: string | null;
@@ -213,7 +213,7 @@ export type TaskUpdate = {
 };
 
 export type Ticket = {
-  assignee: string;
+  assignee: string | number;
   category: string;
   created_at: Date;
   created_by: string;
@@ -228,6 +228,7 @@ export type TicketEntry = {
   created_at: Date;
   created_by: string;
   id: string;
+  media: string;
   ticket: string;
 };
 

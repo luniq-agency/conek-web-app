@@ -5,7 +5,7 @@ import { invoice_status } from '@/app/constants/Constants';
 import { formatCurrency, formatDate } from '@/app/utils/formats';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
-import { Tag } from 'primereact/tag';
+import { MultiSelect } from 'primereact/multiselect';
 import { Sidebar } from 'primereact/sidebar';
 import { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
@@ -24,16 +24,15 @@ import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
 import AdminCreateInvoice from './AdminCreateInvoice';
 import { useRouter } from 'next/navigation';
-import { sendEmail, sendEmailWithAttachment } from '@/app/actions/email';
-import { userLookup } from '@/app/actions/users';
-import { invoiceItemsLoad } from '@/app/actions/invoiceitem';
-import { generateInvoicePDF } from '@/app/actions/pdf';
 import Floater from '../../ui/Floater';
 import { ContextButton, DeleteButton, PrimaryButton, SecondaryButton } from '../../buttons/Buttons';
-import { Delete, Trash } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { Dialog } from 'primereact/dialog';
 import Row from '../../layout/Row';
 import DividerBlock from '../../DividerBlock';
+import Tag from '../../ui/Tag';
+import SearchBox from '../../forms/SearchBox';
+import { SelectLabel } from '../../inputs/Select';
 
 interface Props {
   clients?: User[];
@@ -44,10 +43,14 @@ export default function InvoicesTable({ clients }: Props) {
   const { userProfile } = useAuth();
   const router = useRouter();
 
-  // STATETS
+  // INPUTS
+  const [search, setSearch] = useState('');
+
+  // STATES
   const [deleting, setDeleting] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedInvoices, setSelectedInvoices] = useState<Invoice[]>([]);
+  const [statusFilter, setStatusFilter] = useState('');
   const [visible, setVisible] = useState(false);
   const toast = useRef<Toast | null>(null);
 
@@ -68,6 +71,22 @@ export default function InvoicesTable({ clients }: Props) {
   }, [clients]);
 
   const [rowClick, setRowClick] = useState(true);
+
+  // FILTER
+  const enrichedInvoices = invoicesList.map((invoice) => {
+    const client = clients?.find((c) => c.id === invoice.user);
+    return {
+      ...invoice,
+      recipientName: client ? `${client.user_name_last}, ${client.user_name_first}` : '',
+    };
+  });
+
+  const filteredInvoices = enrichedInvoices.filter((invoice) => {
+    const matchesSearch = invoice.recipientName.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus =
+      statusFilter.length === 0 || statusFilter.includes(invoice.invoice_status);
+    return matchesSearch && matchesStatus;
+  });
 
   // ACTIONS
   const cancelDelete = () => {
@@ -131,6 +150,10 @@ export default function InvoicesTable({ clients }: Props) {
     setDeleting(true);
   };
 
+  const resetFilter = () => {
+    setStatusFilter('');
+  };
+
   //TEMPLATES
   const actionTemplate = (rowData: Invoice) => {
     return (
@@ -162,9 +185,39 @@ export default function InvoicesTable({ clients }: Props) {
     return <span>{formatDate(rowData.invoice_date)}</span>;
   };
 
+  const dueDateTemplate = (rowData: Invoice) => {
+    if (!rowData.invoice_date_due) return <span>–</span>;
+    const color = rowData.invoice_date_due < new Date() ? 'red' : 'inherit';
+    return <span style={{ color }}>{formatDate(rowData.invoice_date_due)}</span>;
+  };
+
+  const headerTemplate = (
+    <Row justifyContent="space-between">
+      <Row alignItems="center" justifyContent="end">
+        <SearchBox maxWidth={250} onChange={setSearch} value={search} />
+        <SelectLabel
+          maxWidth={250}
+          onChange={setStatusFilter}
+          onClear={resetFilter}
+          options={invoice_status}
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Status"
+          value={statusFilter}
+        />
+      </Row>
+    </Row>
+  );
+
   const statusTemplate = (rowData: Invoice) => {
-    const statusObj = invoice_status.find((t) => t.value === rowData.invoice_status);
-    return <Tag severity={(statusObj?.severity as any) ?? 'info'} value={statusObj?.label ?? ''} />;
+    const status = invoice_status.find((t) => t.value === rowData.invoice_status);
+    return (
+      <Tag
+        bgColor={status?.bg || 'var(--primary)'}
+        color={status?.color || 'white'}
+        text={status?.label || ''}
+      />
+    );
   };
 
   const totalTemplate = (rowData: Invoice) => {
@@ -236,6 +289,7 @@ export default function InvoicesTable({ clients }: Props) {
       </Dialog>
       <DataTable
         emptyMessage="Keine Rechnungen gefunden."
+        header={headerTemplate}
         onSelectionChange={(e: any) => setSelectedInvoices(e.value)}
         paginator
         rows={10}
@@ -244,13 +298,20 @@ export default function InvoicesTable({ clients }: Props) {
         sortField="invoice_number"
         sortOrder={-1}
         stripedRows
-        value={invoicesList}
+        value={filteredInvoices}
       >
         <Column selectionMode="multiple" header="" headerStyle={{ width: '3rem' }} />
         <Column field="invoice_number" header="#" sortable />
-        <Column body={recipientTemplate} header="Empfänger" hidden={!clients} />
+        <Column
+          body={recipientTemplate}
+          field="recipientName"
+          header="Empfänger"
+          hidden={!clients}
+          sortable
+        />
         <Column body={dateTemplate} header="Rechnungsdatum" sortable />
-        <Column body={totalTemplate} field="invoice_total_gross" header="Betrag" />
+        <Column body={dueDateTemplate} header="Fälligkeitsdatum" sortable />
+        <Column body={totalTemplate} field="invoice_total_gross" header="Betrag" sortable />
         <Column body={statusTemplate} field="status" header="Status" />
         <Column body={actionTemplate} header="Aktionen" />
       </DataTable>
@@ -422,8 +483,14 @@ export function InvoicesTableUser({ user }: Props) {
   };
 
   const statusTemplate = (rowData: Invoice) => {
-    const statusObj = invoice_status.find((t) => t.value === rowData.invoice_status);
-    return <Tag severity={(statusObj?.severity as any) ?? 'info'} value={statusObj?.label ?? ''} />;
+    const status = invoice_status.find((t) => t.value === rowData.invoice_status);
+    return (
+      <Tag
+        bgColor={status?.bg || 'var(--primary)'}
+        color={status?.color || 'white'}
+        text={status?.label || ''}
+      />
+    );
   };
 
   const totalTemplate = (rowData: Invoice) => {

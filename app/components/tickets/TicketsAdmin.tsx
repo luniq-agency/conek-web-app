@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from '../admin/Admin.module.css';
 import { DataScroller } from 'primereact/datascroller';
-import { Ticket, TicketEntry, User } from '@/app/types/Database';
+import { Document, Ticket, TicketEntry, User } from '@/app/types/Database';
 import TicketBox from './TicketBox';
 import { InputText } from 'primereact/inputtext';
 import DividerBlock from '../DividerBlock';
@@ -16,16 +16,21 @@ import { notificationCreate } from '@/app/actions/notification';
 import { userLookup } from '@/app/actions/users';
 import { UserAvatar } from '../UserAvatar';
 import { formatDate } from '@/app/utils/formats';
+import { documentsLoadUser } from '@/app/actions/documents';
 
 interface Props {
   tickets: Ticket[];
+  users: User[];
 }
 
-export default function TicketsAdmin({ tickets }: Props) {
+export default function TicketsAdmin({ tickets, users }: Props) {
   const { user, userProfile } = useAuth();
 
   const op = useRef<OverlayPanel | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  // DATA
+  const [docs, setDocs] = useState<Document[]>([]);
 
   // STATES
   const [ticketCreator, setTicketCreator] = useState<User | null>(null);
@@ -47,10 +52,14 @@ export default function TicketsAdmin({ tickets }: Props) {
     if (!selectedTicket) return;
 
     const fetchEntries = async () => {
-      const res = await ticketEntriesLoadTicket(selectedTicket.id);
+      const [res, clientRes, docRes] = await Promise.all([
+        ticketEntriesLoadTicket(selectedTicket.id),
+        userLookup(selectedTicket.created_by),
+        documentsLoadUser(selectedTicket.created_by)
+      ]);
       setEntries(res ?? []);
-      const client = await userLookup(selectedTicket.created_by);
-      setTicketCreator(client);
+      setTicketCreator(clientRes);
+      setDocs(docRes);
     };
     fetchEntries();
   }, [selectedTicket]);
@@ -154,7 +163,13 @@ export default function TicketsAdmin({ tickets }: Props) {
           </div>
           <div className={styles.chatContent}>
             {entries.map((entry) => (
-              <TicketUpdateBox creator={entry.created_by} key={entry.id} entry={entry} />
+              <TicketUpdateBox
+                creator={entry.created_by}
+                docs={docs}
+                key={entry.id}
+                entry={entry}
+                users={users}
+              />
             ))}
           </div>
           <form className={styles.chatContainerFooter} onSubmit={submitAnswer}>
@@ -182,7 +197,7 @@ export default function TicketsAdmin({ tickets }: Props) {
           }}
         >
           <div className="row align-center gap-s">
-            <UserAvatar fontSize={16} height={32} user={ticketCreator} width={32}/>
+            <UserAvatar fontSize={16} height={32} user={ticketCreator} width={32} />
             <span style={{ flexGrow: 1, fontSize: 16, fontWeight: 700 }}>
               {ticketCreator?.user_name_last}, {ticketCreator?.user_name_first}
             </span>

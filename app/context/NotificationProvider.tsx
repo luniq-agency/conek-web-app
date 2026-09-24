@@ -56,7 +56,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           event: 'INSERT',
           schema: 'public',
           table: 'notification',
-          filter: `user_uuid=eq.${user?.id}`,
+          filter: `recipient=eq.${user?.id}`,
         },
         (payload) => {
           setNotifications((prev) => [payload.new as Notification, ...prev]);

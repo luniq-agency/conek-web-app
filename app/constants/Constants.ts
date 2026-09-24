@@ -120,8 +120,8 @@ export const invoice_status = [
     value: 'draft',
   },
   {
-    bg: '#fc9619',
-    color: 'white',
+    bg: '#EED7FC',
+    color: '#50253F',
     label: 'Gesendet',
     severity: 'warning',
     value: 'sent',
@@ -257,13 +257,25 @@ export const tax_rates = [
 
 export const ticket_options = [
   {
+    description: 'Brief vom Finanzamt etc.',
+    label: 'Behördenkommunikation',
+    value: 'official',
+  },
+  {
+    description: 'Änderungswünsche, Verbesserungsvorschläge etc.',
     label: 'Frage zu CONEK',
     value: 'general',
   },
   {
+    description: 'Technische Probleme, Bugs & Fehler etc.',
     label: 'Technischer Support',
     value: 'tech_support',
   },
+  {
+    description: 'Allgemeine Anliegen',
+    label: 'Sonstiges',
+    value: 'other'
+  }
 ];
 
 export const ticket_status = [

@@ -10,7 +10,7 @@ export async function ticketCreate(data: Partial<Ticket>) {
 
   if (error) throw new Error(error.message);
 
-  return data;
+  return created;
 }
 
 export async function ticketLoadSingle(id: string): Promise<Ticket> {

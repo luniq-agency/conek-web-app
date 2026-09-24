@@ -64,27 +64,27 @@ export default function DocumentExplorer({
 
   // ACTIONS
   const confirmFolder = async () => {
-      if (!owner || !pendingFolder) return;
-  
-      console.log('Selected Folder:', selectedFolder);
-      const name = pendingFolder.name.trim() || 'Neuer Ordner';
-  
-      const payload = {
-        name,
-        parent: selectedFolder,
-        user: owner,
-      };
-  
-      console.log('Folder Payload:', payload);
-  
-      try {
-        await folderCreate(payload);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setPendingFolder(null);
-      }
+    if (!owner || !pendingFolder) return;
+
+    console.log('Selected Folder:', selectedFolder);
+    const name = pendingFolder.name.trim() || 'Neuer Ordner';
+
+    const payload = {
+      name,
+      parent: selectedFolder,
+      user: owner,
     };
+
+    console.log('Folder Payload:', payload);
+
+    try {
+      await folderCreate(payload);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPendingFolder(null);
+    }
+  };
 
   const createFolder = async () => {
     const tempId = 'pending-' + Date.now();
@@ -93,9 +93,7 @@ export default function DocumentExplorer({
     setTimeout(() => pendingInputRef.current?.focus(), 50);
   };
 
-  const deleteFolder = async () => {
-
-  }
+  const deleteFolder = async () => {};
 
   const dropOnFolder = async (folderId: string) => {
     if (!draggingDocument) return;
@@ -117,7 +115,10 @@ export default function DocumentExplorer({
           icon="pi pi-arrow-left"
           label="Zurück"
           text
-          onClick={() => setSelectedFolder(null)}
+          onClick={() => {
+            setSelectedFolder(null);
+            onSelectFolder(null as any); // je nach Typ ggf. Props anpassen auf `DocumentFolder | null`
+          }}
           style={{ width: 'fit-content' }}
         />
       )}
@@ -154,7 +155,10 @@ export default function DocumentExplorer({
           <DocumentFolderBox
             folder={folder}
             key={folder.id}
-            onClick={() => onSelectFolder(folder as DocumentFolder)}
+            onClick={() => {
+              setSelectedFolder(folder.id); // ← intern navigieren
+              onSelectFolder(folder as DocumentFolder); // ← Parent informieren (z.B. für Upload-Zielordner)
+            }}
             onDelete={deleteFolder}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => dropOnFolder(folder.id)}

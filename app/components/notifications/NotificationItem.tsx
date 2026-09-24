@@ -4,10 +4,12 @@ import { notificationDelete, notificationUpdate } from '@/app/actions/notificati
 import { useRef } from 'react';
 import { ContextMenu } from 'primereact/contextmenu';
 import Link from 'next/link';
+import { IconButton } from '../buttons/IconButton';
+import { EllipsisVertical } from 'lucide-react';
 
 interface Props {
   notification: Notification;
-  onClick: ()=> void;
+  onClick: () => void;
 }
 
 export default function NotificationItem({ notification, onClick }: Props) {
@@ -56,10 +58,14 @@ export default function NotificationItem({ notification, onClick }: Props) {
       onContextMenu={(e) => menu.current?.show(e)}
     >
       <ContextMenu model={items} ref={menu} breakpoint="767px" />
-      <span className="width-100" style={{ fontSize: 14 }}>
+      <span className="width-100" style={{ fontSize: 12 }}>
         {notification.message}
       </span>
       {!notification.read && <div className="dot-red" />}
+      <IconButton
+        icon={EllipsisVertical}
+        onClick={() => menu.current?.show({} as React.SyntheticEvent)}
+      />
     </Link>
   );
 }

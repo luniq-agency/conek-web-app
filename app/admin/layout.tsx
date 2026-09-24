@@ -27,7 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <main className="page-dashboard">
       {showSidebar && <AdminSidebar />}
       <div className="page-admin">{children}</div>
-      <HelpBox />
+      {/*<HelpBox />*/}
     </main>
   );
 }
