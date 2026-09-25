@@ -2,6 +2,7 @@
   align-items: center;
   background-color: transparent;
   color: var(--text-primary);
+  cursor: pointer;
   display: flex;
   font-size: 12px;
   font-weight: 400 !important;

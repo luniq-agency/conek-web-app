@@ -35,7 +35,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!userProfile) return;
 
-    // Initial laden
     const fetchNotifications = async () => {
       const { data } = await supabase
         .from('notification')
@@ -47,7 +46,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     fetchNotifications();
 
-    // Realtime abonnieren
     const channel = supabase
       .channel('notifications')
       .on(
@@ -56,7 +54,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           event: 'INSERT',
           schema: 'public',
           table: 'notification',
-          filter: `recipient=eq.${user?.id}`,
+          filter: `recipient=eq.${userProfile.id}`, // ← userProfile.id statt user?.id
         },
         (payload) => {
           setNotifications((prev) => [payload.new as Notification, ...prev]);
@@ -67,7 +65,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [userProfile]);
 
   const markAsRead = async (id: string) => {
     await supabase.from('notification').update({ read: true }).eq('id', id);
@@ -75,8 +73,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   };
 
   const markAllAsRead = async () => {
-    if (!user) return;
-    await supabase.from('notification').update({ read: true }).eq('user_uuid', user.id);
+    if (!userProfile) return;
+    await supabase.from('notification').update({ read: true }).eq('recipient', userProfile.id); // ← konsistent mit den anderen Queries
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 

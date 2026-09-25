@@ -86,6 +86,25 @@ export async function tasksLoadOpen(role: string, id: string): Promise<Task[]> {
   return data || [];
 }
 
+export async function tasksLoadOpenLatest(role: string, id: string): Promise<Task[]> {
+  const supabase = await createClient();
+
+  let query = supabase.from('task').select('*').in('status', ['open', 'overdue']).limit(5);
+
+  if (role === 'agency') {
+    if (!id) {
+      throw new Error('agentId ist erforderlich, wenn role "agency" ist.');
+    }
+    query = query.eq('assignee', id);
+  } else if (role !== 'admin') {
+    throw new Error(`Unbekannte Rolle: ${role}`);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
 export async function tasksLoadUser(id: string): Promise<Task[]> {
   const supabase = await createClient();
 

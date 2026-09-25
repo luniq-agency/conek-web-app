@@ -63,7 +63,12 @@ export async function sendEmailWithAttachment({
   return data;
 }
 
-export async function sendInvoiceEmail(invoice: Invoice, items: InvoiceItem[], recipient: User, link: string) {
+export async function sendInvoiceEmail(
+  invoice: Invoice,
+  items: InvoiceItem[],
+  recipient: User,
+  link: string
+) {
   // PDF direkt hier generieren – kein Transfer zum Client
   const buffer = await generateInvoicePDF(invoice, items, recipient);
 
@@ -92,7 +97,7 @@ export async function sendInvoiceEmail(invoice: Invoice, items: InvoiceItem[], r
 }
 
 export async function sendAdminInviteEmail(name: string, to: string, url: string) {
-    const { data, error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: 'CONEK <info@conek.de>',
     to,
     subject: 'Deine Einladung zu CONEK',
@@ -104,6 +109,7 @@ export async function sendAdminInviteEmail(name: string, to: string, url: string
       },
     },
   } as any);
+  if (error) console.log('E-Mail-Fehler:', error);
 
   return data;
 }

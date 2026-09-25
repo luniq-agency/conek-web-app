@@ -12,7 +12,7 @@ import { Task, User } from '@/app/types/Database';
 import { adminsLoadAll } from '@/app/actions/admin';
 import { clientsLoadAll } from '@/app/actions/clients';
 import { Registration, registrationsLoadMonthly } from '@/app/actions/stats';
-import { tasksLoadOpen } from '@/app/actions/tasks';
+import { tasksLoadOpenLatest } from '@/app/actions/tasks';
 import { useProfilePolling } from '@/app/hooks/useProfilePolling';
 import { ClientTableSmall } from '../components/clients/ClientTableSmall';
 import Grid from '../components/layout/Grid';
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
           userProfile.user_role === 'admin'
             ? registrationsLoadMonthly()
             : agencyGetSignups(userProfile.id),
-          tasksLoadOpen(userProfile.user_role, userProfile.id),
+          tasksLoadOpenLatest(userProfile.user_role, userProfile.id),
         ]);
         setAdmins(adminRes);
         setClients(clientRes);

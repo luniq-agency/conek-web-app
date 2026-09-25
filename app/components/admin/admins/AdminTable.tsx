@@ -8,17 +8,21 @@ import { DataTable } from 'primereact/datatable';
 import LayoutColumn from '@/app/components/layout/Column';
 import Tag from '../../ui/Tag';
 import Row from '../../layout/Row';
-import { ContextButton } from '../../buttons/Buttons';
-import { Pencil } from 'lucide-react';
-import { useState } from 'react';
+import { ContextButton, PrimaryButton } from '../../buttons/Buttons';
+import { EllipsisVertical, Mail, Pencil } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { TextInputLabel } from '../../forms/FormElements';
+import { OverlayPanel } from 'primereact/overlaypanel';
+import { sendAdminInviteEmail } from '@/app/actions/email';
 
 interface Props {
   admins: User[];
 }
 
 export default function AdminsTable({ admins }: Props) {
+  const op = useRef<OverlayPanel | null>(null);
+
   // STATES
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [visible, setVisible] = useState(false);
@@ -27,6 +31,13 @@ export default function AdminsTable({ admins }: Props) {
   const selectUser = (u: User) => {
     setSelectedUser(u);
     setVisible(true);
+  };
+
+  const sendInvite = async (u: User) => {
+    op.current?.hide();
+    const name = u.user_name_first;
+    console.log(name, u.email, u.id);
+    await sendAdminInviteEmail(name, u.email, u.id);
   };
 
   const nameTemplate = (rowData: User) => {
@@ -39,9 +50,24 @@ export default function AdminsTable({ admins }: Props) {
 
   const actionTemplate = (rowData: User) => {
     return (
-      <Row gap={4}>
-        <ContextButton icon={Pencil} onClick={() => selectUser(rowData)} />
-      </Row>
+      <>
+        <OverlayPanel ref={op}>
+          <ContextButton
+            icon={Mail}
+            label="Einladung erneut versenden"
+            onClick={() => sendInvite(rowData)}
+          />
+        </OverlayPanel>
+        <Row gap={0}>
+          <ContextButton icon={Pencil} onClick={() => selectUser(rowData)} />
+          <ContextButton
+            icon={EllipsisVertical}
+            onClick={(e) => {
+              op.current?.toggle(e);
+            }}
+          />
+        </Row>
+      </>
     );
   };
 
@@ -63,6 +89,11 @@ export default function AdminsTable({ admins }: Props) {
           <TextInputLabel label="Vorname" readonly value={selectedUser?.user_name_first} />
           <TextInputLabel label="Nachname" readonly value={selectedUser?.user_name_last} />
           <TextInputLabel label="E-Mail" readonly value={selectedUser?.email} />
+          <PrimaryButton
+            label="Einladung erneut versenden"
+            onClick={() => sendInvite(selectedUser!)}
+            size="medium"
+          />
         </LayoutColumn>
       </Dialog>
       <DataTable
